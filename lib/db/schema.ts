@@ -1,16 +1,33 @@
-import { AnyPgColumn, boolean, date, integer, pgEnum, pgSchema, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  type AnyPgColumn,
+  boolean,
+  date,
+  integer,
+  pgEnum,
+  pgSchema,
+  pgTable,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import { uuidv7 } from "uuidv7";
 import { bytea } from "./custom";
 
-export const element = pgEnum("character_element", ["anemo", "geo", "dendro", "hydro", "pyro", "cryo"]);
+export const element = pgEnum("character_element", [
+  "anemo",
+  "geo",
+  "dendro",
+  "hydro",
+  "pyro",
+  "cryo",
+]);
 
 // #region Shared
 export const cdn = pgTable("cdn", {
   id: text().primaryKey().$defaultFn(uuidv7),
   data: bytea().notNull(),
   type: text().notNull(),
-  size: text().notNull()
-})
+  size: text().notNull(),
+});
 
 export const auditLog = pgTable("auditLog", {
   id: text().primaryKey().$defaultFn(uuidv7),
@@ -21,23 +38,27 @@ export const auditLog = pgTable("auditLog", {
 export const characters = pgTable("characters", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().unique().notNull(), // Qiqi
-  version: text().notNull().references(() => versions.id), // Li-A
+  version: text()
+    .notNull()
+    .references(() => versions.id), // Li-A
   stars: integer().notNull().$type<4 | 5>(),
   vision: element().notNull(),
-  image: text().notNull().references(() => cdn.id),
-  weapon: text().notNull()
+  image: text()
+    .notNull()
+    .references(() => cdn.id),
+  weapon: text().notNull(),
 });
 
 export const versions = pgTable("versions", {
   id: text().primaryKey(), // LI
   name: text().notNull(), // LunaI
-  from: text().references((): AnyPgColumn => versions.id)
+  from: text().references((): AnyPgColumn => versions.id),
   // deprecate: date().notNull() // 21/03/2077
 });
 
 export const settings = pgTable("settings", {
   id: text().primaryKey().$defaultFn(uuidv7),
-  enka: boolean().notNull().default(false) // Turn this off when Enka is on maintenance
+  enka: boolean().notNull().default(false), // Turn this off when Enka is on maintenance
 });
 
 //#endregion
@@ -49,7 +70,9 @@ export const submissions = artifact.table("submissions", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
   comment: text().notNull(),
-  char: text().notNull().references(() => characters.name),
+  char: text()
+    .notNull()
+    .references(() => characters.name),
 });
 
 export const artifactSettings = artifact.table("settings", {
@@ -66,7 +89,9 @@ export const tierlist = pgSchema("tierlist");
 export const tierlistTypes = tierlist.table("types", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
-  image: text().notNull().references(() => cdn.id)
+  image: text()
+    .notNull()
+    .references(() => cdn.id),
 });
 
 export const tierlistTiers = tierlist.table("tiers", {
@@ -90,17 +115,28 @@ export const tierlistBadges = tierlist.table("badges", {
 export const tierlistVersions = tierlist.table("versions", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
-  hidden: boolean().notNull().default(false)
+  hidden: boolean().notNull().default(false),
 });
 
 export const tierlistStates = tierlist.table("states", {
   uuid: text().primaryKey().$defaultFn(uuidv7),
-  char: text().notNull().references(() => characters.id),
-  list: text().notNull().references(() => tierlistVersions.id),
-  tier: text().notNull().references(() => tierlistVersions.id),
-  column: text().notNull().references(() => tierlistColumns.id),
+  char: text()
+    .notNull()
+    .references(() => characters.id),
+  list: text()
+    .notNull()
+    .references(() => tierlistVersions.id),
+  tier: text()
+    .notNull()
+    .references(() => tierlistVersions.id),
+  column: text()
+    .notNull()
+    .references(() => tierlistColumns.id),
   comment: text().notNull().default(""),
-  badges: text().references(() => tierlistBadges.id).array(4).default([])
+  badges: text()
+    .references(() => tierlistBadges.id)
+    .array(4)
+    .default([]),
 });
 
 //#endregion
