@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Anuphan, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Image from "next/image";
+import { Toaster } from "sonner";
 import Background from "#/bg.jpg";
 
 const anuphan = Anuphan({
@@ -43,9 +44,10 @@ export default function RootLayout({
           src={Background}
           alt="Background"
           fill
-          className="z-[-1] opacity-20"
+          className="z-[-1] opacity-20 object-cover"
         />
         {children}
+        <Toaster />
       </body>
     </html>
   );

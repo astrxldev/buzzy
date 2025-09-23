@@ -19,6 +19,7 @@ export const element = pgEnum("character_element", [
   "hydro",
   "pyro",
   "cryo",
+  "electro",
 ]);
 
 // #region Shared
@@ -47,6 +48,7 @@ export const characters = pgTable("characters", {
     .notNull()
     .references(() => cdn.id),
   weapon: text().notNull(),
+  amber: text().notNull(), // Amber character ID
 });
 
 export const versions = pgTable("versions", {
@@ -68,6 +70,7 @@ export const artifact = pgSchema("artifact");
 
 export const submissions = artifact.table("submissions", {
   id: text().primaryKey().$defaultFn(uuidv7),
+  uid: text().notNull().unique(),
   name: text().notNull(),
   comment: text().notNull(),
   char: text()

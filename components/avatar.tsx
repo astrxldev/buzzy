@@ -6,9 +6,12 @@ import type { characters } from "@/lib/db/schema";
 export default function Avatar({
   char,
   scale = 1,
-}: {
+  selected,
+  ...props
+}: React.ComponentProps<"div"> & {
   char: typeof characters.$inferInsert;
   scale?: number;
+  selected?: boolean | 0;
 }) {
   const star = (key: number) => (
     <svg
@@ -33,7 +36,12 @@ export default function Avatar({
       style={{
         width: 128 * scale,
         height: 168 * scale,
+        opacity: typeof selected !== "boolean" || selected ? 1 : 0.4,
+        // @ts-expect-error
+        ":hover": { opacity: 0.8 },
       }}
+      {...props}
+      className="transition-opacity"
     >
       <div
         style={{
