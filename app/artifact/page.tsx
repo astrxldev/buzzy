@@ -91,6 +91,7 @@ export default async function ArtifactFormPage() {
                   type="text"
                   placeholder="Mr. Buzz"
                   autoComplete="name"
+                  maxLength={32}
                   required
                 />
               </div>
@@ -106,6 +107,7 @@ export default async function ArtifactFormPage() {
                       type="number"
                       required
                       placeholder="887654321"
+                      maxLength={10}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -132,6 +134,7 @@ export default async function ArtifactFormPage() {
                   name="comment"
                   placeholder="(ไม่บังคับ)"
                   className="bg-card"
+                  maxLength={512}
                 />
               </div>
             </div>
@@ -189,7 +192,7 @@ export default async function ArtifactFormPage() {
                 <SendHorizonal />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>ส่งเลยคับพี่</TooltipContent>
+            <TooltipContent>ส่งเลยจัฟลูกพี่</TooltipContent>
           </Tooltip>
         </CardFooter>
       </Card>

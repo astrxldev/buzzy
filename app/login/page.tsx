@@ -10,15 +10,15 @@ import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage({
-  queryParams,
+  searchParams,
 }: {
-  queryParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string }>;
 }) {
   const router = useRouter();
   async function submit(ev: FormEvent<HTMLFormElement>) {
     ev.preventDefault();
     const data = new FormData(ev.currentTarget);
-    const cb = (await queryParams?.then(({ next }) => next)) || "/admin";
+    const cb = (await searchParams?.then(({ next }) => next)) || "/admin";
     const r = await authClient.signIn
       .email({
         email: data.get("email") as string,
@@ -49,8 +49,11 @@ export default function LoginPage({
                 <h1 className="text-xl font-bold">Welcome to Buzzy.</h1>
                 <div className="text-center text-sm">
                   Don&apos;t have an account?{" "}
-                  <a href="/" className="underline underline-offset-4">
-                    Get out
+                  <a
+                    href="https://cdn.dgnr.us/signup"
+                    className="underline underline-offset-4"
+                  >
+                    Sign Up
                   </a>
                 </div>
               </div>

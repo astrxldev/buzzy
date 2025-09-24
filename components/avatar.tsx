@@ -1,3 +1,4 @@
+"use client";
 import { AutoTextSize } from "auto-text-size";
 import Image from "next/image";
 import type { characters } from "@/lib/db/schema";

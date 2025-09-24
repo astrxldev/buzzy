@@ -56,6 +56,7 @@ export function CharacterChooser() {
           onChange={(ev) => setUid(ev.target.value)}
         />
       </div>
+      <Label htmlFor="character">เลือกตัวละครที่ต้องการ</Label>
       <ScrollArea>
         {isError ? (
           <Placeholder>

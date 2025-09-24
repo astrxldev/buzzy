@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { cdn } from "@/lib/db/schema";
 
+export const revalidate = 86400; // 24 hours
+
 export async function generateStaticParams() {
   return await db.select({ id: cdn.id }).from(cdn);
 }

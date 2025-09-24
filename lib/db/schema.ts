@@ -78,6 +78,7 @@ export const submissions = artifact.table("submissions", {
     .notNull()
     .references(() => characters.name),
   queue: serial(),
+  checked: boolean().notNull().default(false),
 });
 
 export const artifactSettings = artifact.table("settings", {
