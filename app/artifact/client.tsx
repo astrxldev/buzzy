@@ -13,6 +13,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { getCharacters } from "@/lib/api";
 import { uidRegex } from "@/lib/const";
 import type { characters } from "@/lib/db/schema";
+import { cn } from "@/lib/utils";
 import type { EnkaNetworkUser } from "@/types/enka";
 import { RulesDialog } from "./rules";
 
@@ -45,23 +46,32 @@ export function CharacterChooser() {
   return (
     <>
       <div className="grid gap-2">
-        <Label htmlFor="password">UID</Label>
+        <Label htmlFor="uid">UID</Label>
         <Input
-          id="password"
+          id="uid"
+          name="uid"
           type="number"
           required
-          placeholder="887654321"
+          placeholder="814006303"
           onChange={(ev) => setUid(ev.target.value)}
         />
       </div>
       <ScrollArea>
         {isError ? (
-          <div className="w-full h-[100.8px] flex gap-2 justify-center items-center rounded-md bg-muted">
+          <Placeholder>
             <CircleX className="text-red-500" /> เกิดข้อผิดพลาดในการดึงข้อมูล
-          </div>
+          </Placeholder>
         ) : isLoading ? (
-          <div className="w-full h-[100.8px] flex gap-2 justify-center items-center rounded-md bg-muted">
+          <Placeholder>
             <Loader2 className="animate-spin" /> กำลังโหลดตัวละคร...
+          </Placeholder>
+        ) : !chars.length ? (
+          <div className="flex gap-2 mb-2">
+            <Placeholder />
+            <Placeholder />
+            <Placeholder />
+            <Placeholder />
+            <Placeholder />
           </div>
         ) : (
           <div className="flex gap-2 mb-2">
@@ -80,6 +90,18 @@ export function CharacterChooser() {
         <input id="character" name="character" type="hidden" value={selected} />
       </ScrollArea>
     </>
+  );
+}
+
+function Placeholder({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "w-full h-[100.8px] flex gap-2 justify-center items-center rounded-md bg-muted",
+        className,
+      )}
+      {...props}
+    ></div>
   );
 }
 

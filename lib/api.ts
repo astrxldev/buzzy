@@ -1,6 +1,7 @@
 "use server";
 
 import { eq, inArray } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import { uidRegex } from "./const";
 import { db } from "./db";
 import {
@@ -27,10 +28,10 @@ export async function getArtifactConfig() {
 export async function submitArtifact(formData: FormData) {
   const config = await getArtifactConfig();
   const name = formData.get("name")?.toString();
-  const uid = formData.get("password")?.toString();
+  const uid = formData.get("uid")?.toString();
   const character = formData.get("character")?.toString();
-  const comment = formData.get("comment")?.toString();
-  if (!name || !uid || !character || !comment) throw "กรุณากรอกข้อมูลให้ครบถ้วน";
+  const comment = formData.get("comment")?.toString() || "";
+  if (!name || !uid || !character) throw "กรุณากรอกข้อมูลให้ครบถ้วน";
   if (name.length > 32) throw "ชื่อยาวเกินไป ต้องไม่เกิน 32 ตัวอักษร";
   if (!uidRegex.test(uid)) throw "UID ไม่ถูกต้อง ต้องเป็นเลข 9 หลัก";
   if (comment.length > 256) throw "ข้อความเพิ่มเติมยาวเกินไป ต้องไม่เกิน 256 ตัวอักษร";
@@ -50,10 +51,15 @@ export async function submitArtifact(formData: FormData) {
     .where(eq(submissions.uid, uid))
     .limit(1);
   if (existing) throw "คุณลงทะเบียนไปแล้ว";
-  await db.insert(submissions).values({
-    uid,
-    name,
-    comment,
-    char: char.name,
-  });
+  const [queue] = await db
+    .insert(submissions)
+    .values({
+      uid,
+      name,
+      comment,
+      char: char.name,
+    })
+    .returning({ queue: submissions.queue, id: submissions.id });
+  revalidatePath("/artifact/admin");
+  return queue;
 }

@@ -6,6 +6,7 @@ import {
   pgEnum,
   pgSchema,
   pgTable,
+  serial,
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
@@ -76,6 +77,7 @@ export const submissions = artifact.table("submissions", {
   char: text()
     .notNull()
     .references(() => characters.name),
+  queue: serial(),
 });
 
 export const artifactSettings = artifact.table("settings", {

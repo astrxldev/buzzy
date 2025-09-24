@@ -1,5 +1,7 @@
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
+import { eq } from "drizzle-orm";
 import { BookAlert, CircleDollarSign, SendHorizonal } from "lucide-react";
+import { cookies } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -18,14 +20,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
-import { getArtifactConfig, submitArtifact } from "@/lib/api";
+import { getArtifactConfig } from "@/lib/api";
 import { db } from "@/lib/db";
 import { characters, submissions } from "@/lib/db/schema";
 import { CharacterChooser, Disclaimer } from "./client";
+import { ArtifactFormWrapper } from "./form";
 import { LiveButton } from "./live";
 import { RulesDialog } from "./rules";
 
 export default async function ArtifactFormPage() {
+  const cookie = await cookies();
+  const sid = cookie.get("sid");
+  const [q] = sid?.value
+    ? await db
+        .select({ queue: submissions.queue })
+        .from(submissions)
+        .where(eq(submissions.id, sid.value))
+    : [];
+  if (sid && !q) cookie.delete("sid");
   const config = await getArtifactConfig();
   const count = await db.$count(submissions);
 
@@ -46,9 +58,16 @@ export default async function ArtifactFormPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form action={submitArtifact} id="mainform">
+          <ArtifactFormWrapper id="mainform">
             <div className="flex flex-col gap-3">
-              {config.locked ? (
+              {q ? (
+                <Blocker>
+                  <div className="flex gap-1 flex-col items-center">
+                    <span className="font-bold text-3xl">คิวของคุณคือหมายเลข</span>
+                    <span className="font-bold text-5xl">{q.queue}</span>
+                  </div>
+                </Blocker>
+              ) : config.locked ? (
                 <Blocker>
                   <span className="font-bold text-3xl">ขณะนี้ปิดรับอยู่</span>
                 </Blocker>
@@ -68,6 +87,7 @@ export default async function ArtifactFormPage() {
                 <Label htmlFor="name">ชื่อ</Label>
                 <Input
                   id="name"
+                  name="name"
                   type="text"
                   placeholder="Mr. Buzz"
                   autoComplete="name"
@@ -79,9 +99,10 @@ export default async function ArtifactFormPage() {
               ) : (
                 <>
                   <div className="grid gap-2">
-                    <Label htmlFor="password">UID</Label>
+                    <Label htmlFor="uid">UID</Label>
                     <Input
-                      id="password"
+                      id="uid"
+                      name="uid"
                       type="number"
                       required
                       placeholder="887654321"
@@ -108,13 +129,13 @@ export default async function ArtifactFormPage() {
                 <Label htmlFor="comment">ข้อความเพิ่มเติม</Label>
                 <Textarea
                   id="comment"
-                  required
+                  name="comment"
                   placeholder="(ไม่บังคับ)"
                   className="bg-card"
                 />
               </div>
             </div>
-          </form>
+          </ArtifactFormWrapper>
         </CardContent>
         <CardFooter className="flex gap-2 justify-between">
           <div className="flex gap-2">
@@ -156,7 +177,15 @@ export default async function ArtifactFormPage() {
           </div>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button type="submit" form="mainform">
+              <Button
+                type="submit"
+                form="mainform"
+                disabled={
+                  !!q ||
+                  config.locked ||
+                  (config.limit >= 0 && count >= config.limit)
+                }
+              >
                 <SendHorizonal />
               </Button>
             </TooltipTrigger>
