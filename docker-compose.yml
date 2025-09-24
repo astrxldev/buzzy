@@ -1,0 +1,14 @@
+services:
+  app:
+    restart: always
+    build: .
+    ports:
+      - 8093:3000
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 1024M
+    volumes:
+      - ./data/prod:/app/data
+    stop_grace_period: 1s

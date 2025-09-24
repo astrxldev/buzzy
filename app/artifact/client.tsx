@@ -36,7 +36,10 @@ export function CharacterChooser() {
       const charIds = data.playerInfo.showAvatarInfoList.map((c) =>
         c.avatarId.toString(),
       );
-      setChars(await getCharacters(charIds));
+      const chars = await getCharacters(charIds);
+      setChars(
+        charIds.map((e) => chars.find((c) => c.amber === e)!).filter(Boolean),
+      );
     }
     fetchChars()
       .catch(() => setIsError(true))

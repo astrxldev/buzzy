@@ -1,7 +1,8 @@
 "use server";
 
-import { eq, inArray, not } from "drizzle-orm";
+import { eq, inArray, not, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { apiAuthCheck } from "./auth";
 import { uidRegex } from "./const";
 import { db } from "./db";
@@ -23,7 +24,7 @@ export async function getArtifactConfig() {
   const [art] = await db.select().from(artifactSettings).limit(1);
   const [glob] = await db.select().from(settings).limit(1);
   // @ts-expect-error
-  return { locked: false, limit: -1, enka: true, ...art, ...glob };
+  return { locked: false, limit: -1, enka: false, ...art, ...glob };
 }
 
 export async function submitArtifact(formData: FormData) {
@@ -32,26 +33,26 @@ export async function submitArtifact(formData: FormData) {
   const uid = formData.get("uid")?.toString();
   const character = formData.get("character")?.toString();
   const comment = formData.get("comment")?.toString() || "";
-  if (!name || !uid || !character) throw "กรุณากรอกข้อมูลให้ครบถ้วน";
-  if (name.length > 32) throw "ชื่อยาวเกินไป ต้องไม่เกิน 32 ตัวอักษร";
-  if (!uidRegex.test(uid)) throw "UID ไม่ถูกต้อง ต้องเป็นเลข 9 หลัก";
-  if (comment.length > 256) throw "ข้อความเพิ่มเติมยาวเกินไป ต้องไม่เกิน 512 ตัวอักษร";
-  if (config.locked) throw "ปิดรับลงทะเบียนชั่วคราว เนื่องจากมีผู้ลงจำนวนมาก";
+  if (!name || !uid || !character) return "กรุณากรอกข้อมูลให้ครบถ้วน";
+  if (name.length > 32) return "ชื่อยาวเกินไป ต้องไม่เกิน 32 ตัวอักษร";
+  if (!uidRegex.test(uid)) return "UID ไม่ถูกต้อง ต้องเป็นเลข 9 หลัก";
+  if (comment.length > 256) return "ข้อความเพิ่มเติมยาวเกินไป ต้องไม่เกิน 512 ตัวอักษร";
+  if (config.locked) return "ปิดรับลงทะเบียนชั่วคราว เนื่องจากมีผู้ลงจำนวนมาก";
   const count = await db.$count(submissions);
   if (config.limit !== -1 && count >= config.limit)
-    throw `คิวลงทะเบียนเต็มแล้ว (${config.limit} ครั้ง)`;
+    return `คิวลงทะเบียนเต็มแล้ว (${config.limit} ครั้ง)`;
   const [char] = await db
     .select()
     .from(characters)
     .where(eq(characters.name, character))
     .limit(1);
-  if (!char) throw "ไม่พบตัวละครที่เลือก";
+  if (!char) return "ไม่พบตัวละครที่เลือก";
   const [existing] = await db
     .select()
     .from(submissions)
     .where(eq(submissions.uid, uid))
     .limit(1);
-  if (existing) throw "คุณลงทะเบียนไปแล้ว";
+  if (existing) return "คุณลงทะเบียนไปแล้ว";
   const [queue] = await db
     .insert(submissions)
     .values({
@@ -107,4 +108,23 @@ export async function setLimit(limit: number) {
   )
     await db.insert(artifactSettings).values({ limit });
   revalidatePath("/artifact/admin");
+}
+
+export async function wipe() {
+  if (!(await apiAuthCheck())) throw "Unauthorized";
+  await db.delete(submissions);
+  revalidatePath("/artifact/admin");
+  redirect("/artifact/admin");
+}
+
+export async function random() {
+  if (!(await apiAuthCheck())) throw "Unauthorized";
+  const [sub] = await db
+    .select()
+    .from(submissions)
+    .where(not(submissions.checked))
+    .orderBy(sql`RANDOM()`)
+    .limit(1);
+  if (sub) redirect(`/artifact/admin/${sub.id}`);
+  else throw "ไม่พบผู้ลงทะเบียนที่ยังไม่ตรวจสอบ";
 }

@@ -22,6 +22,7 @@ export function ComboBox({
   data,
   placeholder = "Search...",
   id,
+  name,
   className,
   ...props
 }: React.ComponentProps<"button"> & {
@@ -48,7 +49,7 @@ export function ComboBox({
             <ChevronsUpDown className="opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
+        <PopoverContent className="w-[400px] p-0">
           <Command>
             <CommandInput placeholder={placeholder} className="h-9" />
             <CommandList>
@@ -77,7 +78,7 @@ export function ComboBox({
           </Command>
         </PopoverContent>
       </Popover>
-      <input id={id} type="hidden" value={value} />
+      <input id={id} name={name} type="hidden" value={value} />
     </>
   );
 }

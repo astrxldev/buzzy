@@ -1,0 +1,7 @@
+node_modules
+data
+.github
+.direnv
+.git
+.env.local
+.next

@@ -114,6 +114,8 @@ export default async function ArtifactFormPage() {
                     <Label htmlFor="character">ตัวละคร</Label>
                     <ComboBox
                       placeholder="ค้นหาตัวละคร"
+                      id="character"
+                      name="character"
                       data={
                         await db
                           .select({

@@ -3,6 +3,7 @@
 import { Lock, Unlock } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -52,11 +53,11 @@ export function SidebarLink({
       )}
     >
       {submission.queue}. {submission.name}
-      <SidebarMenuBadge>
+      <SidebarMenuBadge className="pointer-events-auto">
         <Checkbox
-          className="mr-2 z-500"
+          className="mr-2"
           checked={submission.checked}
-          onClick={() => toggleCheck(submission.id)}
+          onCheckedChange={() => toggleCheck(submission.id)}
         />
       </SidebarMenuBadge>
     </Link>
@@ -158,5 +159,29 @@ export function LimitManager({
         </SidebarMenuBadge>
       </SidebarMenuItem>
     </SidebarMenu>
+  );
+}
+
+export function SubmissionList({
+  subs,
+}: {
+  subs: { id: string; name: string; checked: boolean; queue: number }[];
+}) {
+  const [query, setQuery] = useState("");
+  return (
+    <>
+      <Input
+        placeholder="Search..."
+        type="search"
+        onChange={(ev) => setQuery(ev.target.value.toLowerCase())}
+      />
+      {subs
+        .filter((s) => (s.queue + s.name).toLowerCase().includes(query))
+        .map((s) => (
+          <SidebarMenuButton key={s.id} asChild>
+            <SidebarLink submission={s} />
+          </SidebarMenuButton>
+        ))}
+    </>
   );
 }

@@ -1,6 +1,5 @@
 import { Dice3, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Sidebar,
   SidebarContent,
@@ -9,14 +8,12 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarProvider,
+  SidebarMenu, SidebarProvider
 } from "@/components/ui/sidebar";
-import { getArtifactConfig } from "@/lib/api";
+import { getArtifactConfig, random, wipe } from "@/lib/api";
 import { db } from "@/lib/db";
 import { submissions } from "@/lib/db/schema";
-import { LimitManager, SidebarLink } from "./client";
+import { LimitManager, SubmissionList } from "./client";
 
 export default async function AdminLayout({
   children,
@@ -40,10 +37,20 @@ export default async function AdminLayout({
           <div className="flex justify-between items-center">
             <b>Admin</b>
             <div className="flex gap-1">
-              <Button variant="ghost" size="icon" className="size-8">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8"
+                onClick={random}
+              >
                 <Dice3 size={24} className="size-6" />
               </Button>
-              <Button variant="ghost" size="icon" className="size-8">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8"
+                onClick={wipe}
+              >
                 <Trash2 size={24} className="size-6 text-red-500" />
               </Button>
             </div>
@@ -53,14 +60,7 @@ export default async function AdminLayout({
           <SidebarGroup>
             <SidebarGroupLabel>Submissions</SidebarGroupLabel>
             <SidebarMenu>
-              <form>
-                <Input placeholder="Search..." type="search" name="q" />
-              </form>
-              {subs.map((s) => (
-                <SidebarMenuButton key={s.id} asChild>
-                  <SidebarLink submission={s} />
-                </SidebarMenuButton>
-              ))}
+              <SubmissionList subs={subs} />
             </SidebarMenu>
           </SidebarGroup>
         </SidebarContent>

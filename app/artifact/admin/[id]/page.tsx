@@ -11,12 +11,6 @@ import { db } from "@/lib/db";
 import { characters, submissions } from "@/lib/db/schema";
 import { CopyButton, EnkaBrowser } from "./client";
 
-export const revalidate = 86400; // 24 hours
-
-export async function generateStaticParams() {
-  return await db.select({ id: submissions.id }).from(submissions);
-}
-
 export default async function AdminSubmissionView({
   params,
 }: {

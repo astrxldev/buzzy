@@ -4,13 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
-import { base } from "@/lib/const";
 import type { YoutubeLiveInfo } from "../api/live/route";
 
 export async function LiveButton() {
-  const live: YoutubeLiveInfo = await fetch(`${base}/api/live`).then((e) =>
-    e.json(),
-  );
+  const live: YoutubeLiveInfo = await fetch(`http://localhost:3000/api/live`)
+    .then((e) => e.json())
+    .catch(() => "none");
   if (live === "none") return;
   const { url, thumbnails } = live;
   return (
