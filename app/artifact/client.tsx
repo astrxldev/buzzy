@@ -122,3 +122,8 @@ export function Disclaimer() {
     </Blocker>
   );
 }
+
+export async function ClearCookie() {
+  cookieStore.delete("sid");
+  return <></>;
+}

@@ -1,4 +1,15 @@
 import { Dice3, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Sidebar,
@@ -13,7 +24,7 @@ import {
 import { getArtifactConfig, random, wipe } from "@/lib/api";
 import { db } from "@/lib/db";
 import { submissions } from "@/lib/db/schema";
-import { LimitManager, SubmissionList } from "./client";
+import { LimitManager, SubmissionList, Watcher } from "./client";
 
 export default async function AdminLayout({
   children,
@@ -45,14 +56,30 @@ export default async function AdminLayout({
               >
                 <Dice3 size={24} className="size-6" />
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8"
-                onClick={wipe}
-              >
-                <Trash2 size={24} className="size-6 text-red-500" />
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="size-8">
+                    <Trash2 size={24} className="size-6 text-red-500" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Are you absolutely sure?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete
+                      your account and remove your data from our servers.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={wipe}>
+                      Continue
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         </SidebarHeader>
@@ -71,7 +98,10 @@ export default async function AdminLayout({
           </SidebarGroup>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="bg-transparent">{children}</SidebarInset>
+      <SidebarInset className="bg-transparent">
+        {children}
+        <Watcher />
+      </SidebarInset>
     </SidebarProvider>
   );
 }

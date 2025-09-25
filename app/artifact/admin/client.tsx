@@ -2,8 +2,8 @@
 
 import { Lock, Unlock } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -44,6 +44,7 @@ export function SidebarLink({
   className?: string;
 }) {
   const { id } = useParams();
+  const router = useRouter();
   return (
     <Link
       href={`/artifact/admin/${submission.id}`}
@@ -57,7 +58,10 @@ export function SidebarLink({
         <Checkbox
           className="mr-2"
           checked={submission.checked}
-          onCheckedChange={() => toggleCheck(submission.id)}
+          onCheckedChange={async () => {
+            await toggleCheck(submission.id);
+            router.refresh();
+          }}
         />
       </SidebarMenuBadge>
     </Link>
@@ -184,4 +188,15 @@ export function SubmissionList({
         ))}
     </>
   );
+}
+
+export function Watcher() {
+  const router = useRouter();
+  useEffect(() => {
+    const es = new EventSource(`/api/artifact/ev`);
+    es.addEventListener("update", () => router.refresh());
+    return () => es.close();
+  }, [router]);
+
+  return <div></div>;
 }

@@ -7,7 +7,6 @@ import { submitArtifact } from "@/lib/api";
 export function ArtifactFormWrapper(props: React.ComponentProps<"form">) {
   const router = useRouter();
   async function submit(data: FormData) {
-    console.log(Object.fromEntries(data.entries()));
     submitArtifact(data)
       .then((q) => {
         if (typeof q === "string") return toast.error(q);

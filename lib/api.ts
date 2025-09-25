@@ -12,6 +12,7 @@ import {
   settings,
   submissions,
 } from "./db/schema";
+import { sse } from "./utils";
 
 export async function getCharacters(chars: string[]) {
   return await db
@@ -63,6 +64,7 @@ export async function submitArtifact(formData: FormData) {
     })
     .returning({ queue: submissions.queue, id: submissions.id });
   revalidatePath("/artifact/admin");
+  sse.publish({}, { topic: "artifact-ev", event: "update" });
   return queue;
 }
 
@@ -113,6 +115,9 @@ export async function setLimit(limit: number) {
 export async function wipe() {
   if (!(await apiAuthCheck())) throw "Unauthorized";
   await db.delete(submissions);
+  await db.execute(
+    sql`ALTER SEQUENCE artifact.submissions_queue_seq RESTART WITH 1`,
+  );
   revalidatePath("/artifact/admin");
   redirect("/artifact/admin");
 }

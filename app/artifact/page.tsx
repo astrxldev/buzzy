@@ -23,7 +23,7 @@ import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
 import { getArtifactConfig } from "@/lib/api";
 import { db } from "@/lib/db";
 import { characters, submissions } from "@/lib/db/schema";
-import { CharacterChooser, Disclaimer } from "./client";
+import { CharacterChooser, ClearCookie, Disclaimer } from "./client";
 import { ArtifactFormWrapper } from "./form";
 import { LiveButton } from "./live";
 import { RulesDialog } from "./rules";
@@ -37,7 +37,6 @@ export default async function ArtifactFormPage() {
         .from(submissions)
         .where(eq(submissions.id, sid.value))
     : [];
-  if (sid && !q) cookie.delete("sid");
   const config = await getArtifactConfig();
   const count = await db.$count(submissions);
 
@@ -198,6 +197,7 @@ export default async function ArtifactFormPage() {
           </Tooltip>
         </CardFooter>
       </Card>
+      {sid && !q && <ClearCookie />}
     </div>
   );
 }
