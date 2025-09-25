@@ -2,10 +2,11 @@
 /** biome-ignore-all lint/a11y/useKeyWithClickEvents: Not needed */
 "use client";
 
-import { BookAlert, CircleX, Loader2 } from "lucide-react";
+import { BookAlert, CircleX, Loader2, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import Avatar from "@/components/avatar";
 import { Blocker } from "@/components/blocker";
+import { ComboBox } from "@/components/combobox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,12 +18,20 @@ import { cn } from "@/lib/utils";
 import type { EnkaNetworkUser } from "@/types/enka";
 import { RulesDialog } from "./rules";
 
-export function CharacterChooser() {
+export function CharacterChooser({
+  clist,
+}: {
+  clist: {
+    value: string;
+    label: string;
+  }[];
+}) {
   const [uid, setUid] = useState("");
   const [chars, setChars] = useState<(typeof characters.$inferSelect)[]>([]);
   const [selected, setSelected] = useState<string | undefined>();
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [manual, setManual] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
@@ -59,40 +68,78 @@ export function CharacterChooser() {
           onChange={(ev) => setUid(ev.target.value)}
         />
       </div>
-      <Label htmlFor="character">เลือกตัวละครที่ต้องการ</Label>
-      <ScrollArea>
-        {isError ? (
-          <Placeholder>
-            <CircleX className="text-red-500" /> เกิดข้อผิดพลาดในการดึงข้อมูล
-          </Placeholder>
-        ) : isLoading ? (
-          <Placeholder>
-            <Loader2 className="animate-spin" /> กำลังโหลดตัวละคร...
-          </Placeholder>
-        ) : !chars.length ? (
-          <div className="flex gap-2 mb-2">
-            <Placeholder />
-            <Placeholder />
-            <Placeholder />
-            <Placeholder />
-            <Placeholder />
-          </div>
+      <Label htmlFor="character">
+        เลือกตัวละครที่ต้องการ
+        {manual ? (
+          <u
+            className="ml-auto cursor-pointer"
+            onClick={() => setManual(false)}
+          >
+            เลือกจากลิสต์
+          </u>
         ) : (
-          <div className="flex gap-2 mb-2">
-            {chars.map((c) => (
-              <Button key={c.id} asChild onClick={() => setSelected(c.name)}>
-                <Avatar
-                  scale={0.6}
-                  char={c}
-                  selected={selected ? selected === c.name : 0}
-                />
-              </Button>
-            ))}
-          </div>
+          <span className="ml-auto">
+            หาไม่เจอ?{" "}
+            <u className="cursor-pointer" onClick={() => setManual(true)}>
+              เลือกเอง
+            </u>
+          </span>
         )}
-        <ScrollBar orientation="horizontal" />
-        <input id="character" name="character" type="hidden" value={selected} />
-      </ScrollArea>
+      </Label>
+      {manual ? (
+        <ComboBox
+          placeholder="ค้นหาตัวละคร"
+          id="character"
+          name="character"
+          data={clist}
+          className="w-full bg-transparent! hover:bg-accent!"
+        />
+      ) : (
+        <ScrollArea>
+          {isError ? (
+            <Placeholder>
+              <CircleX className="text-red-500" /> เกิดข้อผิดพลาดในการดึงข้อมูล
+            </Placeholder>
+          ) : isLoading ? (
+            <Placeholder>
+              <Loader2 className="animate-spin" /> กำลังโหลดตัวละคร...
+            </Placeholder>
+          ) : !chars.length ? (
+            <div className="flex gap-2 mb-2">
+              <Placeholder />
+              <Placeholder />
+              <Placeholder />
+              <Placeholder />
+              <Placeholder />
+            </div>
+          ) : (
+            <div className="flex gap-2 mb-2">
+              <Placeholder
+                className="w-[76.8px] cursor-pointer rounded-sm"
+                onClick={() => setManual(true)}
+              >
+                <Search />
+              </Placeholder>
+              {chars.map((c) => (
+                <Button key={c.id} asChild onClick={() => setSelected(c.name)}>
+                  <Avatar
+                    scale={0.6}
+                    char={c}
+                    selected={selected ? selected === c.name : 0}
+                  />
+                </Button>
+              ))}
+            </div>
+          )}
+          <ScrollBar orientation="horizontal" />
+          <input
+            id="character"
+            name="character"
+            type="hidden"
+            value={selected}
+          />
+        </ScrollArea>
+      )}
     </>
   );
 }

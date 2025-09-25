@@ -93,6 +93,7 @@ export async function toggleLock() {
   )
     await db.insert(artifactSettings).values({ locked: true });
   revalidatePath("/artifact/admin");
+  revalidatePath("/");
 }
 
 export async function setLimit(limit: number) {
@@ -110,6 +111,7 @@ export async function setLimit(limit: number) {
   )
     await db.insert(artifactSettings).values({ limit });
   revalidatePath("/artifact/admin");
+  revalidatePath("/");
 }
 
 export async function wipe() {

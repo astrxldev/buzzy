@@ -37,6 +37,12 @@ export default async function ArtifactFormPage() {
         .from(submissions)
         .where(eq(submissions.id, sid.value))
     : [];
+  const clist = await db
+    .select({
+      label: characters.name,
+      value: characters.name,
+    })
+    .from(characters);
   const config = await getArtifactConfig();
   const count = await db.$count(submissions);
 
@@ -95,7 +101,7 @@ export default async function ArtifactFormPage() {
                 />
               </div>
               {config.enka ? (
-                <CharacterChooser />
+                <CharacterChooser clist={clist} />
               ) : (
                 <>
                   <div className="grid gap-2">
@@ -115,15 +121,8 @@ export default async function ArtifactFormPage() {
                       placeholder="ค้นหาตัวละคร"
                       id="character"
                       name="character"
-                      data={
-                        await db
-                          .select({
-                            label: characters.name,
-                            value: characters.name,
-                          })
-                          .from(characters)
-                      }
-                      className="w-full"
+                      data={clist}
+                      className="w-full bg-transparent! hover:bg-accent!"
                     />
                   </div>
                 </>
@@ -134,7 +133,7 @@ export default async function ArtifactFormPage() {
                   id="comment"
                   name="comment"
                   placeholder="(ไม่บังคับ)"
-                  className="bg-card"
+                  className="bg-card!"
                   maxLength={512}
                 />
               </div>
