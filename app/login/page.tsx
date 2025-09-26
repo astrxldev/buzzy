@@ -2,7 +2,7 @@
 
 import { UserLock } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { FormEvent } from "react";
+import { use, type FormEvent } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,10 +15,11 @@ export default function LoginPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const router = useRouter();
+  const { next } = use(searchParams);
+  const cb = next || "/admin";
   async function submit(ev: FormEvent<HTMLFormElement>) {
     ev.preventDefault();
     const data = new FormData(ev.currentTarget);
-    const cb = (await searchParams?.then(({ next }) => next)) || "/admin";
     const r = await authClient.signIn
       .email({
         email: data.get("email") as string,

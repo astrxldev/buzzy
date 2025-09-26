@@ -21,5 +21,5 @@ export async function apiAuthCheck() {
     headers: await headers(),
   });
 
-  return session.user;
+  return session?.user;
 }
