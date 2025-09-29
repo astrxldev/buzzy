@@ -7,7 +7,9 @@ import * as schema from "$/db/schema";
 export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
+    // disableSignUp: true,
   },
+  trustedOrigins: ["http://nyx:3000"],
   database: drizzleAdapter(db, {
     provider: "pg", // or "mysql", "sqlite"
     schema,
@@ -20,6 +22,8 @@ export async function apiAuthCheck() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
+
+  console.log(session);
 
   return session?.user;
 }

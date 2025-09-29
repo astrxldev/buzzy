@@ -4,6 +4,7 @@ import "./globals.css";
 import Image from "next/image";
 import { Toaster } from "sonner";
 import Background from "#/bg.jpg";
+import Providers from "./provider";
 
 const anuphan = Anuphan({
   variable: "--font-anuphan",
@@ -38,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body
-        className={`${anuphan.variable} ${geistMono.variable} font-sans antialiased dark  h-full`}
+        className={`${anuphan.variable} ${geistMono.variable} font-sans antialiased dark h-full`}
       >
         <Image
           src={Background}
@@ -46,7 +47,7 @@ export default function RootLayout({
           fill
           className="z-[-1] opacity-20 object-cover"
         />
-        {children}
+        <Providers>{children}</Providers>
         <Toaster />
       </body>
     </html>

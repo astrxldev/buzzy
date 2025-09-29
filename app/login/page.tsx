@@ -2,7 +2,7 @@
 
 import { UserLock } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { use, type FormEvent } from "react";
+import { type FormEvent, use } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,11 +20,11 @@ export default function LoginPage({
   async function submit(ev: FormEvent<HTMLFormElement>) {
     ev.preventDefault();
     const data = new FormData(ev.currentTarget);
-    const r = await authClient.signIn
+    const r = await authClient.signUp
       .email({
         email: data.get("email") as string,
         password: data.get("password") as string,
-        callbackURL: cb,
+        name: data.get("name") as string,
       })
       .catch(() => toast.error("Failed to login"));
     if (typeof r !== "object") return toast.error("Invalid email or password");
@@ -59,6 +59,17 @@ export default function LoginPage({
                 </div>
               </div>
               <div className="flex flex-col gap-3">
+                <div className="grid gap-1">
+                  <Label htmlFor="email">Name</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="Mr. Buzz"
+                    required
+                    autoFocus
+                  />
+                </div>
                 <div className="grid gap-1">
                   <Label htmlFor="email">Email</Label>
                   <Input

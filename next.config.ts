@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
       {
         hostname: "gi.yatta.moe",
       },
+      {
+        hostname: "cdn.dgnr.us",
+      },
     ],
   },
   // basePath: "/beta"

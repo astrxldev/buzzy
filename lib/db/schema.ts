@@ -1,14 +1,14 @@
 import {
-  type AnyPgColumn,
-  boolean,
-  date,
-  integer,
-  pgEnum,
-  pgSchema,
-  pgTable,
-  serial,
-  text,
-  timestamp,
+    type AnyPgColumn,
+    boolean,
+    date,
+    integer,
+    pgEnum,
+    pgSchema,
+    pgTable,
+    serial,
+    text,
+    timestamp,
 } from "drizzle-orm/pg-core";
 import { uuidv7 } from "uuidv7";
 import { bytea } from "./custom";
@@ -119,9 +119,13 @@ export const tierlistBadges = tierlist.table("badges", {
 });
 
 export const tierlistVersions = tierlist.table("versions", {
-  id: text().primaryKey().$defaultFn(uuidv7),
+  id: text().primaryKey(),
   name: text().notNull(),
   hidden: boolean().notNull().default(false),
+  type: text()
+    .notNull()
+    .references(() => tierlistTypes.id),
+  image: text().references(() => cdn.id),
 });
 
 export const tierlistStates = tierlist.table("states", {

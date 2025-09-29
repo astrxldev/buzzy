@@ -52,13 +52,18 @@ export default async function ArtifactFormPage() {
         <CardHeader className="justify-center">
           <CardTitle>
             <div className="w-[276.5px]">
-              <Image
-                style={{ position: "absolute", transform: "translateY(-70%)" }}
-                height={137.5}
-                width={276.5}
-                src={banner}
-                alt="เสือกไอดีชาวบ้าน"
-              />
+              <Link href="/">
+                <Image
+                  style={{
+                    position: "absolute",
+                    transform: "translateY(-70%)",
+                  }}
+                  height={137.5}
+                  width={276.5}
+                  src={banner}
+                  alt="เสือกไอดีชาวบ้าน"
+                />
+              </Link>
             </div>
           </CardTitle>
         </CardHeader>
@@ -74,12 +79,12 @@ export default async function ArtifactFormPage() {
                 </Blocker>
               ) : config.locked ? (
                 <Blocker>
-                  <span className="font-bold text-3xl">ขณะนี้ปิดรับอยู่</span>
+                  <span className="font-bold text-3xl">ยังไม่เปิดรับคิว</span>
                 </Blocker>
               ) : config.limit >= 0 && count >= config.limit ? (
                 <Blocker>
                   <div className="flex gap-1 flex-col items-center">
-                    <span className="font-bold text-3xl">ขณะนี้คิวเต็มแล้ว</span>
+                    <span className="font-bold text-3xl">คิวเต็มแล้ว</span>
                     <span className="font-bold text-2xl">
                       ต้องโดเนทลัดคิวแล้วล่ะ
                     </span>
@@ -89,12 +94,12 @@ export default async function ArtifactFormPage() {
                 <Disclaimer />
               )}
               <div className="grid gap-2">
-                <Label htmlFor="name">ชื่อ</Label>
+                <Label htmlFor="name">ชื่อ*</Label>
                 <Input
                   id="name"
                   name="name"
                   type="text"
-                  placeholder="Mr. Buzz"
+                  placeholder="Mr.Buzz"
                   autoComplete="name"
                   maxLength={32}
                   required
@@ -105,18 +110,18 @@ export default async function ArtifactFormPage() {
               ) : (
                 <>
                   <div className="grid gap-2">
-                    <Label htmlFor="uid">UID</Label>
+                    <Label htmlFor="uid">UID*</Label>
                     <Input
                       id="uid"
                       name="uid"
                       type="number"
                       required
-                      placeholder="887654321"
+                      placeholder="814006303"
                       maxLength={10}
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="character">ตัวละคร</Label>
+                    <Label htmlFor="character">ตัวละคร*</Label>
                     <ComboBox
                       placeholder="ค้นหาตัวละคร"
                       id="character"
@@ -132,7 +137,7 @@ export default async function ArtifactFormPage() {
                 <Textarea
                   id="comment"
                   name="comment"
-                  placeholder="(ไม่บังคับ)"
+                  placeholder="เช่น Er พอไหมครับ, คริสวยยังครับ (ไม่บังคับ)"
                   className="bg-card!"
                   maxLength={512}
                 />

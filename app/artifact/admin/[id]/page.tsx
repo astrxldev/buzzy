@@ -31,14 +31,12 @@ export default async function AdminSubmissionView({
     <div className="p-2 h-full">
       <div className="flex flex-col h-full w-full gap-2">
         <div className="flex w-full justify-between gap-2">
-          <Card className="w-full pb-1">
+          <Card className="w-full pb-1 rounded-md">
             <CardHeader>
               <CardTitle>
                 {sub.queue}. {sub.name}
               </CardTitle>
-              <CardDescription>
-                {sub.comment}
-              </CardDescription>
+              <CardDescription>{sub.comment}</CardDescription>
             </CardHeader>
             <CardFooter className="h-full items-end">
               <div className="flex items-center">

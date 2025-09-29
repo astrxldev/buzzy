@@ -19,7 +19,8 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
-  SidebarMenu, SidebarProvider
+  SidebarMenu,
+  SidebarProvider,
 } from "@/components/ui/sidebar";
 import { getArtifactConfig, random, wipe } from "@/lib/api";
 import { db } from "@/lib/db";
