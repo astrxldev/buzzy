@@ -1,6 +1,7 @@
 "use server";
 
 import { eq, inArray, not, sql } from "drizzle-orm";
+import type { PgColumn, PgTable } from "drizzle-orm/pg-core";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { apiAuthCheck } from "./auth";
@@ -77,6 +78,7 @@ export async function toggleCheck(submissionId: string) {
     })
     .where(eq(submissions.id, submissionId));
   revalidatePath("/artifact/admin");
+  revalidatePath("/artifact");
 }
 
 export async function toggleLock() {
@@ -93,7 +95,7 @@ export async function toggleLock() {
   )
     await db.insert(artifactSettings).values({ locked: true });
   revalidatePath("/artifact/admin");
-  revalidatePath("/");
+  revalidatePath("/artifact");
 }
 
 export async function setLimit(limit: number) {
@@ -111,7 +113,7 @@ export async function setLimit(limit: number) {
   )
     await db.insert(artifactSettings).values({ limit });
   revalidatePath("/artifact/admin");
-  revalidatePath("/");
+  revalidatePath("/artifact");
 }
 
 export async function wipe() {
@@ -121,6 +123,7 @@ export async function wipe() {
     sql`ALTER SEQUENCE artifact.submissions_queue_seq RESTART WITH 1`,
   );
   revalidatePath("/artifact/admin");
+  revalidatePath("/artifact");
   redirect("/artifact/admin");
 }
 
@@ -134,4 +137,44 @@ export async function random() {
     .limit(1);
   if (sub) redirect(`/artifact/admin/${sub.id}`);
   else throw "ไม่พบผู้ลงทะเบียนที่ยังไม่ตรวจสอบ";
+}
+
+export async function reorder(
+  table: PgTable & { id: PgColumn; order: PgColumn },
+  id: string,
+  position: number,
+) {
+  await db
+    .update(table)
+    .set({
+      order: sql`
+      (
+        SELECT (prev_order + next_order) / 2
+        FROM (
+          SELECT "order",
+                 lag("order") OVER (ORDER BY "order") AS prev_order,
+                 lead("order") OVER (ORDER BY "order") AS next_order,
+                 row_number() OVER (ORDER BY "order") AS rn
+          FROM ${table}
+        ) sub
+        WHERE rn = ${position}
+      )
+    `,
+    })
+    .where(eq(table.id, id));
+}
+
+export async function untangle(
+  table: PgTable & { id: PgColumn; order: PgColumn },
+) {
+  await db.execute(sql`
+    WITH ordered AS (
+      SELECT id, row_number() OVER (ORDER BY "order") * 10 AS new_order
+      FROM ${table}
+    )
+    UPDATE ${table} t
+    SET "order" = o.new_order
+    FROM ordered o
+    WHERE t.id = o.id;
+  `);
 }

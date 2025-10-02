@@ -1,4 +1,5 @@
 import { Dice3, Trash2 } from "lucide-react";
+import { redirect } from "next/navigation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +24,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import { getArtifactConfig, random, wipe } from "@/lib/api";
+import { apiAuthCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { submissions } from "@/lib/db/schema";
 import { LimitManager, SubmissionList, Watcher } from "./client";
@@ -32,6 +34,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  if (!(await apiAuthCheck())) redirect("/");
   const subs = await db
     .select({
       id: submissions.id,
@@ -63,7 +66,7 @@ export default async function AdminLayout({
                     <Trash2 size={24} className="size-6 text-red-500" />
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="z-101">
                   <AlertDialogHeader>
                     <AlertDialogTitle>
                       Are you absolutely sure?

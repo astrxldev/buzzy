@@ -7,6 +7,9 @@ export default function Home() {
       <Link href="/artifact">
         <Button>Artifact</Button>
       </Link>
+      <Link href="/tl">
+        <Button>TierList</Button>
+      </Link>
     </div>
   );
 }

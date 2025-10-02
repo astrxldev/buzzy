@@ -1,8 +1,8 @@
 "use client";
 
-import { UserLock } from "lucide-react";
+import { Loader2, UserLock } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { type FormEvent, use } from "react";
+import { type FormEvent, use, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,22 +14,40 @@ export default function LoginPage({
 }: {
   searchParams: Promise<{ next?: string }>;
 }) {
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { next } = use(searchParams);
   const cb = next || "/admin";
+
+  useEffect(() => {
+    async function checkSession() {
+      const { data } = await authClient.getSession();
+      if (data) router.push(cb);
+    }
+    checkSession();
+  }, [cb, router]);
+
   async function submit(ev: FormEvent<HTMLFormElement>) {
     ev.preventDefault();
+    setLoading(true);
     const data = new FormData(ev.currentTarget);
-    const r = await authClient.signUp
+    const r = await authClient.signIn
       .email({
         email: data.get("email") as string,
         password: data.get("password") as string,
-        name: data.get("name") as string,
+        // name: data.get("name") as string,
       })
       .catch(() => toast.error("Failed to login"));
-    if (typeof r !== "object") return toast.error("Invalid email or password");
-    if (r.error) return toast.error(r.error.message);
+    if (typeof r !== "object") {
+      setLoading(false);
+      return toast.error("Invalid email or password");
+    }
+    if (r.error) {
+      setLoading(false);
+      return toast.error(r.error.message);
+    }
     router.push(cb);
+    setLoading(false);
   }
   return (
     <div className="bg-[#1117] backdrop-blur-lg flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
@@ -59,7 +77,7 @@ export default function LoginPage({
                 </div>
               </div>
               <div className="flex flex-col gap-3">
-                <div className="grid gap-1">
+                {/* <div className="grid gap-1">
                   <Label htmlFor="email">Name</Label>
                   <Input
                     id="name"
@@ -69,7 +87,7 @@ export default function LoginPage({
                     required
                     autoFocus
                   />
-                </div>
+                </div> */}
                 <div className="grid gap-1">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -90,8 +108,8 @@ export default function LoginPage({
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full">
-                  Login
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? <Loader2 className="animate-spin" /> : "Login"}
                 </Button>
               </div>
             </div>

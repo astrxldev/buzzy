@@ -12,7 +12,7 @@ export function Blocker({
   return (
     <div
       className={cn(
-        "blocker backdrop-blur-sm bg-[#2225] flex justify-center items-center absolute top-[-5px] left-[-5px] bottom-[-5px] right-[-5px] rounded-sm z-100 border-t-gray-700 border-l-gray-600 border-1",
+        "blocker backdrop-blur-sm bg-[#2225] flex justify-center items-center absolute top-[-5px] left-[-5px] bottom-[-5px] right-[-5px] rounded-sm z-45 border-t-gray-700 border-l-gray-600 border-1",
         className,
       )}
       {...props}

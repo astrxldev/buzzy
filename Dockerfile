@@ -40,9 +40,6 @@ RUN bun run build
 ### Stage 3: runner ###
 FROM oven/bun:latest AS runner
 
-# Install jc (disk usage info)
-RUN apt update && apt install jc -y
-
 # Isolation
 RUN useradd -mu 1001 container
 USER container

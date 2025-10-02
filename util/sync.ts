@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { AmberElementMap } from "@/lib/const";
 import { db } from "@/lib/db";
 import { cdn, characters, versions } from "@/lib/db/schema";
@@ -10,16 +11,27 @@ async function main() {
   await db.transaction(async (tx) => {
     console.log("Cleaning up...");
     await tx.delete(characters);
-    await tx.delete(cdn);
-    await tx.delete(versions);
-    console.log("Creating base version...");
-    const [{ id: version }] = await tx
-      .insert(versions)
-      .values({
-        id: "b10",
-        name: "Base 1.0",
-      })
-      .returning({ id: versions.id });
+    // await tx.delete(cdn);
+    const existingBase = (
+      await tx
+        .select({ id: versions.id })
+        .from(versions)
+        .where(eq(versions.id, "b10"))
+    ).length;
+    console.log(
+      existingBase
+        ? "Base version already exist. Skipping creation."
+        : "Creating base version...",
+    );
+    const [{ id: version }] = existingBase
+      ? await tx.select({ id: versions.id }).from(versions)
+      : await tx
+          .insert(versions)
+          .values({
+            id: "b10",
+            name: "Base 1.0",
+          })
+          .returning({ id: versions.id });
     process.stdout.write("Syncing characters...");
     const total = Object.keys(data.data.items).length * 3;
     var done = 0;
@@ -33,7 +45,7 @@ async function main() {
       );
       return p;
     }
-    async function handle(char: Avatar) {
+    async function handle(char: Avatar, order: string) {
       await tx
         .insert(characters)
         .values({
@@ -56,14 +68,17 @@ async function main() {
           stars: char.rank as 4 | 5,
           version,
           weapon: char.weaponType,
+          order,
         })
         .onConflictDoNothing();
     }
+    let i = 0;
     for (const char of Object.values(data.data.items)) {
+      i += 10;
       process.stdout.write(
         `\rSyncing characters... ${char.name}                                 `,
       );
-      pros.push(handle(char).then(progress));
+      pros.push(handle(char, `${i}`).then(progress));
     }
     await Promise.all(pros);
     console.log("\nDone!");

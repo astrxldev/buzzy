@@ -1,5 +1,6 @@
 "use client";
 
+import { useProgress } from "@bprogress/next";
 import { Lock, Unlock } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -43,8 +44,14 @@ export function SidebarLink({
   submission: { id: string; name: string; checked: boolean; queue: number };
   className?: string;
 }) {
+  const { stop } = useProgress();
   const { id } = useParams();
-  const router = useRouter();
+  const [checked, setChecked] = useState(submission.checked);
+
+  useEffect(() => {
+    setChecked(submission.checked);
+  }, [submission.checked]);
+
   return (
     <Link
       href={`/artifact/admin/${submission.id}`}
@@ -52,15 +59,22 @@ export function SidebarLink({
         className,
         id === submission.id && "bg-accent text-accent-foreground",
       )}
+      prefetch
+      onClick={(ev) => {
+        if ((ev.target as HTMLButtonElement).type === "button") {
+          ev.preventDefault();
+        }
+      }}
     >
       {submission.queue}. {submission.name}
       <SidebarMenuBadge className="pointer-events-auto">
         <Checkbox
           className="mr-2"
-          checked={submission.checked}
+          checked={checked}
           onCheckedChange={async () => {
+            setChecked((x) => !x);
             await toggleCheck(submission.id);
-            router.refresh();
+            stop();
           }}
         />
       </SidebarMenuBadge>

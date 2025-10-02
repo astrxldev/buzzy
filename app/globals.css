@@ -137,3 +137,8 @@ input[type="number"] {
   z-index: 0;
   position: relative;
 }
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-blue-500) var(--card);
+}

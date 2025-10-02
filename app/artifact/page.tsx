@@ -49,15 +49,36 @@ export default async function ArtifactFormPage() {
   return (
     <div className="flex flex-col justify-around items-center h-full">
       <Card className="w-full max-w-md">
+        {q ? (
+          <Blocker>
+            <div className="flex gap-1 flex-col items-center">
+              <span className="font-bold text-3xl">คิวของคุณคือหมายเลข</span>
+              <span className="font-bold text-5xl">{q.queue}</span>
+            </div>
+          </Blocker>
+        ) : config.locked ? (
+          <Blocker>
+            <span className="font-bold text-3xl">ยังไม่เปิดรับคิว</span>
+          </Blocker>
+        ) : config.limit >= 0 && count >= config.limit ? (
+          <Blocker>
+            <div className="flex gap-1 flex-col items-center">
+              <span className="font-bold text-3xl">คิวเต็มแล้ว</span>
+              <span className="font-bold text-2xl">ต้องโดเนทลัดคิวแล้วล่ะ</span>
+            </div>
+          </Blocker>
+        ) : (
+          <Disclaimer />
+        )}
         <CardHeader className="justify-center">
           <CardTitle>
             <div className="w-[276.5px]">
               <Link href="/">
                 <Image
                   style={{
-                    position: "absolute",
                     transform: "translateY(-70%)",
                   }}
+                  className="absolute z-50"
                   height={137.5}
                   width={276.5}
                   src={banner}
@@ -70,29 +91,6 @@ export default async function ArtifactFormPage() {
         <CardContent>
           <ArtifactFormWrapper id="mainform">
             <div className="flex flex-col gap-3">
-              {q ? (
-                <Blocker>
-                  <div className="flex gap-1 flex-col items-center">
-                    <span className="font-bold text-3xl">คิวของคุณคือหมายเลข</span>
-                    <span className="font-bold text-5xl">{q.queue}</span>
-                  </div>
-                </Blocker>
-              ) : config.locked ? (
-                <Blocker>
-                  <span className="font-bold text-3xl">ยังไม่เปิดรับคิว</span>
-                </Blocker>
-              ) : config.limit >= 0 && count >= config.limit ? (
-                <Blocker>
-                  <div className="flex gap-1 flex-col items-center">
-                    <span className="font-bold text-3xl">คิวเต็มแล้ว</span>
-                    <span className="font-bold text-2xl">
-                      ต้องโดเนทลัดคิวแล้วล่ะ
-                    </span>
-                  </div>
-                </Blocker>
-              ) : (
-                <Disclaimer />
-              )}
               <div className="grid gap-2">
                 <Label htmlFor="name">ชื่อ*</Label>
                 <Input

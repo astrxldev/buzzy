@@ -1,14 +1,15 @@
 import {
-    type AnyPgColumn,
-    boolean,
-    date,
-    integer,
-    pgEnum,
-    pgSchema,
-    pgTable,
-    serial,
-    text,
-    timestamp,
+  type AnyPgColumn,
+  boolean,
+  date,
+  integer,
+  numeric,
+  pgEnum,
+  pgSchema,
+  pgTable,
+  serial,
+  text,
+  timestamp,
 } from "drizzle-orm/pg-core";
 import { uuidv7 } from "uuidv7";
 import { bytea } from "./custom";
@@ -27,6 +28,7 @@ export const element = pgEnum("character_element", [
 export const cdn = pgTable("cdn", {
   id: text().primaryKey().$defaultFn(uuidv7),
   data: bytea().notNull(),
+  name: text(),
   type: text().notNull(),
   size: text().notNull(),
 });
@@ -50,6 +52,7 @@ export const characters = pgTable("characters", {
     .references(() => cdn.id),
   weapon: text().notNull(),
   amber: text().notNull(), // Amber character ID
+  order: numeric().notNull(),
 });
 
 export const versions = pgTable("versions", {
@@ -95,27 +98,30 @@ export const tierlist = pgSchema("tierlist");
 export const tierlistTypes = tierlist.table("types", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
-  image: text()
-    .notNull()
-    .references(() => cdn.id),
+  image: text().references(() => cdn.id),
+  order: numeric().notNull(),
 });
 
 export const tierlistTiers = tierlist.table("tiers", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
+  badges: text().references(()=>tierlistBadges.id).array(),
   image: text().references(() => cdn.id),
+  order: numeric().notNull(),
 });
 
 export const tierlistColumns = tierlist.table("columns", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
   image: text().references(() => cdn.id),
+  order: numeric().notNull(),
 });
 
 export const tierlistBadges = tierlist.table("badges", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
   image: text().references(() => cdn.id),
+  order: numeric().notNull(),
 });
 
 export const tierlistVersions = tierlist.table("versions", {
@@ -126,6 +132,8 @@ export const tierlistVersions = tierlist.table("versions", {
     .notNull()
     .references(() => tierlistTypes.id),
   image: text().references(() => cdn.id),
+  from: text().notNull().references(()=>versions.id),
+  order: numeric().notNull(),
 });
 
 export const tierlistStates = tierlist.table("states", {
@@ -138,7 +146,7 @@ export const tierlistStates = tierlist.table("states", {
     .references(() => tierlistVersions.id),
   tier: text()
     .notNull()
-    .references(() => tierlistVersions.id),
+    .references(() => tierlistTiers.id),
   column: text()
     .notNull()
     .references(() => tierlistColumns.id),
@@ -147,6 +155,7 @@ export const tierlistStates = tierlist.table("states", {
     .references(() => tierlistBadges.id)
     .array(4)
     .default([]),
+  order: numeric().notNull(),
 });
 
 //#endregion
