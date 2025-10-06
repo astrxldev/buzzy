@@ -6,8 +6,10 @@ export const TierListContext = createContext<{
   chars: (typeof characters.$inferSelect)[];
   badges: (typeof tierlistBadges.$inferSelect)[];
   tileSize: number;
+  badgeSize: number;
 }>({
   chars: [],
   badges: [],
   tileSize: 64,
+  badgeSize: 24,
 });

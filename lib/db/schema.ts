@@ -3,7 +3,7 @@ import {
   boolean,
   date,
   integer,
-  numeric,
+  jsonb,
   pgEnum,
   pgSchema,
   pgTable,
@@ -44,15 +44,18 @@ export const characters = pgTable("characters", {
   name: text().unique().notNull(), // Qiqi
   version: text()
     .notNull()
-    .references(() => versions.id), // Li-A
+    .references(() => versions.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }), // Li-A
   stars: integer().notNull().$type<4 | 5>(),
   vision: element().notNull(),
   image: text()
     .notNull()
-    .references(() => cdn.id),
+    .references(() => cdn.id, { onDelete: "cascade", onUpdate: "cascade" }),
   weapon: text().notNull(),
   amber: text().notNull(), // Amber character ID
-  order: numeric().notNull(),
+  order: integer().notNull(),
 });
 
 export const versions = pgTable("versions", {
@@ -79,7 +82,10 @@ export const submissions = artifact.table("submissions", {
   comment: text().notNull(),
   char: text()
     .notNull()
-    .references(() => characters.name),
+    .references(() => characters.name, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
   queue: serial(),
   checked: boolean().notNull().default(false),
 });
@@ -98,30 +104,44 @@ export const tierlist = pgSchema("tierlist");
 export const tierlistTypes = tierlist.table("types", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
-  image: text().references(() => cdn.id),
-  order: numeric().notNull(),
+  image: text().references(() => cdn.id, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  order: integer().notNull(),
 });
 
 export const tierlistTiers = tierlist.table("tiers", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
-  badges: text().references(()=>tierlistBadges.id).array(),
-  image: text().references(() => cdn.id),
-  order: numeric().notNull(),
+  badges: text()
+    .references(() => tierlistBadges.id)
+    .array(),
+  image: text().references(() => cdn.id, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  order: integer().notNull(),
 });
 
 export const tierlistColumns = tierlist.table("columns", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
-  image: text().references(() => cdn.id),
-  order: numeric().notNull(),
+  image: text().references(() => cdn.id, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  order: integer().notNull(),
 });
 
 export const tierlistBadges = tierlist.table("badges", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
-  image: text().references(() => cdn.id),
-  order: numeric().notNull(),
+  image: text().references(() => cdn.id, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  order: integer().notNull(),
 });
 
 export const tierlistVersions = tierlist.table("versions", {
@@ -130,32 +150,43 @@ export const tierlistVersions = tierlist.table("versions", {
   hidden: boolean().notNull().default(false),
   type: text()
     .notNull()
-    .references(() => tierlistTypes.id),
-  image: text().references(() => cdn.id),
-  from: text().notNull().references(()=>versions.id),
-  order: numeric().notNull(),
+    .references(() => tierlistTypes.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+  image: text().references(() => cdn.id, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  from: text()
+    .notNull()
+    .references(() => versions.id),
+  order: integer().notNull(),
+  states: jsonb().notNull().$type<{ [x: string]: string[] }>().default({}),
 });
 
 export const tierlistStates = tierlist.table("states", {
   uuid: text().primaryKey().$defaultFn(uuidv7),
   char: text()
     .notNull()
-    .references(() => characters.id),
+    .references(() => characters.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
   list: text()
     .notNull()
-    .references(() => tierlistVersions.id),
-  tier: text()
-    .notNull()
-    .references(() => tierlistTiers.id),
-  column: text()
-    .notNull()
-    .references(() => tierlistColumns.id),
+    .references(() => tierlistVersions.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
   comment: text().notNull().default(""),
   badges: text()
-    .references(() => tierlistBadges.id)
+    .references(() => tierlistBadges.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    })
     .array(4)
     .default([]),
-  order: numeric().notNull(),
 });
 
 //#endregion

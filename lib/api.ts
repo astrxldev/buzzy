@@ -1,7 +1,6 @@
 "use server";
 
 import { eq, inArray, not, sql } from "drizzle-orm";
-import type { PgColumn, PgTable } from "drizzle-orm/pg-core";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { apiAuthCheck } from "./auth";
@@ -139,42 +138,58 @@ export async function random() {
   else throw "ไม่พบผู้ลงทะเบียนที่ยังไม่ตรวจสอบ";
 }
 
-export async function reorder(
+/*export async function reorder(
   table: PgTable & { id: PgColumn; order: PgColumn },
-  id: string,
-  position: number,
+  target: string | { id: string; order: number },
+  data: Partial<{ id: string; order: number }>,
 ) {
-  await db
-    .update(table)
-    .set({
-      order: sql`
-      (
-        SELECT (prev_order + next_order) / 2
-        FROM (
-          SELECT "order",
-                 lag("order") OVER (ORDER BY "order") AS prev_order,
-                 lead("order") OVER (ORDER BY "order") AS next_order,
-                 row_number() OVER (ORDER BY "order") AS rn
-          FROM ${table}
-        ) sub
-        WHERE rn = ${position}
-      )
-    `,
-    })
-    .where(eq(table.id, id));
-}
+  return await db.transaction(async (tx) => {
+    const [item] =
+      typeof target === "string"
+        ? ((await tx.select().from(table).where(eq(table.id, target))) as {
+            id: string;
+            order: number;
+          }[])
+        : [target];
 
-export async function untangle(
-  table: PgTable & { id: PgColumn; order: PgColumn },
-) {
-  await db.execute(sql`
-    WITH ordered AS (
-      SELECT id, row_number() OVER (ORDER BY "order") * 10 AS new_order
-      FROM ${table}
-    )
-    UPDATE ${table} t
-    SET "order" = o.new_order
-    FROM ordered o
-    WHERE t.id = o.id;
-  `);
-}
+    if (!item) throw new Error("Item not found");
+
+    const newOrder = data.order;
+    if (newOrder != null && newOrder !== item.order) {
+      // Moving up
+      if (newOrder < item.order) {
+        await tx
+          .update(table)
+          .set({ order: sql`${table.order} + 1` })
+          .where(
+            and(
+              eq(table.list, item.list),
+              gte(table.order, newOrder),
+              lt(table.order, item.order),
+            ),
+          );
+      }
+      // Moving down
+      else {
+        await tx
+          .update(tierlistStates)
+          .set({ order: sql`${tierlistStates.order} - 1` })
+          .where(
+            and(
+              eq(tierlistStates.list, item.list),
+              lte(tierlistStates.order, newOrder),
+              gt(tierlistStates.order, item.order),
+            ),
+          );
+      }
+    }
+
+    // Finally, move the item itself
+    await tx
+      .update(tierlistStates)
+      .set(data)
+      .where(eq(tierlistStates.id, item.id));
+
+    return { ...item, ...data };
+  });
+}*/

@@ -6,7 +6,7 @@ import {
   DragOverlay,
   useDroppable,
 } from "@dnd-kit/core";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { Calculator, ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -46,11 +46,17 @@ import type {
 import { TierListCell } from "./cell";
 import { Draggable } from "./character";
 import { TierListContext } from "./context";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { SimpleTooltip } from "@/components/tooltip";
 
 function Untiered({
   children,
   ref,
-  open
+  open,
 }: {
   children?: ReactNode;
   ref?: RefObject<HTMLDivElement | null>;
@@ -64,7 +70,7 @@ function Untiered({
     <div ref={ref}>
       <div
         ref={setNodeRef}
-        className={`flex flex-wrap ${open?"p-1":""} gap-2 bg-[#0005] overflow-auto`}
+        className={`flex flex-wrap ${open ? "p-1" : ""} gap-2 bg-[#0005] overflow-auto`}
         style={{
           maxHeight: `${(tileSize + 4) * 3 + 4}px`,
         }}
@@ -94,6 +100,7 @@ export function TierList({
     "tl_tileSize",
     null,
   );
+  const [badgeSize, setBadgeSize] = useLocalStorage<number>("tl_badgeSize", 24);
   const [tileSizeAuto, setTileSizeAuto] = useState(0);
   const tileSize = tileSizeSetting || tileSizeAuto;
 
@@ -112,15 +119,15 @@ export function TierList({
         const colRect = colRef.current.getBoundingClientRect();
         const untieredRect = untieredRef.current.getBoundingClientRect();
 
-        const colPaddingLeft = 4; // or measure with getComputedStyle(colRef.current)
+        const colPaddingLeft = 4;
         const contPaddingLeft = 4;
         const tilePaddingRight = 8;
 
-        // tiered (always 6 cols)
+        // tiered
         const tileSizeCol =
           (colRect.width - colPaddingLeft) / tiles - tilePaddingRight;
 
-        // untiered → calculate how many columns fit with ~tileSizeCol
+        // untiered
         let x = Math.floor(
           (untieredRect.width - contPaddingLeft) /
             (tileSizeCol + tilePaddingRight),
@@ -134,7 +141,7 @@ export function TierList({
         // final auto size
         auto = Math.min(tileSizeCol, tileSizeUntiered);
         tiles--;
-      } while (auto < 50 && tiles > 0);
+      } while (auto < 60 && tiles > 0);
       setTileSizeAuto(auto);
     }
 
@@ -192,7 +199,7 @@ export function TierList({
   //#endregion placements
 
   return (
-    <TierListContext.Provider value={{ badges, chars, tileSize }}>
+    <TierListContext.Provider value={{ badges, chars, tileSize, badgeSize }}>
       <DndContext
         onDragStart={(e) => setDragging(e.active.id as string)}
         onDragEnd={handleDragEnd}
@@ -228,49 +235,112 @@ export function TierList({
                     <DialogTitle>การตั้งค่า</DialogTitle>
                   </DialogHeader>
                   <div className="flex justify-between">
-                    <div className="grid gap-2 group">
-                      <span>
-                        ขนาดตัวละคร{" "}
-                        <span className="text-muted-foreground group-hover:opacity-100 opacity-0 transition-opacity">
-                          (px)
+                    <div className="flex flex-col gap-2">
+                      <div className="grid gap-2 group">
+                        <span className="flex gap-1">
+                          ขนาดตัวละคร{" "}
+                          <span className="flex gap-1 text-muted-foreground md:opacity-0 group-hover:opacity-100 transition-opacity">
+                            (px){" "}
+                            {tileSizeSetting ? (
+                              ""
+                            ) : (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Calculator className="text-emerald-400" />
+                                </TooltipTrigger>
+                                <TooltipContent>คำนวณอัตโนมัติ</TooltipContent>
+                              </Tooltip>
+                            )}
+                          </span>
                         </span>
-                      </span>
-                      <div className="flex gap-1">
-                        <Input
-                          value={tileSize}
-                          onChange={(ev) =>
-                            setTileSize(Number(ev.target.value))
-                          }
-                          type="number"
-                        />
-                        <Button
-                          onClick={() =>
-                            setTileSize((x) => (x || tileSize) + 1)
-                          }
-                          variant="outline"
-                          size="icon"
-                        >
-                          <ChevronUp />
-                        </Button>
-                        <Button
-                          onClick={() =>
-                            setTileSize((x) => (x || tileSize) - 1)
-                          }
-                          variant="outline"
-                          size="icon"
-                        >
-                          <ChevronDown />
-                        </Button>
+                        <div className="flex gap-1">
+                          <Input
+                            value={tileSizeSetting || Math.round(tileSizeAuto)}
+                            onChange={(ev) =>
+                              setTileSize(Number(ev.target.value))
+                            }
+                            type="number"
+                          />
+                          <Button
+                            onClick={() =>
+                              setTileSize((x) => (x || tileSize) + 1)
+                            }
+                            variant="outline"
+                            size="icon"
+                          >
+                            <ChevronUp />
+                          </Button>
+                          <Button
+                            onClick={() =>
+                              setTileSize((x) => (x || tileSize) - 1)
+                            }
+                            variant="outline"
+                            size="icon"
+                          >
+                            <ChevronDown />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="grid gap-2 group">
+                        <span>
+                          ขนาดเครื่องหมาย{" "}
+                          <span className="text-muted-foreground md:opacity-0 group-hover:opacity-100 transition-opacity">
+                            (px)
+                          </span>
+                        </span>
+                        <div className="flex gap-1">
+                          <Input
+                            value={badgeSize}
+                            onChange={(ev) =>
+                              setBadgeSize(Number(ev.target.value))
+                            }
+                            type="number"
+                          />
+                          <Button
+                            onClick={() =>
+                              setBadgeSize((x) => (x || tileSize) + 1)
+                            }
+                            variant="outline"
+                            size="icon"
+                          >
+                            <ChevronUp />
+                          </Button>
+                          <Button
+                            onClick={() =>
+                              setBadgeSize((x) => (x || tileSize) - 1)
+                            }
+                            variant="outline"
+                            size="icon"
+                          >
+                            <ChevronDown />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                     <div>
-                      <Image
-                        src={Favicon}
-                        alt="Test Image"
-                        width={tileSize}
-                        height={tileSize}
-                        className="rounded"
-                      />
+                      <div
+                        style={{
+                          background:
+                            "rgba(200,124,36) linear-gradient(136deg,rgba(49,43,71,.5294117647058824),transparent)",
+                          width: tileSize,
+                        }}
+                        className="rounded aspect-square relative"
+                      >
+                        <Image
+                          className="absolute bottom-0.5 left-0.5 border rounded"
+                          src={Favicon}
+                          alt="Test Badge"
+                          width={badgeSize}
+                          height={badgeSize}
+                        />
+                        <Image
+                          className="absolute bottom-0.5 right-0.5 border rounded"
+                          src={Favicon}
+                          alt="Test Badge"
+                          width={badgeSize}
+                          height={badgeSize}
+                        />
+                      </div>
                     </div>
                   </div>
                 </DialogContent>
