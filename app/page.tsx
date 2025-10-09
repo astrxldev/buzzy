@@ -1,15 +1,91 @@
+import { ChevronRightIcon } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import Banner from "#/banner.webp";
+import ArtifactLogo from "#/logos/artifact.webp";
+import TierlistLogo from "#/logos/tierlist.webp";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+} from "@/components/ui/item";
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <Link href="/artifact">
-        <Button>Artifact</Button>
-      </Link>
-      <Link href="/tl">
-        <Button>TierList</Button>
-      </Link>
+    <div className="relative h-screen w-full overflow-hidden flex items-center justify-center">
+      <div className="max-w-[85rem] w-full mx-auto px-4 sm:px-6 py-6">
+        <Card className="max-w-lg w-full mx-auto pt-0">
+          <Image
+            src={Banner}
+            alt="Banner"
+            className="w-full rounded-t-xl"
+            width={500}
+            height={500}
+          />
+
+          <CardContent className="space-y-6">
+            <div className="flex flex-col gap-2">
+              <Item variant="outline" asChild>
+                <Link href="/artifact">
+                  <ItemMedia>
+                    <Image
+                      src={ArtifactLogo}
+                      alt="เสือกไอดีชาวบ้าน"
+                      className="w-22"
+                      width={500}
+                      height={500}
+                    />
+                  </ItemMedia>
+                  <ItemContent>
+                    <ItemTitle>เสือกไอดีชาวบ้าน</ItemTitle>
+                    <ItemDescription className="line-clamp-none">
+                      ใครอยากให้ดูอาร์ติแฟกต์ให้ในไลฟ์ ไปกรอกแบบฟอร์มได้เลย
+                    </ItemDescription>
+                  </ItemContent>
+                  <ItemActions>
+                    <ChevronRightIcon className="size-4" />
+                  </ItemActions>
+                </Link>
+              </Item>
+
+              <Item variant="outline" asChild>
+                <Link href="/tl">
+                  <ItemMedia>
+                    <Image
+                      src={TierlistLogo}
+                      alt="จัดเทียร์ลิสต์อบิส"
+                      className="w-22"
+                      width={500}
+                      height={500}
+                    />
+                  </ItemMedia>
+                  <ItemContent>
+                    <ItemTitle>จัดเทียร์ลิสต์</ItemTitle>
+                    <ItemDescription className="line-clamp-none">
+                      เทียร์ลิสต์เมต้าตัวละครของอบิสแพทช์นั้นๆเท่านั้น
+                      ซึ่งจะเปลี่ยนไปในแต่ละแพทช์ตามความสามารถของตัวละครในการรับมือกับอบิสแพทช์นั้นๆ
+                      ไม่ใช่เทียร์ลิสต์ภาพรวมของตัวละคร
+                    </ItemDescription>
+                  </ItemContent>
+                  <ItemActions>
+                    <ChevronRightIcon className="size-4" />
+                  </ItemActions>
+                </Link>
+              </Item>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <p className="text-xs text-center text-muted-foreground">
+              buzz.gunshiz.top is not affiliated with HoYoverse. Game content
+              and materials are trademarks and copyrights of HoYoverse.
+            </p>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 }

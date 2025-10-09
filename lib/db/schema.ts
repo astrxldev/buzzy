@@ -162,11 +162,11 @@ export const tierlistVersions = tierlist.table("versions", {
     .notNull()
     .references(() => versions.id),
   order: integer().notNull(),
-  states: jsonb().notNull().$type<{ [x: string]: string[] }>().default({}),
+  placements: jsonb().notNull().$type<{ [x: string]: string[] }>().default({}),
 });
 
 export const tierlistStates = tierlist.table("states", {
-  uuid: text().primaryKey().$defaultFn(uuidv7),
+  uuid: text().primaryKey().unique().$defaultFn(uuidv7),
   char: text()
     .notNull()
     .references(() => characters.id, {

@@ -1,6 +1,6 @@
 "use server";
 
-import { eq, inArray, not, sql } from "drizzle-orm";
+import { and, eq, inArray, not, or, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { apiAuthCheck } from "./auth";
@@ -11,6 +11,8 @@ import {
   characters,
   settings,
   submissions,
+  tierlistStates,
+  tierlistVersions,
 } from "./db/schema";
 import { sse } from "./utils";
 
@@ -136,6 +138,58 @@ export async function random() {
     .limit(1);
   if (sub) redirect(`/artifact/admin/${sub.id}`);
   else throw "ไม่พบผู้ลงทะเบียนที่ยังไม่ตรวจสอบ";
+}
+
+export async function tlState(
+  data: Partial<typeof tierlistStates.$inferInsert>,
+) {
+  if (!(await apiAuthCheck())) throw "Unauthorized";
+  const [existing] = await db
+    .select()
+    .from(tierlistStates)
+    .where(
+      or(
+        eq(tierlistStates.uuid, `${data.uuid}`),
+        and(
+          eq(tierlistStates.char, `${data.char}`),
+          eq(tierlistStates.list, `${data.list}`),
+        ),
+      ),
+    );
+  if (existing)
+    await db
+      .update(tierlistStates)
+      .set(data)
+      .where(eq(tierlistStates.uuid, `${data.uuid}`));
+  else
+    await db
+      .insert(tierlistStates)
+      .values(data as typeof tierlistStates.$inferInsert);
+  const list = data.list || existing?.list;
+  const states = await db
+    .select()
+    .from(tierlistStates)
+    .where(eq(tierlistStates.list, list));
+
+  revalidatePath(`/api/tl/${list}/states`);
+  sse.publish(states, { topic: `tl-${list}`, event: "update_states" });
+}
+
+export async function tlPlacements(
+  list: string,
+  placements: Record<string, string[]>,
+) {
+  if (!(await apiAuthCheck())) throw "Unauthorized";
+
+  await db
+    .update(tierlistVersions)
+    .set({
+      placements,
+    })
+    .where(eq(tierlistVersions.id, list));
+
+  revalidatePath(`/api/tl/${list}`);
+  sse.publish(placements, { topic: `tl-${list}`, event: "update_placements" });
 }
 
 /*export async function reorder(

@@ -6,7 +6,12 @@ import {
   DragOverlay,
   useDroppable,
 } from "@dnd-kit/core";
-import { Calculator, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Calculator,
+  ChevronDown,
+  ChevronUp,
+  TriangleAlert,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -14,10 +19,12 @@ import {
   type ReactNode,
   type RefObject,
   useContext,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
 } from "react";
+import { toast } from "sonner";
 import { useLocalStorage } from "usehooks-ts";
 import Favicon from "#/favicon.webp";
 import { Button } from "@/components/ui/button";
@@ -35,10 +42,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { tlPlacements, tlState } from "@/lib/api";
 import type {
   characters,
   tierlistBadges,
   tierlistColumns,
+  tierlistStates,
   tierlistTiers,
   tierlistTypes,
   tierlistVersions,
@@ -46,12 +60,6 @@ import type {
 import { TierListCell } from "./cell";
 import { Draggable } from "./character";
 import { TierListContext } from "./context";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { SimpleTooltip } from "@/components/tooltip";
 
 function Untiered({
   children,
@@ -88,13 +96,15 @@ export function TierList({
   tiers,
   columns,
   badges,
+  editable = false,
 }: {
   type: typeof tierlistTypes.$inferSelect;
   version: typeof tierlistVersions.$inferSelect;
   chars: (typeof characters.$inferSelect)[];
   tiers: (typeof tierlistTiers.$inferSelect)[];
   columns: (typeof tierlistColumns.$inferSelect)[];
-  badges: (typeof tierlistBadges.$inferSelect)[];
+  badges: (typeof tierlistBadges.$inferSelect & { tier: string[] })[];
+  editable?: boolean;
 }) {
   const [tileSizeSetting, setTileSize] = useLocalStorage<number | null>(
     "tl_tileSize",
@@ -103,6 +113,45 @@ export function TierList({
   const [badgeSize, setBadgeSize] = useLocalStorage<number>("tl_badgeSize", 24);
   const [tileSizeAuto, setTileSizeAuto] = useState(0);
   const tileSize = tileSizeSetting || tileSizeAuto;
+  const [states, setStates] = useState<(typeof tierlistStates.$inferSelect)[]>(
+    [],
+  );
+
+  //#region error handling
+  useEffect(() => {
+    const handler = (ev: ErrorEvent) =>
+      toast("Unexpected Error Occured", {
+        icon: <TriangleAlert className="text-red-400" />,
+        description: `${ev.error.message || ev.error || "*unknown error*"}`,
+      });
+    window.addEventListener("error", handler);
+    return () => window.removeEventListener("error", handler);
+  });
+  //#endregion
+
+  //#region states fetching
+  useEffect(() => {
+    async function fetchStates() {
+      setStates(
+        await fetch(`/api/tl/${version.id}/states`).then((r) => r.json()),
+      );
+    }
+    fetchStates();
+  }, [version]);
+
+  useEffect(() => {
+    const es = new EventSource(`/api/tl/${version.id}/ev`);
+    es.addEventListener("update_states", (d) => setStates(JSON.parse(d.data)));
+    es.addEventListener("update_placements", (d) =>
+      setPlacements(JSON.parse(d.data)),
+    );
+    es.onerror = () =>
+      toast("Live Reload ใช้งานไม่ได้ ลองรีโหลดใหม่", {
+        icon: <TriangleAlert className="text-red-400" />,
+      });
+    return () => es.close();
+  }, [version]);
+  //#endregion
 
   const colRef = useRef<HTMLDivElement | null>(null);
   const untieredRef = useRef<HTMLDivElement | null>(null);
@@ -161,23 +210,23 @@ export function TierList({
     true,
   );
 
-  //#region placements handling
-  const initialPlacements: Record<string, string[]> = {
-    untiered: chars.map((ch) => ch.id),
+  const tiered: (string | undefined)[] = Object.values({
+    ...version.placements,
+    untiered: undefined,
+  }).flat();
+  const [placements, setPlacements] = useState<Record<string, string[]>>({
     ...Object.fromEntries(
       tiers.flatMap((t) =>
         columns.map((c) => [`${t.id}-${c.id}`, [] as string[]]),
       ),
     ),
-  };
-
-  const [placements, setPlacements] = useLocalStorage<Record<string, string[]>>(
-    `tl_${type.id}_${version.id}_placements`,
-    initialPlacements,
-  );
+    ...version.placements,
+    untiered: chars.map((ch) => ch.id).filter((c) => !tiered.includes(c)),
+  });
   const [dragging, setDragging] = useState<string | null>(null);
 
   function handleDragEnd(event: DragEndEvent) {
+    if (!editable) return;
     const { active, over } = event;
     if (!over) return;
     const charId = active.id as string;
@@ -190,16 +239,46 @@ export function TierList({
       }
     }
     if (!source || source === target) return;
-    setPlacements({
+    const newPlacements = {
       ...placements,
       [source]: placements[source].filter((id) => id !== charId),
       [target]: [...placements[target], charId],
-    });
+    };
+    setPlacements(newPlacements);
+    tlPlacements(version.id, newPlacements).catch((e) =>
+      toast(`Sync ล้มเหลว: ${e.message || e}`, {
+        icon: <TriangleAlert className="text-red-400" />,
+      }),
+    );
   }
   //#endregion placements
 
   return (
-    <TierListContext.Provider value={{ badges, chars, tileSize, badgeSize }}>
+    <TierListContext.Provider
+      value={{
+        badges,
+        chars,
+        tileSize,
+        badgeSize,
+        editable,
+        async setState(char, data) {
+          const newEntry = {
+            ...states.find((e) => e.char === char),
+            ...(Object.fromEntries(
+              Object.entries(data).filter(([_, v]) => v !== undefined),
+            ) as typeof tierlistStates.$inferSelect),
+            list: version.id,
+            char,
+          };
+          setStates((s) => [...s.filter((e) => e.char !== char), newEntry]);
+          tlState(newEntry).catch((e) =>
+            toast(`Sync ล้มเหลว: ${e.message || e}`, {
+              icon: <TriangleAlert className="text-red-400" />,
+            }),
+          );
+        },
+      }}
+    >
       <DndContext
         onDragStart={(e) => setDragging(e.active.id as string)}
         onDragEnd={handleDragEnd}
@@ -385,7 +464,12 @@ export function TierList({
                     return (
                       <TierListCell key={cellId} column={c} tier={t}>
                         {cellChars.map((ch) => (
-                          <Draggable key={ch.id} char={ch} />
+                          <Draggable
+                            key={ch.id}
+                            char={ch}
+                            tier={t.id}
+                            state={states.find((s) => s.char === ch.id)}
+                          />
                         ))}
                       </TierListCell>
                     );
@@ -411,7 +495,13 @@ export function TierList({
               {untieredOpen &&
                 placements.untiered.map((id) => {
                   const ch = chars.find((c) => c.id === id)!;
-                  return <Draggable key={ch.id} char={ch} />;
+                  return (
+                    <Draggable
+                      key={ch.id}
+                      char={ch}
+                      state={states.find((s) => s.char === ch.id)}
+                    />
+                  );
                 })}
             </Untiered>
           </div>

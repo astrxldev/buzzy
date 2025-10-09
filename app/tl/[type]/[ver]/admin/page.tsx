@@ -10,7 +10,7 @@ import {
   tierlistVersions,
   versions,
 } from "@/lib/db/schema";
-import { TierList } from "./tierlist";
+import { TierList } from "../tierlist";
 
 export default async function TierlistPage({
   params,
@@ -75,6 +75,6 @@ export default async function TierlistPage({
   });
   // console.log(config);
   if (!config) notFound();
-  return <TierList {...config} />;
+  return <TierList editable {...config} />;
   // return <pre>{JSON.stringify(config, null, 2)}</pre>;
 }

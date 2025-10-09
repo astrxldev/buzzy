@@ -45,7 +45,7 @@ async function main() {
       );
       return p;
     }
-    async function handle(char: Avatar, order: string) {
+    async function handle(char: Avatar, order: number) {
       await tx
         .insert(characters)
         .values({
@@ -78,7 +78,7 @@ async function main() {
       process.stdout.write(
         `\rSyncing characters... ${char.name}                                 `,
       );
-      pros.push(handle(char, `${i}`).then(progress));
+      pros.push(handle(char, i).then(progress));
     }
     await Promise.all(pros);
     console.log("\nDone!");
