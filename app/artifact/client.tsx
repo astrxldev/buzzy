@@ -171,6 +171,8 @@ export function Disclaimer() {
 }
 
 export async function ClearCookie() {
-  cookieStore.delete("sid");
-  return <></>;
+  // biome-ignore lint/suspicious/noTsIgnore: typescript issue
+  // @ts-ignore
+    cookieStore.delete("sid");
+  return "";
 }

@@ -160,12 +160,8 @@
           "name": "characters_version_versions_id_fk",
           "tableFrom": "characters",
           "tableTo": "versions",
-          "columnsFrom": [
-            "version"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["version"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -173,12 +169,8 @@
           "name": "characters_image_cdn_id_fk",
           "tableFrom": "characters",
           "tableTo": "cdn",
-          "columnsFrom": [
-            "image"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["image"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -281,12 +273,8 @@
           "name": "badges_image_cdn_id_fk",
           "tableFrom": "badges",
           "tableTo": "cdn",
-          "columnsFrom": [
-            "image"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["image"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -326,12 +314,8 @@
           "name": "columns_image_cdn_id_fk",
           "tableFrom": "columns",
           "tableTo": "cdn",
-          "columnsFrom": [
-            "image"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["image"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -397,12 +381,8 @@
           "name": "states_char_characters_id_fk",
           "tableFrom": "states",
           "tableTo": "characters",
-          "columnsFrom": [
-            "char"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["char"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -411,12 +391,8 @@
           "tableFrom": "states",
           "tableTo": "versions",
           "schemaTo": "tierlist",
-          "columnsFrom": [
-            "list"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["list"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -425,12 +401,8 @@
           "tableFrom": "states",
           "tableTo": "versions",
           "schemaTo": "tierlist",
-          "columnsFrom": [
-            "tier"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tier"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -439,12 +411,8 @@
           "tableFrom": "states",
           "tableTo": "columns",
           "schemaTo": "tierlist",
-          "columnsFrom": [
-            "column"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["column"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -484,12 +452,8 @@
           "name": "tiers_image_cdn_id_fk",
           "tableFrom": "tiers",
           "tableTo": "cdn",
-          "columnsFrom": [
-            "image"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["image"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -529,12 +493,8 @@
           "name": "types_image_cdn_id_fk",
           "tableFrom": "types",
           "tableTo": "cdn",
-          "columnsFrom": [
-            "image"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["image"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -606,12 +566,8 @@
           "name": "versions_from_versions_id_fk",
           "tableFrom": "versions",
           "tableTo": "versions",
-          "columnsFrom": [
-            "from"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["from"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -627,14 +583,7 @@
     "public.character_element": {
       "name": "character_element",
       "schema": "public",
-      "values": [
-        "anemo",
-        "geo",
-        "dendro",
-        "hydro",
-        "pyro",
-        "cryo"
-      ]
+      "values": ["anemo", "geo", "dendro", "hydro", "pyro", "cryo"]
     }
   },
   "schemas": {

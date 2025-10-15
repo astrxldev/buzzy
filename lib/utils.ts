@@ -24,11 +24,11 @@ if (!globalThis.sseList) {
 export class EventSourceManager {
   private id = 0;
   new(topic = "_global"): Response {
-    console.log(` SUB #${topic}`);
     let timeout: NodeJS.Timeout | undefined;
     this.id++;
     if (this.id > 100000) this.id = 0;
     const id = this.id;
+    console.log(` SUB ${topic}#${id}`);
 
     const push = (s: ServerEventSource) => {
       globalThis.sseList.push(s);
@@ -38,7 +38,7 @@ export class EventSourceManager {
         globalThis.sseList.findIndex((e) => e.id === id),
         1,
       );
-      console.log(` DSC #${topic}`);
+      console.log(` SUB ${topic}#${id}`);
     };
     return new Response(
       new ReadableStream({

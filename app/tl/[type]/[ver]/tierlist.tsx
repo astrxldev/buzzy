@@ -6,11 +6,13 @@ import {
   DragOverlay,
   useDroppable,
 } from "@dnd-kit/core";
+import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import {
   Calculator,
   ChevronDown,
   ChevronUp,
-  TriangleAlert,
+  Smartphone,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -27,6 +29,7 @@ import {
 import { toast } from "sonner";
 import { useLocalStorage } from "usehooks-ts";
 import Favicon from "#/favicon.webp";
+import { Blocker } from "@/components/blocker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -60,6 +63,7 @@ import type {
 import { TierListCell } from "./cell";
 import { Draggable } from "./character";
 import { TierListContext } from "./context";
+import { TlStatusOverlay } from "./overlay";
 
 function Untiered({
   children,
@@ -116,12 +120,16 @@ export function TierList({
   const [states, setStates] = useState<(typeof tierlistStates.$inferSelect)[]>(
     [],
   );
+  const [evStatus, setEvStatus] = useState<{
+    upload: boolean;
+    download: boolean;
+    ev: "unknown" | "connecting" | "ready";
+  }>({ upload: false, download: false, ev: "unknown" });
 
   //#region error handling
   useEffect(() => {
     const handler = (ev: ErrorEvent) =>
-      toast("Unexpected Error Occured", {
-        icon: <TriangleAlert className="text-red-400" />,
+      toast.error("Unexpected Error Occured", {
         description: `${ev.error.message || ev.error || "*unknown error*"}`,
       });
     window.addEventListener("error", handler);
@@ -132,25 +140,27 @@ export function TierList({
   //#region states fetching
   useEffect(() => {
     async function fetchStates() {
+      setEvStatus((x) => ({ ...x, download: true }));
       setStates(
-        await fetch(`/api/tl/${version.id}/states`).then((r) => r.json()),
+        await fetch(`/api/tl/${version.id}/states`)
+          .then((r) => r.json())
+          .finally(() => setEvStatus((x) => ({ ...x, download: false }))),
       );
     }
     fetchStates();
-  }, [version]);
+  }, [version.id]);
 
   useEffect(() => {
+    setEvStatus((x) => ({ ...x, ev: "connecting" }));
     const es = new EventSource(`/api/tl/${version.id}/ev`);
+    es.onopen = () => setEvStatus((x) => ({ ...x, ev: "ready" }));
     es.addEventListener("update_states", (d) => setStates(JSON.parse(d.data)));
     es.addEventListener("update_placements", (d) =>
       setPlacements(JSON.parse(d.data)),
     );
-    es.onerror = () =>
-      toast("Live Reload ใช้งานไม่ได้ ลองรีโหลดใหม่", {
-        icon: <TriangleAlert className="text-red-400" />,
-      });
+    es.onerror = () => setEvStatus((x) => ({ ...x, ev: "unknown" }));
     return () => es.close();
-  }, [version]);
+  }, [version.id]);
   //#endregion
 
   const colRef = useRef<HTMLDivElement | null>(null);
@@ -205,6 +215,7 @@ export function TierList({
   }, [columns.length, colRef.current, untieredRef.current]);
   //#endregion tileSize
 
+  //#region placements
   const [untieredOpen, setUntieredOpen] = useLocalStorage(
     "tl_untieredOpen",
     true,
@@ -229,29 +240,72 @@ export function TierList({
     if (!editable) return;
     const { active, over } = event;
     if (!over) return;
+
     const charId = active.id as string;
-    const target = over.id as string;
-    let source: string | undefined;
+    const targetId = over.id as string;
+
+    // Find source cell
+    let sourceCell: string | undefined;
     for (const cell in placements) {
       if (placements[cell].includes(charId)) {
-        source = cell;
+        sourceCell = cell;
         break;
       }
     }
-    if (!source || source === target) return;
-    const newPlacements = {
-      ...placements,
-      [source]: placements[source].filter((id) => id !== charId),
-      [target]: [...placements[target], charId],
-    };
+    if (!sourceCell) return;
+
+    let newPlacements = { ...placements };
+
+    // Check if dropped on another character (sorting within same cell)
+    if (chars.some((ch) => ch.id === targetId)) {
+      // Find target cell
+      let targetCell: string | undefined;
+      for (const cell in placements) {
+        if (placements[cell].includes(targetId)) {
+          targetCell = cell;
+          break;
+        }
+      }
+      if (!targetCell) return;
+
+      if (sourceCell === targetCell) {
+        // Reorder within same cell
+        const items = [...placements[sourceCell]];
+        const oldIndex = items.indexOf(charId);
+        const newIndex = items.indexOf(targetId);
+
+        newPlacements[sourceCell] = arrayMove(items, oldIndex, newIndex);
+      } else {
+        // Move to different cell
+        newPlacements = {
+          ...newPlacements,
+          [sourceCell]: placements[sourceCell].filter((id) => id !== charId),
+          [targetCell]: [...placements[targetCell], charId],
+        };
+      }
+    } else {
+      // Dropped on a cell (not on a character)
+      const targetCell = targetId;
+      if (sourceCell !== targetCell) {
+        newPlacements = {
+          ...newPlacements,
+          [sourceCell]: placements[sourceCell].filter((id) => id !== charId),
+          [targetCell]: [...placements[targetCell], charId],
+        };
+      }
+    }
+
     setPlacements(newPlacements);
-    tlPlacements(version.id, newPlacements).catch((e) =>
-      toast(`Sync ล้มเหลว: ${e.message || e}`, {
-        icon: <TriangleAlert className="text-red-400" />,
-      }),
-    );
+    setEvStatus((x) => ({ ...x, upload: true }));
+    tlPlacements(version.id, newPlacements)
+      .catch((e) => toast.error(`Sync ล้มเหลว: ${e.message || e}`))
+      .finally(() => setEvStatus((x) => ({ ...x, upload: false })));
   }
   //#endregion placements
+
+  //#region ui states
+  const [disclaimer, showDisclaimer] = useState(true);
+  //#endregion ui
 
   return (
     <TierListContext.Provider
@@ -272,9 +326,7 @@ export function TierList({
           };
           setStates((s) => [...s.filter((e) => e.char !== char), newEntry]);
           tlState(newEntry).catch((e) =>
-            toast(`Sync ล้มเหลว: ${e.message || e}`, {
-              icon: <TriangleAlert className="text-red-400" />,
-            }),
+            toast.error(`Sync ล้มเหลว: ${e.message || e}`),
           );
         },
       }}
@@ -284,6 +336,32 @@ export function TierList({
         onDragEnd={handleDragEnd}
       >
         <div className="flex flex-col justify-between h-full">
+          <Blocker inner className="not-portrait:hidden md:hidden">
+            <div className="flex flex-col items-center font-bold text-2xl gap-16">
+              <Smartphone size={128} className="animate-phonerotate" />
+              โปรดปรับจอเป็นแนวนอน
+            </div>
+          </Blocker>
+          {version.disclaimer && disclaimer ? (
+            <Blocker inner className="hidden not-portrait:block md:block">
+              <Image
+                src={`/cdn/${version.disclaimer}`}
+                alt="Disclaimer"
+                fill
+                className="object-contain bg-[#000A]"
+              />
+              <Button
+                variant="outline"
+                className="absolute top-0 right-0 m-2"
+                size="icon"
+                onClick={() => showDisclaimer(false)}
+              >
+                <X />
+              </Button>
+            </Blocker>
+          ) : (
+            <TlStatusOverlay ev={evStatus} deprecates={version.deprecates} />
+          )}
           <div className="flex-1 min-h-0 overflow-auto">
             <div
               className={`grid w-full [&>*]:border`}
@@ -462,7 +540,12 @@ export function TierList({
                       (id) => chars.find((ch) => ch.id === id)!,
                     );
                     return (
-                      <TierListCell key={cellId} column={c} tier={t}>
+                      <TierListCell
+                        key={cellId}
+                        column={c}
+                        tier={t}
+                        items={placements[cellId]}
+                      >
                         {cellChars.map((ch) => (
                           <Draggable
                             key={ch.id}
@@ -491,19 +574,24 @@ export function TierList({
                 <ChevronUp className="ml-1" />
               )}
             </Button>
-            <Untiered ref={untieredRef} open={untieredOpen}>
-              {untieredOpen &&
-                placements.untiered.map((id) => {
-                  const ch = chars.find((c) => c.id === id)!;
-                  return (
-                    <Draggable
-                      key={ch.id}
-                      char={ch}
-                      state={states.find((s) => s.char === ch.id)}
-                    />
-                  );
-                })}
-            </Untiered>
+            <SortableContext
+              items={placements.untiered}
+              strategy={rectSortingStrategy}
+            >
+              <Untiered ref={untieredRef} open={untieredOpen}>
+                {untieredOpen &&
+                  placements.untiered.map((id) => {
+                    const ch = chars.find((c) => c.id === id)!;
+                    return (
+                      <Draggable
+                        key={ch.id}
+                        char={ch}
+                        state={states.find((s) => s.char === ch.id)}
+                      />
+                    );
+                  })}
+              </Untiered>
+            </SortableContext>
           </div>
         </div>
         <DragOverlay>
@@ -514,4 +602,8 @@ export function TierList({
       </DndContext>
     </TierListContext.Provider>
   );
+}
+
+function arrayMove<T>(arr: T[], oldIndex: number, newIndex: number): T[] {
+  return arr.toSpliced(oldIndex, 1).toSpliced(newIndex, 0, arr[oldIndex]);
 }

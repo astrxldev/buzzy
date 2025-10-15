@@ -2,52 +2,54 @@ import { NextResponse } from "next/server";
 
 export const revalidate = 900;
 
-export type YoutubeLiveInfo = {
-  url: string;
-  thumbnails: {
-    url: string;
-    width: number;
-    height: number;
-  }
-} | "none";
+export type YoutubeLiveInfo =
+  | {
+      url: string;
+      thumbnails: {
+        url: string;
+        width: number;
+        height: number;
+      };
+    }
+  | "none";
 
 type APISearchResource = {
-  "kind": "youtube#searchResult",
-  "etag": string,
-  "id": {
-    "kind": string,
-    "videoId": string,
-    "channelId": string,
-    "playlistId": string
-  },
-  "snippet": {
-    "publishedAt": string,
-    "channelId": string,
-    "title": string,
-    "description": string,
-    "thumbnails": {
+  kind: "youtube#searchResult";
+  etag: string;
+  id: {
+    kind: string;
+    videoId: string;
+    channelId: string;
+    playlistId: string;
+  };
+  snippet: {
+    publishedAt: string;
+    channelId: string;
+    title: string;
+    description: string;
+    thumbnails: {
       [key: string]: {
-        "url": string,
-        "width": number,
-        "height": number
-      }
-    },
-    "channelTitle": string,
-    "liveBroadcastContent": string
-  }
+        url: string;
+        width: number;
+        height: number;
+      };
+    };
+    channelTitle: string;
+    liveBroadcastContent: string;
+  };
 };
 
 type APISearchResponse = {
-  "kind": "youtube#searchListResponse",
-  "etag": string,
-  "nextPageToken": string,
-  "prevPageToken": string,
-  "regionCode": string,
-  "pageInfo": {
-    "totalResults": number,
-    "resultsPerPage": number
-  },
-  "items": APISearchResource[],
+  kind: "youtube#searchListResponse";
+  etag: string;
+  nextPageToken: string;
+  prevPageToken: string;
+  regionCode: string;
+  pageInfo: {
+    totalResults: number;
+    resultsPerPage: number;
+  };
+  items: APISearchResource[];
 };
 
 export async function GET() {
@@ -61,18 +63,18 @@ export async function GET() {
         revalidate: 900, // refresh every 15 minutes
       },
       cache: "force-cache",
-    }
+    },
   );
 
   if (!response.ok)
     throw new Error(`YouTube API error: ${response.statusText}`);
 
   const data: APISearchResponse = await response.json();
-  if (data.items.length <= 0)
-    return NextResponse.json<YoutubeLiveInfo>("none");
+  if (data.items.length <= 0) return NextResponse.json<YoutubeLiveInfo>("none");
   const live = data.items[0];
   return NextResponse.json<YoutubeLiveInfo>({
     url: `https://www.youtube.com/watch?v=${live.id.videoId}`,
-    thumbnails: live.snippet.thumbnails[Object.keys(live.snippet.thumbnails)[0]]
+    thumbnails:
+      live.snippet.thumbnails[Object.keys(live.snippet.thumbnails)[0]],
   });
 }

@@ -1,7 +1,7 @@
 import { getSessionCookie } from "better-auth/cookies";
 import { type NextRequest, NextResponse } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const sessionCookie = getSessionCookie(request);
 
   // THIS IS NOT SECURE!
@@ -20,5 +20,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/artifact/admin/:path*", "/tl/:path*/:path*/admin"], // Specify the routes the middleware applies to
+  matcher: [
+    "/artifact/admin/:path*",
+    "/tl/:path*/:path*/admin",
+    "/admin/:path*",
+  ], // Specify the routes the middleware applies to
 };

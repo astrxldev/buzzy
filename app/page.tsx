@@ -31,18 +31,23 @@ export default function Home() {
             <div className="flex flex-col gap-2">
               <Item variant="outline" asChild>
                 <Link href="/artifact">
-                  <ItemMedia>
+                  <ItemMedia className="justify-center">
                     <Image
                       src={ArtifactLogo}
                       alt="เสือกไอดีชาวบ้าน"
-                      className="w-22"
+                      className="w-[calc(100svw-112px)] md:w-22"
                       width={500}
                       height={500}
                     />
                   </ItemMedia>
                   <ItemContent>
-                    <ItemTitle>เสือกไอดีชาวบ้าน</ItemTitle>
-                    <ItemDescription className="line-clamp-none">
+                    <ItemTitle>
+                      <span className="hidden md:block">เสือกไอดีชาวบ้าน</span>
+                      <span className="block md:hidden">
+                        ตรวจแฟลกเกนชินรายแพทช์
+                      </span>
+                    </ItemTitle>
+                    <ItemDescription className="line-clamp-none hidden md:block">
                       ใครอยากให้ดูอาร์ติแฟกต์ให้ในไลฟ์ ไปกรอกแบบฟอร์มได้เลย
                     </ItemDescription>
                   </ItemContent>
@@ -65,7 +70,7 @@ export default function Home() {
                   </ItemMedia>
                   <ItemContent>
                     <ItemTitle>จัดเทียร์ลิสต์</ItemTitle>
-                    <ItemDescription className="line-clamp-none">
+                    <ItemDescription className="line-clamp-none hidden md:block">
                       เทียร์ลิสต์เมต้าตัวละครของอบิสแพทช์นั้นๆเท่านั้น
                       ซึ่งจะเปลี่ยนไปในแต่ละแพทช์ตามความสามารถของตัวละครในการรับมือกับอบิสแพทช์นั้นๆ
                       ไม่ใช่เทียร์ลิสต์ภาพรวมของตัวละคร

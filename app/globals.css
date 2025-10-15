@@ -142,3 +142,29 @@ input[type="number"] {
   scrollbar-width: thin;
   scrollbar-color: var(--color-blue-500) var(--card);
 }
+
+@theme {
+  --animate-phonerotate: phonerotate 3s ease infinite;
+  @keyframes phonerotate {
+    0% {
+      transform: rotate(0deg);
+      opacity: 0%;
+    }
+    10% {
+      opacity: 100%;
+    }
+    40% {
+      transform: rotate(0deg);
+    }
+    60% {
+      transform: rotate(90deg);
+    }
+    90% {
+      opacity: 100%;
+    }
+    100% {
+      transform: rotate(90deg);
+      opacity: 0%;
+    }
+  }
+}

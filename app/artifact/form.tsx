@@ -10,7 +10,11 @@ export function ArtifactFormWrapper(props: React.ComponentProps<"form">) {
     submitArtifact(data)
       .then((q) => {
         if (typeof q === "string") return toast.error(q);
-        cookieStore.set("sid", q.id);
+        try {
+          // biome-ignore lint/suspicious/noTsIgnore: typescript issue
+          // @ts-ignore
+          cookieStore.set("sid", q.id);
+        } catch {}
         router.refresh();
       })
       .catch((e) => toast.error(`${e.message || e}`));

@@ -158,6 +158,11 @@ export const tierlistVersions = tierlist.table("versions", {
     onDelete: "cascade",
     onUpdate: "cascade",
   }),
+  disclaimer: text().references(() => cdn.id, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  deprecates: text().notNull(),
   from: text()
     .notNull()
     .references(() => versions.id),

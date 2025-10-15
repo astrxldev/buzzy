@@ -6,13 +6,15 @@ import { cn } from "@/lib/utils";
 export function Blocker({
   children,
   fail = false,
+  inner = false,
   className,
   ...props
-}: React.ComponentProps<"div"> & { children: ReactNode; fail?: boolean }) {
+}: React.ComponentProps<"div"> & { inner?: boolean; fail?: boolean }) {
   return (
     <div
       className={cn(
         "blocker backdrop-blur-sm bg-[#2225] flex justify-center items-center absolute top-[-5px] left-[-5px] bottom-[-5px] right-[-5px] rounded-sm z-45 border-t-gray-700 border-l-gray-600 border-1",
+        inner && "rounded-none top-0 left-0 bottom-0 right-0",
         className,
       )}
       {...props}

@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // reactCompiler: true,
+  allowedDevOrigins: ["astral:3000", "dev3000.dgnr.us"],
   // basePath: "/beta"
 };
 

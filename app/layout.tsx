@@ -17,14 +17,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://buzz.gunshiz.top"),
+  metadataBase: new URL(process.env.BASE_URL || "https://buzz.gunshiz.top"),
   title: "เกนชินไม่ใช่เกมมือถือ",
   description: "ระบบอีเวนท์ของเกนชินไม่ใช่เกมมือถือ",
-  icons: "https://buzzy.gunshiz.top/favicon.webp", // TODO: CHANGE BACK TO buzz
+  icons: `/favicon.webp`, // TODO: CHANGE BACK TO buzz
   openGraph: {
     title: "เกนชินไม่ใช่เกมมือถือ",
     description: "ระบบอีเวนท์ของเกนชินไม่ใช่เกมมือถือ",
-    url: "https://buzz.gunshiz.top",
+    url: `/`,
     siteName: "เกนชินไม่ใช่เกมมือถือ",
     locale: "th_TH",
     type: "website",
@@ -47,7 +47,7 @@ export default function RootLayout({
           className="z-[-1] opacity-20 object-cover fixed top-0 left-0 w-full h-full"
         />
         <Providers>{children}</Providers>
-        <Toaster theme="dark" />
+        <Toaster theme="dark" richColors />
       </body>
     </html>
   );

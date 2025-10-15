@@ -32,7 +32,7 @@ COPY --from=deps /home/container/package*.json ./
 COPY --from=deps /home/container/bun.lock ./ 
 
 # App source
-COPY . .
+COPY --chown=1001 . .
 
 # Run patcher (background) + Next.js build (foreground), then kill patcher
 RUN bun run build
