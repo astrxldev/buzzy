@@ -46,9 +46,10 @@ USER container
 WORKDIR /home/container
 
 COPY --from=builder /home/container/node_modules ./node_modules
-COPY --from=builder /home/container/.next ./.next
-COPY --from=builder /home/container/package*.json ./ 
 COPY --from=builder /home/container/bun.lock ./ 
-COPY --from=builder /home/container/* ./
+COPY --from=builder /home/container/package*.json ./ 
+COPY --from=builder /home/container/public ./public
+COPY --from=builder /home/container/.env ./.env
+COPY --from=builder /home/container/.next ./.next
 
 CMD ["bun", "start"]

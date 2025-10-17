@@ -28,7 +28,9 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { useLocalStorage } from "usehooks-ts";
-import Favicon from "#/favicon.webp";
+import Qiqi from "#/assets/qiqi.png";
+import BadgeSP from "#/assets/sp.webp";
+import BadgeSSS from "#/assets/sss.webp";
 import { Blocker } from "@/components/blocker";
 import { Button } from "@/components/ui/button";
 import {
@@ -483,16 +485,17 @@ export function TierList({
                         }}
                         className="rounded aspect-square relative"
                       >
+                        <Image src={Qiqi} alt="Qiqi" fill />
                         <Image
-                          className="absolute bottom-0.5 left-0.5 border rounded"
-                          src={Favicon}
+                          className="bg-[#2225] backdrop-blur-sm bottom-0.5 left-0.5 absolute rounded border"
+                          src={BadgeSSS}
                           alt="Test Badge"
                           width={badgeSize}
                           height={badgeSize}
                         />
                         <Image
-                          className="absolute bottom-0.5 right-0.5 border rounded"
-                          src={Favicon}
+                          className="bg-[#2225] backdrop-blur-sm bottom-0.5 right-0.5 absolute border rounded"
+                          src={BadgeSP}
                           alt="Test Badge"
                           width={badgeSize}
                           height={badgeSize}

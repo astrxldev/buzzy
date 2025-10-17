@@ -1,6 +1,7 @@
 "use server";
 
 import { and, eq, inArray, not, or, sql } from "drizzle-orm";
+import { getTableConfig, type PgDatabase } from "drizzle-orm/pg-core";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { apiAuthCheck } from "./auth";
@@ -8,10 +9,15 @@ import { uidRegex } from "./const";
 import { db } from "./db";
 import {
   artifactSettings,
+  cdn,
   characters,
   settings,
   submissions,
+  tierlistBadges,
+  tierlistColumns,
   tierlistStates,
+  tierlistTiers,
+  tierlistTypes,
   tierlistVersions,
 } from "./db/schema";
 import { sse } from "./utils";
@@ -181,10 +187,13 @@ export async function tlPlacements(
 ) {
   if (!(await apiAuthCheck())) throw "Unauthorized";
 
+  // biome-ignore lint/correctness/noUnusedVariables: immutable property removal
+  const { untiered, ...placementObj } = placements;
+
   await db
     .update(tierlistVersions)
     .set({
-      placements,
+      placements: placementObj,
     })
     .where(eq(tierlistVersions.id, list));
 
@@ -192,58 +201,84 @@ export async function tlPlacements(
   sse.publish(placements, { topic: `tl-${list}`, event: "update_placements" });
 }
 
-/*export async function reorder(
-  table: PgTable & { id: PgColumn; order: PgColumn },
-  target: string | { id: string; order: number },
-  data: Partial<{ id: string; order: number }>,
-) {
-  return await db.transaction(async (tx) => {
-    const [item] =
-      typeof target === "string"
-        ? ((await tx.select().from(table).where(eq(table.id, target))) as {
-            id: string;
-            order: number;
-          }[])
-        : [target];
-
-    if (!item) throw new Error("Item not found");
-
-    const newOrder = data.order;
-    if (newOrder != null && newOrder !== item.order) {
-      // Moving up
-      if (newOrder < item.order) {
-        await tx
-          .update(table)
-          .set({ order: sql`${table.order} + 1` })
-          .where(
-            and(
-              eq(table.list, item.list),
-              gte(table.order, newOrder),
-              lt(table.order, item.order),
-            ),
-          );
+export async function cdnDelete(ids: string[], force = false) {
+  if (force) await db.delete(cdn).where(inArray(cdn.id, ids));
+  else
+    for (const id of ids) {
+      const refs = await cdnReferences(id);
+      if (refs.length) {
+        revalidatePath("/cdn/admin");
+        return { id, refs };
       }
-      // Moving down
-      else {
-        await tx
-          .update(tierlistStates)
-          .set({ order: sql`${tierlistStates.order} - 1` })
-          .where(
-            and(
-              eq(tierlistStates.list, item.list),
-              lte(tierlistStates.order, newOrder),
-              gt(tierlistStates.order, item.order),
-            ),
-          );
-      }
+      await db.delete(cdn).where(eq(cdn.id, id));
     }
+  revalidatePath("/cdn/admin");
+}
 
-    // Finally, move the item itself
-    await tx
-      .update(tierlistStates)
-      .set(data)
-      .where(eq(tierlistStates.id, item.id));
+export async function cdnReferences(
+  id: string,
+  // biome-ignore lint/suspicious/noExplicitAny: type parameters
+  tx: PgDatabase<any, any, any> = db,
+) {
+  const tables = [
+    [characters, "image"],
+    [tierlistTypes, "image"],
+    [tierlistTiers, "image"],
+    [tierlistColumns, "image"],
+    [tierlistBadges, "image"],
+    [tierlistVersions, "image", "disclaimer"],
+  ] as const;
+  const promises: Promise<{
+    table: string;
+    cols: string[];
+  }>[] = [];
+  for (const [table, ...cols] of tables)
+    promises.push(
+      tx
+        .select({ id: table.id })
+        .from(table)
+        .where(
+          and(
+            ...cols.map((c) =>
+              eq(table[c as keyof typeof table._.columns], id),
+            ),
+          ),
+        )
+        .then((r) => {
+          const config = getTableConfig(table);
+          return {
+            table: config.schema
+              ? `${config.schema}.${config.name}`
+              : config.name,
+            cols: r.map((c) => c.id),
+          };
+        }),
+    );
+  return Promise.all(promises).then((l) =>
+    l
+      .filter((t) => t.cols.length)
+      .flatMap((t) => t.cols.map((c) => `${t.table}#${c}`)),
+  );
+}
 
-    return { ...item, ...data };
-  });
-}*/
+export async function cdnify(
+  data: Blob | File,
+  // biome-ignore lint/suspicious/noExplicitAny: type parameters
+  config: { tx?: PgDatabase<any, any, any>; name?: string } = {},
+) {
+  const { tx = db, name } = config;
+  const [{ id }] = await tx
+    .insert(cdn)
+    .values({
+      name: name || data instanceof File ? (data as File).name : null,
+      data: Buffer.from(await data.arrayBuffer()),
+      size: `${data.size}`,
+      type: data.type,
+    })
+    .returning({ id: cdn.id });
+
+  try {
+    revalidatePath("/admin/cdn");
+  } catch {}
+  return id;
+}

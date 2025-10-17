@@ -48,7 +48,7 @@ import {
 import { NavUser } from "@/components/user";
 import { db } from "@/lib/db";
 import { versions } from "@/lib/db/schema";
-import { VersionCreateDialogForm } from "./client";
+import { SidebarLink, VersionCreateDialogForm } from "./client";
 
 export default async function AdminLayout({
   children,
@@ -133,28 +133,22 @@ export default async function AdminLayout({
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <Link href="/admin/tl/ver">
-                    <SidebarMenuButton>
-                      <GitGraph />
-                      Versions
-                    </SidebarMenuButton>
-                  </Link>
+                  <SidebarLink href="/admin/tl/ver">
+                    <GitGraph />
+                    Versions
+                  </SidebarLink>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <Link href="/admin/tl/badges">
-                    <SidebarMenuButton>
-                      <Badge />
-                      Badges
-                    </SidebarMenuButton>
-                  </Link>
+                  <SidebarLink href="/admin/tl/badges">
+                    <Badge />
+                    Badges
+                  </SidebarLink>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <Link href="/admin/tl/layout">
-                    <SidebarMenuButton>
-                      <Columns3Cog />
-                      Layout
-                    </SidebarMenuButton>
-                  </Link>
+                  <SidebarLink href="/admin/tl/layout">
+                    <Columns3Cog />
+                    Layout
+                  </SidebarLink>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
@@ -192,9 +186,9 @@ export default async function AdminLayout({
               <SidebarMenu>
                 {vers.map((v) => (
                   <SidebarMenuItem key={v.id}>
-                    <Link href={`/admin/ver/${v.id}`}>
-                      <SidebarMenuButton>{v.name}</SidebarMenuButton>
-                    </Link>
+                    <SidebarLink href={`/admin/ver/${v.id}`}>
+                      {v.name}
+                    </SidebarLink>
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
@@ -207,36 +201,28 @@ export default async function AdminLayout({
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <Link href="/admin/char">
-                    <SidebarMenuButton>
-                      <SquareUserRound />
-                      Characters
-                    </SidebarMenuButton>
-                  </Link>
+                  <SidebarLink href="/admin/char">
+                    <SquareUserRound />
+                    Characters
+                  </SidebarLink>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <Link href="/admin/cdn">
-                    <SidebarMenuButton>
-                      <Package />
-                      CDN
-                    </SidebarMenuButton>
-                  </Link>
+                  <SidebarLink href="/admin/cdn">
+                    <Package />
+                    CDN
+                  </SidebarLink>
                 </SidebarMenuItem>
                 <SidebarMenuItem className="mt-auto">
-                  <Link href="/admin/log">
-                    <SidebarMenuButton>
-                      <ScrollText />
-                      Audit Log
-                    </SidebarMenuButton>
-                  </Link>
+                  <SidebarLink href="/admin/log">
+                    <ScrollText />
+                    Audit Log
+                  </SidebarLink>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <Link href="/admin/settings">
-                    <SidebarMenuButton>
-                      <Settings />
-                      Settings
-                    </SidebarMenuButton>
-                  </Link>
+                  <SidebarLink href="/admin/settings">
+                    <Settings />
+                    Settings
+                  </SidebarLink>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>

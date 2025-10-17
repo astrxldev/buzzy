@@ -47,7 +47,7 @@ export default function RootLayout({
           className="z-[-1] opacity-20 object-cover fixed top-0 left-0 w-full h-full"
         />
         <Providers>{children}</Providers>
-        <Toaster theme="dark" richColors />
+        <Toaster theme="dark" richColors closeButton />
       </body>
     </html>
   );

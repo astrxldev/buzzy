@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
 export function VersionCreateDialogForm() {
   return <form>Todo</form>;
@@ -9,11 +13,11 @@ export function VersionCreateDialogForm() {
 export function RandomWelcomeMessage({ list }: { list?: string[] }) {
   const messages = list || [
     "What are we cooking today?",
-    "What are we doing today?",
+    "I'm NOT an EMERGENCY FOOD!!",
     "Why are you here?",
-    "The food is ready sir.",
+    "The emergency food is ready sir.",
     "Who left the artifact stats like that?",
-    "Don’t forget to hydrate, boss.",
+    "Don't forget to hydrate, boss.",
     "Another day, another reroll.",
     "Still reviewing artifacts? Respect.",
     "Let's make these builds shine.",
@@ -26,7 +30,7 @@ export function RandomWelcomeMessage({ list }: { list?: string[] }) {
     "Your approval power is unmatched.",
     "Remember: critique kindly, roast fairly.",
     "Time to bless—or curse—some artifacts.",
-    "Don’t worry, no 5★ drama yet.",
+    "Don't worry, no 5★ drama yet.",
     "Admin mode: activated.",
   ];
 
@@ -39,4 +43,29 @@ export function RandomWelcomeMessage({ list }: { list?: string[] }) {
   );
 
   return message;
+}
+
+export function SidebarLink({
+  className,
+  children,
+  href,
+  ...props
+}: React.ComponentProps<typeof Link>) {
+  const target = useMemo(
+    () =>
+      href
+        ? new URL(href.toString(), "https://example.com").pathname
+        : undefined,
+    [href],
+  );
+  const pathname = usePathname();
+  return (
+    <Link href={href} {...props}>
+      <SidebarMenuButton
+        className={cn(target === pathname ? "bg-accent" : "", className)}
+      >
+        {children}
+      </SidebarMenuButton>
+    </Link>
+  );
 }

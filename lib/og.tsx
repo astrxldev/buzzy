@@ -16,6 +16,11 @@ export default async function generate({
   const kanit = await readFile(
     join(process.cwd(), "public/Kanit-SemiBold.ttf"),
   );
+  const bannerData = await readFile(
+    join(process.cwd(), "public/web_banner.png"),
+    "base64",
+  );
+  const bannerSrc = `data:image/png;base64,${bannerData}`;
   return new ImageResponse(
     <div
       style={{
@@ -26,12 +31,7 @@ export default async function generate({
         color: "#fff",
       }}
     >
-      <img
-        src={`http://localhost:3000/web_banner.png`}
-        alt="Banner"
-        width={1222}
-        height={560}
-      />
+      <img src={bannerSrc} alt="Banner" width={1222} height={560} />
       <div
         style={{
           fontSize: 64,

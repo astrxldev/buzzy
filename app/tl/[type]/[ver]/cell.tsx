@@ -34,7 +34,7 @@ export function TierListCell({
     <SortableContext id={cellId} items={items} strategy={rectSortingStrategy}>
       <div
         ref={setNodeRef}
-        className="flex flex-wrap p-1 gap-2 items-start"
+        className="flex flex-wrap p-1 gap-2 items-start content-start"
         style={{
           minHeight: `${tileSize + 8}px`,
         }}
@@ -58,6 +58,7 @@ export function SortableDraggable({
     style: React.CSSProperties | undefined;
   }) => ReactNode;
 }) {
+  const { editable } = useContext(TierListContext);
   const {
     attributes,
     listeners,
@@ -65,7 +66,7 @@ export function SortableDraggable({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id });
+  } = useSortable({ id, disabled: !editable });
 
   const style = {
     transform: CSS.Transform.toString(transform),

@@ -61,7 +61,10 @@ export const characters = pgTable("characters", {
 export const versions = pgTable("versions", {
   id: text().primaryKey(), // LI
   name: text().notNull(), // LunaI
-  from: text().references((): AnyPgColumn => versions.id),
+  from: text().references((): AnyPgColumn => versions.id, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
   // deprecate: date().notNull() // 21/03/2077
 });
 
@@ -115,7 +118,10 @@ export const tierlistTiers = tierlist.table("tiers", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
   badges: text()
-    .references(() => tierlistBadges.id)
+    .references(() => tierlistBadges.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    })
     .array(),
   image: text().references(() => cdn.id, {
     onDelete: "cascade",
@@ -165,7 +171,10 @@ export const tierlistVersions = tierlist.table("versions", {
   deprecates: text().notNull(),
   from: text()
     .notNull()
-    .references(() => versions.id),
+    .references(() => versions.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
   order: integer().notNull(),
   placements: jsonb().notNull().$type<{ [x: string]: string[] }>().default({}),
 });

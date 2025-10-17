@@ -58,3 +58,5 @@ export default async function TierlistSelectionPage() {
     </div>
   );
 }
+
+export const dynamic = "force-dynamic";
