@@ -12,3 +12,5 @@ export const contentType = "image/png";
 export default async function Image() {
   return generate({ title: "เสือกไอดีชาวบ้าน", sub: "" });
 }
+
+export const dynamic = "force-dynamic";

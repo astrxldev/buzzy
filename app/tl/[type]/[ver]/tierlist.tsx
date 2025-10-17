@@ -387,6 +387,9 @@ export function TierList({
                     <DialogTrigger asChild>
                       <DropdownMenuItem>การตั้งค่า</DropdownMenuItem>
                     </DialogTrigger>
+                    <DropdownMenuItem onClick={() => showDisclaimer(true)}>
+                      แสดงเงื่อนไข
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <DialogContent>

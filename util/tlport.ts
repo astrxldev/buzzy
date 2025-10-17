@@ -84,14 +84,7 @@ async function main() {
                   p === "untiered"
                     ? []
                     : cl
-                        .map(
-                          (c) =>
-                            chars.find(
-                              (ch) =>
-                                ch.name ===
-                                (c.startsWith("Traveler Pyro") ? "Traveler" : c),
-                            )?.id,
-                        )
+                        .map((c) => chars.find((ch) => ch.name === c)?.id)
                         .filter((v): v is string => typeof v === "string"),
                 ]),
               ),
@@ -107,13 +100,11 @@ async function main() {
             string,
             Partial<{ comment: string; badges: string[] }>
           > = {};
-          for (const [ch, comment] of Object.entries(data.comments)) {
-            const char = ch.startsWith("Traveler Pyro") ? "Traveler" : ch;
+          for (const [char, comment] of Object.entries(data.comments)) {
             states[char] ??= {};
             states[char].comment = comment;
           }
-          for (const [ch, badges] of Object.entries(data.badges)) {
-            const char = ch.startsWith("Traveler Pyro") ? "Traveler" : ch;
+          for (const [char, badges] of Object.entries(data.badges)) {
             states[char] ??= {};
             states[char].badges = badges
               .map((b) => badgeList[b])

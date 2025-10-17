@@ -12,3 +12,5 @@ export const contentType = "image/png";
 export default async function Image() {
   return generate({ title: "เว็บไซต์อีเว็นต์", sub: "" });
 }
+
+export const dynamic = "force-dynamic";
