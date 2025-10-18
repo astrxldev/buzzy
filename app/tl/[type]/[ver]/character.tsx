@@ -194,7 +194,7 @@ export function Draggable({
               )}
               <Textarea
                 placeholder="Comment..."
-                className="aspect-square bg-card resize-none"
+                className="aspect-square bg-card resize-none disabled:opacity-90"
                 value={comment}
                 onChange={(ev) => {
                   setDirty(500);
