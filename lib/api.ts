@@ -238,7 +238,7 @@ export async function cdnReferences(
         .select({ id: table.id })
         .from(table)
         .where(
-          and(
+          or(
             ...cols.map((c) =>
               eq(table[c as keyof typeof table._.columns], id),
             ),

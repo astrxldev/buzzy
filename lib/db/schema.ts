@@ -52,7 +52,7 @@ export const characters = pgTable("characters", {
   vision: element().notNull(),
   image: text()
     .notNull()
-    .references(() => cdn.id, { onDelete: "cascade", onUpdate: "cascade" }),
+    .references(() => cdn.id, { onUpdate: "cascade" }),
   weapon: text().notNull(),
   amber: text().notNull(), // Amber character ID
   order: integer().notNull(),
@@ -62,7 +62,7 @@ export const versions = pgTable("versions", {
   id: text().primaryKey(), // LI
   name: text().notNull(), // LunaI
   from: text().references((): AnyPgColumn => versions.id, {
-    onDelete: "cascade",
+    onDelete: "set null",
     onUpdate: "cascade",
   }),
   // deprecate: date().notNull() // 21/03/2077
@@ -108,7 +108,7 @@ export const tierlistTypes = tierlist.table("types", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
   image: text().references(() => cdn.id, {
-    onDelete: "cascade",
+    onDelete: "set null",
     onUpdate: "cascade",
   }),
   order: integer().notNull(),
@@ -119,12 +119,12 @@ export const tierlistTiers = tierlist.table("tiers", {
   name: text().notNull(),
   badges: text()
     .references(() => tierlistBadges.id, {
-      onDelete: "cascade",
+      onDelete: "set null",
       onUpdate: "cascade",
     })
     .array(),
   image: text().references(() => cdn.id, {
-    onDelete: "cascade",
+    onDelete: "set null",
     onUpdate: "cascade",
   }),
   order: integer().notNull(),
@@ -134,7 +134,7 @@ export const tierlistColumns = tierlist.table("columns", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
   image: text().references(() => cdn.id, {
-    onDelete: "cascade",
+    onDelete: "set null",
     onUpdate: "cascade",
   }),
   order: integer().notNull(),
@@ -144,7 +144,7 @@ export const tierlistBadges = tierlist.table("badges", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
   image: text().references(() => cdn.id, {
-    onDelete: "cascade",
+    onDelete: "set null",
     onUpdate: "cascade",
   }),
   order: integer().notNull(),
@@ -161,11 +161,11 @@ export const tierlistVersions = tierlist.table("versions", {
       onUpdate: "cascade",
     }),
   image: text().references(() => cdn.id, {
-    onDelete: "cascade",
+    onDelete: "set null",
     onUpdate: "cascade",
   }),
   disclaimer: text().references(() => cdn.id, {
-    onDelete: "cascade",
+    onDelete: "set null",
     onUpdate: "cascade",
   }),
   deprecates: text().notNull(),

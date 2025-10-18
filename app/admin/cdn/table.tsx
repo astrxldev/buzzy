@@ -55,8 +55,12 @@ const columns: ColumnDef<{
     enableHiding: false,
   },
   {
-    accessorFn: (row) => row.name || `[${row.id}]`,
+    accessorKey: "name",
     header: "Name",
+  },
+  {
+    accessorKey: "id",
+    header: "ID",
   },
   {
     accessorFn: (row) => b2s(Number(row.size)),
