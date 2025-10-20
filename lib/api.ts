@@ -270,7 +270,7 @@ export async function cdnify(
   const [{ id }] = await tx
     .insert(cdn)
     .values({
-      name: name || data instanceof File ? (data as File).name : null,
+      name: name || (data instanceof File ? (data as File).name : null),
       data: Buffer.from(await data.arrayBuffer()),
       size: `${data.size}`,
       type: data.type,
