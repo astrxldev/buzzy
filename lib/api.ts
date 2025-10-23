@@ -1,26 +1,24 @@
 "use server";
 
 import { and, eq, inArray, not, or, sql } from "drizzle-orm";
-import { getTableConfig, type PgDatabase } from "drizzle-orm/pg-core";
+import type { PgDatabase } from "drizzle-orm/pg-core";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { apiAuthCheck } from "./auth";
 import { uidRegex } from "./const";
 import { db } from "./db";
+import { cdnReferences } from "./db/references";
 import {
   artifactSettings,
+  auditLog,
   cdn,
   characters,
   settings,
   submissions,
-  tierlistBadges,
-  tierlistColumns,
   tierlistStates,
-  tierlistTiers,
-  tierlistTypes,
   tierlistVersions,
 } from "./db/schema";
-import { sse } from "./utils";
+import { b2s, sse } from "./utils";
 
 export async function getCharacters(chars: string[]) {
   return await db
@@ -86,23 +84,26 @@ export async function toggleCheck(submissionId: string) {
     .where(eq(submissions.id, submissionId));
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
+
+  actionLog(`Toggled an artifact submission check mark`);
 }
 
 export async function toggleLock() {
   if (!(await apiAuthCheck())) throw "Unauthorized";
-  if (
-    (
-      await db
-        .update(artifactSettings)
-        .set({
-          locked: not(artifactSettings.locked),
-        })
-        .returning({ id: artifactSettings.id })
-    ).length === 0
-  )
+  const existing = await db
+    .update(artifactSettings)
+    .set({
+      locked: not(artifactSettings.locked),
+    })
+    .returning({ locked: artifactSettings.locked });
+  if (existing.length === 0)
     await db.insert(artifactSettings).values({ locked: true });
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
+
+  actionLog(
+    `${(existing.length ? existing[0].locked : true) ? "Locked" : "Unlocked"} artifact submission`,
+  );
 }
 
 export async function setLimit(limit: number) {
@@ -121,6 +122,8 @@ export async function setLimit(limit: number) {
     await db.insert(artifactSettings).values({ limit });
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
+
+  actionLog(`Set artifact submit limit to ${limit < 0 ? "unlimited" : limit}`);
 }
 
 export async function wipe() {
@@ -131,6 +134,8 @@ export async function wipe() {
   );
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
+
+  actionLog(`Deleted artifact submissions`);
   redirect("/artifact/admin");
 }
 
@@ -178,6 +183,8 @@ export async function tlState(
     .where(eq(tierlistStates.list, list));
 
   revalidatePath(`/api/tl/${list}/states`);
+
+  actionLog(`Updated a state in tierlist ${list}`, data);
   sse.publish(states, { topic: `tl-${list}`, event: "update_states" });
 }
 
@@ -198,67 +205,46 @@ export async function tlPlacements(
     .where(eq(tierlistVersions.id, list));
 
   revalidatePath(`/api/tl/${list}`);
+
+  actionLog(`Updated a placement in tierlist ${list}`);
   sse.publish(placements, { topic: `tl-${list}`, event: "update_placements" });
 }
 
 export async function cdnDelete(ids: string[], force = false) {
+  let deleted = 0;
+
   if (force) await db.delete(cdn).where(inArray(cdn.id, ids));
   else
     for (const id of ids) {
-      const refs = await cdnReferences(id);
+      const refs = await checkCdnRefs(id);
       if (refs.length) {
         revalidatePath("/cdn/admin");
+        actionLog(
+          `Deleted ${deleted}/${ids.length}(Incomplete) files`,
+          ids.slice(0, deleted),
+        );
         return { id, refs };
       }
       await db.delete(cdn).where(eq(cdn.id, id));
+      deleted++;
     }
   revalidatePath("/cdn/admin");
+
+  actionLog(`Deleted ${deleted} files`, ids);
 }
 
-export async function cdnReferences(
-  id: string,
+export async function checkCdnRefs(
+  id: string | string[],
   // biome-ignore lint/suspicious/noExplicitAny: type parameters
   tx: PgDatabase<any, any, any> = db,
-) {
-  const tables = [
-    [characters, "image"],
-    [tierlistTypes, "image"],
-    [tierlistTiers, "image"],
-    [tierlistColumns, "image"],
-    [tierlistBadges, "image"],
-    [tierlistVersions, "image", "disclaimer"],
-  ] as const;
-  const promises: Promise<{
-    table: string;
-    cols: string[];
-  }>[] = [];
-  for (const [table, ...cols] of tables)
-    promises.push(
-      tx
-        .select({ id: table.id })
-        .from(table)
-        .where(
-          or(
-            ...cols.map((c) =>
-              eq(table[c as keyof typeof table._.columns], id),
-            ),
-          ),
-        )
-        .then((r) => {
-          const config = getTableConfig(table);
-          return {
-            table: config.schema
-              ? `${config.schema}.${config.name}`
-              : config.name,
-            cols: r.map((c) => c.id),
-          };
-        }),
-    );
-  return Promise.all(promises).then((l) =>
-    l
-      .filter((t) => t.cols.length)
-      .flatMap((t) => t.cols.map((c) => `${t.table}#${c}`)),
-  );
+): Promise<string[]> {
+  return typeof id === "string"
+    ? tx
+        .select()
+        .from(cdnReferences)
+        .where(eq(cdnReferences.cdn, id))
+        .then((r) => r.map((ref) => `${id}=>${ref.table}#${ref.id}`))
+    : Promise.all(id.map((v) => checkCdnRefs(v, tx))).then((a) => a.flat());
 }
 
 export async function cdnify(
@@ -266,19 +252,44 @@ export async function cdnify(
   // biome-ignore lint/suspicious/noExplicitAny: type parameters
   config: { tx?: PgDatabase<any, any, any>; name?: string } = {},
 ) {
-  const { tx = db, name } = config;
+  const { tx = db, name = data instanceof File ? (data as File).name : null } =
+    config;
   const [{ id }] = await tx
     .insert(cdn)
     .values({
-      name: name || (data instanceof File ? (data as File).name : null),
+      name: name,
       data: Buffer.from(await data.arrayBuffer()),
       size: `${data.size}`,
       type: data.type,
     })
     .returning({ id: cdn.id });
 
+  actionLog(`File uploaded: ${name || `[${id}]`} (${b2s(data.size)})`);
+
   try {
     revalidatePath("/admin/cdn");
   } catch {}
   return id;
+}
+
+async function actionLog(text: string, details?: unknown) {
+  // If not running in Next.js, skip.
+  if (typeof process.versions.bun !== "undefined") return;
+  const session = await apiAuthCheck();
+
+  const res = await db
+    .insert(auditLog)
+    .values({
+      author: session?.name,
+      text,
+      details,
+    })
+    .returning()
+    .catch(() =>
+      console.error(
+        `Error logging audit log, printing it here:\n${session?.name || "[Unknown User]"} - ${text}`,
+      ),
+    );
+
+  if (res) sse.publish(res, { topic: "log" });
 }

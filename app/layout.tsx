@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Anuphan, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { Toaster } from "sonner";
 import Background from "#/bg.jpg";
@@ -46,7 +47,9 @@ export default function RootLayout({
           alt="Background"
           className="z-[-1] opacity-20 object-cover fixed top-0 left-0 w-full h-full"
         />
-        <Providers>{children}</Providers>
+        <Providers>
+          <AnimatePresence mode="wait">{children}</AnimatePresence>
+        </Providers>
         <Toaster theme="dark" richColors closeButton />
       </body>
     </html>

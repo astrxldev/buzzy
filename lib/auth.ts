@@ -13,7 +13,7 @@ export const auth = betterAuth({
     "http://nyx:3000",
     "http://astral:3000",
     "http://localhost:3000",
-    "https://dev3000.dgnr.us"
+    "https://dev3000.dgnr.us",
   ],
   database: drizzleAdapter(db, {
     provider: "pg", // or "mysql", "sqlite"

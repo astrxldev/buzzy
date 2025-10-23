@@ -9,7 +9,6 @@ const tables = Object.values(Schema)
     const references = config.foreignKeys.map((fk) => fk.reference());
     const cdnColumns = config.columns
       .filter((col) => {
-        // Check if column references cdn.id
         const fk = references.find((fk) => fk.columns.some((c) => c === col));
         return (
           fk?.foreignTable === Schema.cdn &&
@@ -30,12 +29,13 @@ const tables = Object.values(Schema)
 export const cdnReferences = pgView("cdn_references").as((qb) => {
   const queries = tables.reduce((prev, { table, column }) => {
     const cols = getTableColumns(table);
+    const config = getTableConfig(table);
     const query = qb
       .select({
         cdn: sql<string>`${cols[column as keyof typeof cols]}`.as("cdn"),
         id: cols["id" as keyof typeof cols],
         column: sql<string>`${column}`.as("column"),
-        table: sql<string>`${getTableConfig(table).name}`.as("table"),
+        table: sql<string>`${`${config.schema}.${config.name}`}`.as("table"),
       })
       .from(table)
       .where(isNotNull(cols[column as keyof typeof cols]));

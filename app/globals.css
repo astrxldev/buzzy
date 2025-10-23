@@ -173,3 +173,21 @@ img {
   user-select: none;
   -webkit-user-drag: none;
 }
+
+.vintage-filter {
+  filter: sepia(0.7) contrast(1.1) brightness(0.9) hue-rotate(-10deg)
+    saturate(1.3);
+  position: relative;
+  display: block;
+}
+
+.vintage-filter::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAPklEQVR42mN8//HLfwYiADMzKq2dD8OgwIyMDEMCwDIAqQFI6wCi8uQwBSA5dA5A0gMiYQAI2hkaQGBiAFeuBUDmBQsjBgAAAABJRU5ErkJggg==")
+    repeat;
+  opacity: 0.08;
+  pointer-events: none;
+  border-radius: inherit;
+}

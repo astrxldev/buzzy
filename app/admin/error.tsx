@@ -1,8 +1,9 @@
 "use client"; // Error boundaries must be Client Components
 
 import { RefreshCw } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function ErrorPage({
   error,
@@ -11,6 +12,7 @@ export default function ErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     // Log the error to an error reporting service
     console.error(error);
@@ -22,10 +24,14 @@ export default function ErrorPage({
       <Button
         onClick={
           // Attempt to recover by trying to re-render the segment
-          () => reset()
+          () => {
+            setLoading(true);
+            setTimeout(() => reset(), 500);
+          }
         }
+        disabled={loading}
       >
-        <RefreshCw />
+        {loading ? <Spinner /> : <RefreshCw />}
         Try again
       </Button>
     </div>

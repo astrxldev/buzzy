@@ -1,0 +1,8 @@
+import { db } from "@/lib/db";
+import { characters } from "@/lib/db/schema";
+import { CharManager } from "./client";
+
+export default async function CharManagerPage() {
+  const chars = await db.select().from(characters);
+  return <CharManager chars={chars} />;
+}

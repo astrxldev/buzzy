@@ -1,7 +1,6 @@
 import {
   type AnyPgColumn,
   boolean,
-  date,
   integer,
   jsonb,
   pgEnum,
@@ -35,8 +34,10 @@ export const cdn = pgTable("cdn", {
 
 export const auditLog = pgTable("auditLog", {
   id: text().primaryKey().$defaultFn(uuidv7),
-  text: text().notNull(), // Buzz deleted Raiden Shogun from Base 1.0
-  time: date().notNull().defaultNow(),
+  author: text(), // Buzz
+  text: text().notNull(), // deleted Raiden Shogun from Base 1.0
+  details: jsonb(),
+  time: timestamp().notNull().defaultNow(),
 });
 
 export const characters = pgTable("characters", {

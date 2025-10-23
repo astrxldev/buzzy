@@ -28,7 +28,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { useLocalStorage } from "usehooks-ts";
-import Qiqi from "#/assets/qiqi.png";
+import Qiqi from "#/assets/qiqi.webp";
 import BadgeSP from "#/assets/sp.webp";
 import BadgeSSS from "#/assets/sss.webp";
 import { Blocker } from "@/components/blocker";
@@ -350,6 +350,7 @@ export function TierList({
                 src={`/cdn/${version.disclaimer}`}
                 alt="Disclaimer"
                 fill
+                priority
                 className="object-contain bg-[#000A]"
               />
               <Button

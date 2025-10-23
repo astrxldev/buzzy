@@ -1,9 +1,9 @@
+import { readFile } from "node:fs/promises";
 import { inArray } from "drizzle-orm";
-import { cdnify, cdnReferences } from "@/lib/api";
+import { cdnify, checkCdnRefs } from "@/lib/api";
 import { AmberElementMap } from "@/lib/const";
 import { db } from "@/lib/db";
 import { cdn, characters, versions } from "@/lib/db/schema";
-import { readFile } from "node:fs/promises";
 
 const exclude = ["Traveler"];
 const extra: Avatar[] = [
@@ -223,7 +223,7 @@ async function main() {
     const files = await tx.select({ id: cdn.id }).from(cdn);
     const pendingDelete: string[] = [];
     for (const file of files) {
-      if ((await cdnReferences(file.id, tx)).length) continue;
+      if ((await checkCdnRefs(file.id, tx)).length) continue;
       console.log("-", file.id);
       pendingDelete.push(file.id);
     }

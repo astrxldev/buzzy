@@ -1,8 +1,8 @@
 import { and, eq } from "drizzle-orm";
+import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { tierlistTypes, tierlistVersions } from "@/lib/db/schema";
 import generate from "@/lib/og";
-import { notFound } from "next/navigation";
 
 // Image metadata
 export const size = {

@@ -16,7 +16,7 @@ export interface PlayerInfo {
   towerFloorIndex: number;
   towerLevelIndex: number;
   showAvatarInfoList: ShowAvatarInfo[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface ProfilePicture {
@@ -75,5 +75,5 @@ export interface Flat {
   }[];
   setNameTextMapHash: string;
   rankLevel: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
