@@ -278,11 +278,18 @@ export function TierList({
 
         newPlacements[sourceCell] = arrayMove(items, oldIndex, newIndex);
       } else {
-        // Move to different cell
+        // Move to different cell - INSERT AT HOVERED POSITION
+        const targetItems = [...placements[targetCell]];
+        const insertIndex = targetItems.indexOf(targetId);
+
         newPlacements = {
           ...newPlacements,
           [sourceCell]: placements[sourceCell].filter((id) => id !== charId),
-          [targetCell]: [...placements[targetCell], charId],
+          [targetCell]: [
+            ...targetItems.slice(0, insertIndex),
+            charId,
+            ...targetItems.slice(insertIndex),
+          ],
         };
       }
     } else {

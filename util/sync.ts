@@ -5,7 +5,7 @@ import { AmberElementMap } from "@/lib/const";
 import { db } from "@/lib/db";
 import { cdn, characters, versions } from "@/lib/db/schema";
 
-const exclude = ["Traveler"];
+const exclude = ["Traveler", "Manekin", "Manekina"];
 const extra: Avatar[] = [
   {
     id: "10000005-pyro",
