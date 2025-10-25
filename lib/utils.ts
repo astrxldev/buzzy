@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 type ServerEventSource = {
-  send: (data: object, event?: string) => void;
+  send: (data: unknown, event?: string) => void;
   write: (msg: string) => void;
   close: () => void;
   topic: string;
@@ -46,7 +46,7 @@ export class EventSourceManager {
           const encoder = new TextEncoder();
           // Register this client
           const res = {
-            send: (data: object, event?: string) =>
+            send: (data: unknown, event?: string) =>
               res.write(
                 `${event ? `event: ${event}\n` : ""}data: ${JSON.stringify(data)}\n\n`,
               ),
@@ -81,17 +81,24 @@ export class EventSourceManager {
       },
     );
   }
+
   publish(
-    data: object,
+    data: unknown,
     { event, topic = "_global" }: { event?: string; topic?: string },
   ) {
     console.log(` PUB #${topic}`);
-    for (const s of globalThis.sseList) {
-      if (s.topic !== topic) continue;
-      try {
-        s.send(data, event);
-      } catch {}
-    }
+    setImmediate(() => {
+      for (const s of globalThis.sseList) {
+        if (s.topic !== topic) continue;
+        try {
+          s.send(data, event);
+        } catch {}
+      }
+    });
+  }
+
+  count(topic = "_global") {
+    return sseList.reduce((c, s) => c + (s.topic === topic ? 1 : 0), 0);
   }
 }
 

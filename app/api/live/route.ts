@@ -10,6 +10,7 @@ export type YoutubeLiveInfo =
         width: number;
         height: number;
       };
+      title: string;
     }
   | "none";
 
@@ -76,5 +77,6 @@ export async function GET() {
     url: `https://www.youtube.com/watch?v=${live.id.videoId}`,
     thumbnails:
       live.snippet.thumbnails[Object.keys(live.snippet.thumbnails)[0]],
+    title: live.snippet.title,
   });
 }

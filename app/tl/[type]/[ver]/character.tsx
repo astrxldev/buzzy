@@ -107,7 +107,7 @@ export function Draggable({
                     <Image
                       key={p}
                       src={`/cdn/${badge.image}`}
-                      className={`bg-[#2225] backdrop-blur-sm ${p} absolute rounded border`}
+                      className={`bg-[#2228] ${p} absolute rounded border`}
                       alt="badge"
                       width={badgeSize}
                       height={badgeSize}
@@ -116,7 +116,7 @@ export function Draggable({
                     <div
                       key={p}
                       style={{ width: badgeSize, height: badgeSize }}
-                      className={`bg-[#2225] backdrop-blur-sm ${p} absolute rounded border font-bold`}
+                      className={`bg-[#2228] ${p} absolute rounded border font-bold`}
                     >
                       {badge.name}
                     </div>

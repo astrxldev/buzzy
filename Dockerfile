@@ -4,7 +4,9 @@
 FROM oven/bun:latest AS deps
 WORKDIR /home/container
 
-RUN apt-get update \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update \
     && apt-get install -y \
         python3 \
         make \
@@ -16,7 +18,7 @@ RUN apt-get update \
 COPY package*.json bun.lock ./
 
 # Install into cache, then persist into real node_modules
-RUN bun install --frozen-lockfile
+RUN --mount=type=cache,target=/root/.bun bun install --frozen-lockfile
 
 ### Stage 2: builder ###
 FROM oven/bun:latest AS builder

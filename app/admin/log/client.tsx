@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { stringify } from "yaml";
 import SearchBox, { type Filters, type ParsedQuery } from "@/components/search";
 import { Button } from "@/components/ui/button";
@@ -10,12 +10,31 @@ import type { auditLog } from "@/lib/db/schema";
 type AuditLog = typeof auditLog.$inferSelect;
 
 export default function AuditLogViewer({
-  logs = [],
+  logs: initialLogs = [],
   users = [],
 }: {
   logs?: AuditLog[];
   users?: { name: string; email: string }[];
 }) {
+  const [logs, updateLogs] = useState(initialLogs);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const es = new EventSource("/api/ev/log");
+    es.onmessage = (res) =>
+      updateLogs((x) => [...x.slice(0, 999), JSON.parse(res.data)]);
+    return () => es.close();
+  }, []);
+
+  useEffect(() => {
+    if (containerRef.current)
+      containerRef.current.scrollTo({
+        top: 999999,
+        left: 0,
+        behavior: "smooth",
+      });
+  });
+
   const filters: Filters = {
     user: () => users.map((u) => u.email),
     has: () => ["artifact", "tierlist", "file"],
@@ -76,9 +95,10 @@ export default function AuditLogViewer({
   ): boolean => {
     if (!previousLog) return false;
     if (currentLog.author !== previousLog.author) return false;
-    const timeDiff =
+    const timeDiff = Math.abs(
       new Date(currentLog.time).getTime() -
-      new Date(previousLog.time).getTime();
+        new Date(previousLog.time).getTime(),
+    );
     return timeDiff < 5 * 60 * 1000; // Group if within 5 minutes
   };
 
@@ -89,7 +109,7 @@ export default function AuditLogViewer({
         className="bg-input"
         onQueryChange={setQuery}
       />
-      <div className="w-full grow-0 overflow-auto">
+      <div className="w-full grow-0 overflow-auto" ref={containerRef}>
         {filteredLogs.map((log, idx) => {
           const isGrouped = shouldGroup(log, logs[idx - 1]);
           const isExpanded = expandedIds.has(log.id);
@@ -100,7 +120,7 @@ export default function AuditLogViewer({
               className="group hover:bg-[#2225] transition-colors"
             >
               <div
-                className={`flex gap-4 px-4 ${isGrouped ? "py-0.5" : "py-3"}`}
+                className={`flex gap-4 px-4 ${isGrouped ? "py-0.5" : "py-3.5"} pb-0.5`}
               >
                 <div className="w-min flex-shrink-0 text-right pt-0.5">
                   <span

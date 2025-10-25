@@ -4,6 +4,7 @@ import { and, eq, inArray, not, or, sql } from "drizzle-orm";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { apiAuthCheck } from "./auth";
 import { uidRegex } from "./const";
 import { db } from "./db";
@@ -272,24 +273,28 @@ export async function cdnify(
   return id;
 }
 
-async function actionLog(text: string, details?: unknown) {
-  // If not running in Next.js, skip.
-  if (typeof process.versions.bun !== "undefined") return;
-  const session = await apiAuthCheck();
+export async function actionLog(text: string, details?: unknown) {
+  after(async () => {
+    // If not running in Next.js, skip.
+    if (typeof process.versions.bun !== "undefined") return;
+    const session = await apiAuthCheck();
 
-  const res = await db
-    .insert(auditLog)
-    .values({
-      author: session?.name,
-      text,
-      details,
-    })
-    .returning()
-    .catch(() =>
-      console.error(
-        `Error logging audit log, printing it here:\n${session?.name || "[Unknown User]"} - ${text}`,
-      ),
-    );
+    const res = await db
+      .insert(auditLog)
+      .values({
+        author: session?.name,
+        text,
+        details,
+      })
+      .returning()
+      .catch(() =>
+        console.error(
+          `Error logging audit log, printing it here:\n${session?.name || "[Unknown User]"} - ${text}`,
+        ),
+      );
 
-  if (res) sse.publish(res, { topic: "log" });
+    revalidatePath("/admin/log");
+
+    if (res) sse.publish(res, { topic: "log" });
+  });
 }

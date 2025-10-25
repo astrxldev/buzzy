@@ -6,6 +6,10 @@ import { db } from "@/lib/db";
 import { tierlistTypes, tierlistVersions } from "@/lib/db/schema";
 import { PageTransition } from "../transition";
 
+export const metadata = {
+  title: "จัดเทียร์ลิสต์",
+};
+
 export default async function TierlistSelectionPage() {
   const types = await db.select().from(tierlistTypes).orderBy(tierlistTypes.id);
   const versionsList = await db

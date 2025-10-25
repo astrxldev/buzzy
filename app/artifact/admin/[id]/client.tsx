@@ -15,7 +15,7 @@ export function EnkaBrowser({ uid }: { uid: string }) {
   return (
     <div className="h-full w-full relative">
       {!ready && (
-        <Loader2 className="animate-spin absolute top-[calc(50%+5rem] left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 text-muted-foreground z-100" />
+        <Loader2 className="animate-spin absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 text-muted-foreground z-100" />
       )}
       <iframe
         src={`https://enka.network/u/${id}`}

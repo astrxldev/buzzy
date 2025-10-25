@@ -5,7 +5,7 @@ import { AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { Toaster } from "sonner";
 import Background from "#/bg.jpg";
-import Providers from "./provider";
+import Providers, { VersionCheck } from "./client";
 
 const anuphan = Anuphan({
   variable: "--font-anuphan",
@@ -23,8 +23,6 @@ export const metadata: Metadata = {
   description: "ระบบอีเวนท์ของเกนชินไม่ใช่เกมมือถือ",
   icons: `/favicon.webp`, // TODO: CHANGE BACK TO buzz
   openGraph: {
-    title: "เกนชินไม่ใช่เกมมือถือ",
-    description: "ระบบอีเวนท์ของเกนชินไม่ใช่เกมมือถือ",
     url: `/`,
     siteName: "เกนชินไม่ใช่เกมมือถือ",
     locale: "th_TH",
@@ -51,6 +49,7 @@ export default function RootLayout({
           <AnimatePresence mode="wait">{children}</AnimatePresence>
         </Providers>
         <Toaster theme="dark" richColors closeButton />
+        <VersionCheck />
       </body>
     </html>
   );

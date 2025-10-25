@@ -12,6 +12,35 @@ import {
 } from "@/lib/db/schema";
 import { TierList } from "./tierlist";
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ type: string; ver: string }>;
+}) {
+  const { type: typeId, ver: verId } = await params;
+
+  try {
+    const [[{ name: type }], [{ name: ver }]] = await Promise.all([
+      db
+        .select({ name: tierlistTypes.name })
+        .from(tierlistTypes)
+        .where(eq(tierlistTypes.id, typeId)),
+      db
+        .select({ name: tierlistVersions.name })
+        .from(tierlistVersions)
+        .where(eq(tierlistVersions.id, verId)),
+    ]);
+
+    return {
+      title: `จัดเทียร์ลิสต์ ${type} ${ver}`,
+    };
+  } catch {
+    return {
+      title: "จัดเทียร์ลิสต์",
+    };
+  }
+}
+
 export default async function TierlistPage({
   params,
 }: {

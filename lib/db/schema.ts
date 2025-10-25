@@ -70,7 +70,7 @@ export const versions = pgTable("versions", {
 });
 
 export const settings = pgTable("settings", {
-  id: text().primaryKey().$defaultFn(uuidv7),
+  id: boolean().primaryKey().default(true),
   enka: boolean().notNull().default(false), // Turn this off when Enka is on maintenance
 });
 
@@ -95,7 +95,7 @@ export const submissions = artifact.table("submissions", {
 });
 
 export const artifactSettings = artifact.table("settings", {
-  id: text().primaryKey().$defaultFn(uuidv7),
+  id: boolean().primaryKey().default(true),
   locked: boolean().notNull().default(false),
   limit: integer().notNull().default(-1),
 });

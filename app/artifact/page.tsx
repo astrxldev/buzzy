@@ -29,6 +29,10 @@ import { ArtifactFormWrapper } from "./form";
 import { LiveButton } from "./live";
 import { RulesDialog } from "./rules";
 
+export const metadata = {
+  title: "เสือกไอดีชาวบ้าน",
+};
+
 export default async function ArtifactFormPage() {
   const cookie = await cookies();
   const sid = cookie.get("sid");
