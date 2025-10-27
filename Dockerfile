@@ -20,6 +20,21 @@ COPY package*.json bun.lock ./
 # Install into cache, then persist into real node_modules
 RUN --mount=type=cache,target=/root/.bun bun install --frozen-lockfile
 
+### Stage N: drizzle ###
+FROM oven/bun:latest as drizzle
+
+# Isolation
+RUN useradd -mu 1001 container
+USER container
+WORKDIR /home/container
+COPY --from=deps /home/container/node_modules ./node_modules
+COPY --from=deps /home/container/package*.json ./
+COPY --from=deps /home/container/bun.lock ./
+COPY --chown=1001 ./drizzle.config.ts ./.env ./
+COPY --chown=1001 ./lib/db ./lib/db
+
+RUN bun dr push
+
 ### Stage 2: builder ###
 FROM oven/bun:latest AS builder
 
@@ -31,7 +46,7 @@ WORKDIR /home/container
 # Reuse deps
 COPY --from=deps /home/container/node_modules ./node_modules
 COPY --from=deps /home/container/package*.json ./ 
-COPY --from=deps /home/container/bun.lock ./ 
+COPY --from=deps /home/container/bun.lock ./
 
 # App source
 COPY --chown=1001 . .
@@ -50,8 +65,12 @@ WORKDIR /home/container
 COPY --from=builder /home/container/node_modules ./node_modules
 COPY --from=builder /home/container/bun.lock ./ 
 COPY --from=builder /home/container/package*.json ./ 
+
 COPY --from=builder /home/container/public ./public
 COPY --from=builder /home/container/.env ./.env
 COPY --from=builder /home/container/.next ./.next
+
+COPY --from=builder /home/container/util ./util
+COPY --from=builder /home/container/tsconfig.json ./tsconfig.json
 
 CMD ["bun", "start"]

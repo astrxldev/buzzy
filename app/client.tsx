@@ -4,6 +4,7 @@ import { ProgressProvider } from "@bprogress/next/app";
 import { useEffect, useState } from "react";
 import ReconnectingEventSource from "reconnecting-eventsource";
 import { toast } from "sonner";
+import CommsProvider from "@/lib/comms";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -13,7 +14,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       options={{ showSpinner: false }}
       shallowRouting
     >
-      {children}
+      <CommsProvider>{children}</CommsProvider>
     </ProgressProvider>
   );
 }

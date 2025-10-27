@@ -8,6 +8,7 @@ import { Suspense } from "react";
 import banner from "#/logos/artifact.webp";
 import { Blocker } from "@/components/blocker";
 import { ComboBox } from "@/components/combobox";
+import { SimpleTooltip } from "@/components/tooltip";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -151,28 +152,25 @@ export default async function ArtifactFormPage() {
           </CardContent>
           <CardFooter className="flex gap-2 justify-between">
             <div className="flex gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    href="https://tipme.in.th/536d969652666273c2fa85ad"
-                    target="_blank"
-                    rel="noreferrer"
+              <SimpleTooltip text="โดเนทลัดคิว ขั้นต่ำ 10 บาท">
+                <Link
+                  href="https://tipme.in.th/536d969652666273c2fa85ad"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Button
+                    variant="outline"
+                    className={
+                      config.limit >= 0 && count >= config.limit
+                        ? "bg-emerald-600! border-white! animate-pulse"
+                        : ""
+                    }
+                    type="button"
                   >
-                    <Button
-                      variant="outline"
-                      className={
-                        config.limit >= 0 && count >= config.limit
-                          ? "bg-emerald-600! border-white! animate-pulse"
-                          : ""
-                      }
-                      type="button"
-                    >
-                      <CircleDollarSign />
-                    </Button>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent>โดเนทลัดคิว ขั้นต่ำ 10 บาท</TooltipContent>
-              </Tooltip>
+                    <CircleDollarSign />
+                  </Button>
+                </Link>
+              </SimpleTooltip>
               <Tooltip>
                 <RulesDialog>
                   <TooltipTrigger asChild>
@@ -187,8 +185,11 @@ export default async function ArtifactFormPage() {
                 <LiveButton />
               </Suspense>
             </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
+            <div className="flex gap-2 items-center">
+              <span className="p-1">
+                {count} / {config.limit < 0 ? "∞" : config.limit}
+              </span>
+              <SimpleTooltip text="ส่งเลยจัฟลูกพี่">
                 <Button
                   type="submit"
                   form="mainform"
@@ -200,9 +201,8 @@ export default async function ArtifactFormPage() {
                 >
                   <SendHorizonal />
                 </Button>
-              </TooltipTrigger>
-              <TooltipContent>ส่งเลยจัฟลูกพี่</TooltipContent>
-            </Tooltip>
+              </SimpleTooltip>
+            </div>
           </CardFooter>
         </Card>
         {sid && !q && <ClearCookie />}
