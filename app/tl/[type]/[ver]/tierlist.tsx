@@ -365,6 +365,7 @@ export function TierList({
                 className="absolute top-0 right-0 m-2"
                 size="icon"
                 onClick={() => showDisclaimer(false)}
+                aria-label="Close Disclaimer"
               >
                 <X />
               </Button>
@@ -374,7 +375,7 @@ export function TierList({
           )}
           <div className="flex-1 min-h-0 overflow-auto">
             <div
-              className={`grid w-full [&>*]:border`}
+              className={`grid w-full *:border`}
               style={{
                 gridTemplateColumns: `min-content repeat(${columns.length}, 1fr)`,
                 gridTemplateRows: `min-content repeat(${tiers.length}, minmax(0, min-content))`,
