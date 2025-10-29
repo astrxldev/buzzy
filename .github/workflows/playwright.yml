@@ -17,11 +17,18 @@ jobs:
       run: bun i --frozen-lockfile
     - name: Install Playwright Browsers
       run: bun x playwright install --with-deps
+    - name: Tailscale
+      uses: tailscale/github-action@v4
+      with:
+        oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+        oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+        tags: tag:ci
     - name: Run Playwright tests
       run: bun x playwright test
       env: # Or as an environment variable
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         BETTER_AUTH_SECRET: ${{ secrets.DATABASE_URL }}
+        BASE_URL: ${{ env.BASE_URL }}
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
