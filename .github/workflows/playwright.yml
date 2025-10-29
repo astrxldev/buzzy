@@ -42,7 +42,7 @@ jobs:
       env: # Or as an environment variable
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         BETTER_AUTH_SECRET: ${{ secrets.DATABASE_URL }}
-        BASE_URL: ${{ env.BASE_URL }}
+        BASE_URL: ${{ vars.BASE_URL }}
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
