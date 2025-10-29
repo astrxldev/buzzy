@@ -18,7 +18,7 @@ jobs:
       id: playwright-version
       run: |
         export VER=$(bun --print "require('./bun.lock').workspaces[''].devDependencies['@playwright/test'].slice(1)")
-        echo "PLAYWRIGHT_VERSION=$VER"" >> $GITHUB_ENV
+        echo "PLAYWRIGHT_VERSION=$VER" >> $GITHUB_ENV
     - name: Cache playwright binaries
       uses: actions/cache@v3
       id: playwright-cache
