@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const { BASE_URL = "http://localhost:3000" } = process.env;
+const BASE_URL = "http://localhost:3000";
 
 test("has title", async ({ page }) => {
   await page.goto(BASE_URL);
@@ -11,7 +11,7 @@ test("has title", async ({ page }) => {
 
 test("artifact link", async ({ page }) => {
   await page.goto(BASE_URL);
-  
+
   const viewportSize = page.viewportSize();
   const isMobile = viewportSize && viewportSize.width < 768;
 
