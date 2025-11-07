@@ -19,7 +19,7 @@ export default function Home() {
   return (
     <PageTransition>
       <div className="relative h-svh w-full overflow-hidden flex items-center justify-center">
-        <div className="max-w-[85rem] w-full mx-auto px-4 sm:px-6 py-6">
+        <div className="max-w-340 w-full mx-auto px-4 sm:px-6 py-6">
           <Card className="max-w-lg w-full mx-auto pt-0">
             <Image
               src={Banner}

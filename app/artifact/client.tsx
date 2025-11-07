@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { getCharacters } from "@/lib/api";
+import { comms } from "@/lib/comms";
 import { uidRegex } from "@/lib/const";
 import type { characters } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
@@ -175,4 +176,12 @@ export async function ClearCookie() {
   // @ts-ignore
   cookieStore.delete("sid");
   return "";
+}
+
+export function WarningDialog() {
+  const [manual, setManual] = comms.var("manual");
+
+  comms.event("beforeSubmit", () => {
+    manual;
+  });
 }
