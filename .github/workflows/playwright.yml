@@ -36,7 +36,7 @@ jobs:
         tags: tag:ci
       if: ${{ vars.NO_TAILSCALE != 'true' }}
     - name: Run Playwright tests
-      run: bun x playwright test
+      run: bun x --bun playwright test
       env: # Or as an environment variable
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         BETTER_AUTH_SECRET: ${{ secrets.DATABASE_URL }}
