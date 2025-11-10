@@ -48,6 +48,7 @@ jobs:
     #     path: playwright-report/
     #     retention-days: 30
   deploy:
+    needs: test
     if: github.event_name == 'push'
     environment: Deploy
     runs-on: ubuntu-latest
