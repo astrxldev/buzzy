@@ -60,6 +60,29 @@ export default function Home() {
                 </Item>
 
                 <Item variant="outline" asChild>
+                  <Link href="/endgame">
+                    <ItemMedia className="justify-center">
+                      <Image
+                        src={ArtifactLogo}
+                        alt="รับลงเอนเกคอนเทนต์"
+                        className="w-[calc(100svw-112px)] md:w-22"
+                        width={500}
+                        height={500}
+                      />
+                    </ItemMedia>
+                    <ItemContent>
+                      <ItemTitle>รับลงเอนเกคอนเทนต์</ItemTitle>
+                      <ItemDescription className="line-clamp-none hidden md:block">
+                        ใครอยากให้ดูอาร์ติแฟกต์ให้ในไลฟ์ ไปกรอกแบบฟอร์มได้เลย
+                      </ItemDescription>
+                    </ItemContent>
+                    <ItemActions>
+                      <ChevronRightIcon className="size-4" />
+                    </ItemActions>
+                  </Link>
+                </Item>
+
+                <Item variant="outline" asChild>
                   <Link href="/tl">
                     <ItemMedia>
                       <Image

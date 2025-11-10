@@ -7,6 +7,14 @@ export function GET() {
     topic: "active",
     event: "version",
   });
+  sse.publish(sse.count("active"), {
+    topic: "active",
+    event: "count",
+  });
 
-  return sse.new("active");
+  return sse.new("active", {
+    onDisconnect() {
+      sse.publish(sse.count("active"), { topic: "active", event: "count" });
+    },
+  });
 }

@@ -2,7 +2,7 @@
 
 import { createContext, use, useEffect, useRef, useState } from "react";
 
-type WebsiteComms = Partial<{ manual: boolean }>;
+type WebsiteComms = Partial<{ manual: boolean, debug: boolean }>;
 
 type WebsiteSignals = { beforeSubmit: undefined } & WebsiteComms;
 

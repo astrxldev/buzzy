@@ -23,7 +23,10 @@ if (!globalThis.sseList) {
 
 export class EventSourceManager {
   private id = 0;
-  new(topic = "_global"): Response {
+  new(
+    topic = "_global",
+    { onDisconnect }: { onDisconnect?: () => void } = {},
+  ): Response {
     let timeout: NodeJS.Timeout | undefined;
     this.id++;
     if (this.id > 100000) this.id = 0;
@@ -38,7 +41,8 @@ export class EventSourceManager {
         globalThis.sseList.findIndex((e) => e.id === id),
         1,
       );
-      console.log(` SUB ${topic}#${id}`);
+      onDisconnect?.();
+      console.log(` DSC ${topic}#${id}`);
     };
     return new Response(
       new ReadableStream({

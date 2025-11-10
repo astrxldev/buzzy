@@ -2,9 +2,10 @@
 
 import { ProgressProvider } from "@bprogress/next/app";
 import { useEffect, useState } from "react";
+import { useKey } from "react-use";
 import ReconnectingEventSource from "reconnecting-eventsource";
 import { toast } from "sonner";
-import CommsProvider from "@/lib/comms";
+import CommsProvider, { comms } from "@/lib/comms";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -21,6 +22,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
 export function VersionCheck() {
   const [version, setVersion] = useState<string>();
+  const [count, setCount] = useState<string | number>("...");
+  const [debug, setDebug] = comms.var("debug");
+
+  useKey("f2", () => setDebug(!debug));
 
   useEffect(() => {
     const es = new ReconnectingEventSource(`/api/active`, {});
@@ -40,6 +45,10 @@ export function VersionCheck() {
         });
       if (newVersion !== version) setVersion(newVersion);
     });
+    es.addEventListener("count", (d) => {
+      const count = JSON.parse(d.data);
+      setCount(count);
+    });
     es.onerror = () =>
       toast.promise(
         new Promise((r) => {
@@ -54,5 +63,11 @@ export function VersionCheck() {
     return () => es.close();
   }, [version]);
 
-  return "";
+  return debug ? (
+    <div className="absolute bottom-0 right-0 m-2 px-1 rounded flex gap-2 bg-card border active:pointer-events-none opacity-20 hover:opacity-100 transition-opacity">
+      {count} ผู้ใช้งานออนไลน์
+    </div>
+  ) : (
+    ""
+  );
 }
