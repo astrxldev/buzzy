@@ -12,3 +12,9 @@ services:
     volumes:
       - ./data/prod:/app/data
     stop_grace_period: 1s
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/')"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
