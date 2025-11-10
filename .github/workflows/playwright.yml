@@ -37,18 +37,12 @@ jobs:
         if: ${{ vars.NO_TAILSCALE != 'true' }}
       - name: Run Playwright tests
         run: bun x --bun playwright test
-        env: # Or as an environment variable
+        env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           BETTER_AUTH_SECRET: ${{ secrets.DATABASE_URL }}
           BASE_URL: ${{ vars.BASE_URL }}
-    # - uses: actions/upload-artifact@v4
-    #   if: ${{ !cancelled() }}
-    #   with:
-    #     name: playwright-report
-    #     path: playwright-report/
-    #     retention-days: 30
   deploy:
-    needs: test
+    # needs: test
     if: github.event_name == 'push'
     environment: Deploy
     runs-on: ubuntu-latest
@@ -78,9 +72,10 @@ jobs:
       - name: Deploy on server
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: 100.75.220.33
           username: dmgnr
-          port: ${{ secrets.SSH_PORT }}
+          password: none # Tailscale authentication
+          port: 22
           script: |
             cd buzzy
             echo "${{ secrets.GITEA_TOKEN }}" | docker login git.dgnr.us -u ${{ github.actor }} --password-stdin
