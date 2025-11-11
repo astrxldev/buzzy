@@ -59,7 +59,7 @@ export default function Home() {
                   </Link>
                 </Item>
 
-                <Item variant="outline" asChild>
+                {/* <Item variant="outline" asChild>
                   <Link href="/endgame">
                     <ItemMedia className="justify-center">
                       <Image
@@ -80,7 +80,7 @@ export default function Home() {
                       <ChevronRightIcon className="size-4" />
                     </ItemActions>
                   </Link>
-                </Item>
+                </Item> */}
 
                 <Item variant="outline" asChild>
                   <Link href="/tl">
