@@ -47,9 +47,9 @@ export default function RootLayout({
         />
         <Providers>
           <AnimatePresence mode="wait">{children}</AnimatePresence>
+          <VersionCheck />
         </Providers>
         <Toaster theme="dark" richColors closeButton />
-        <VersionCheck />
       </body>
     </html>
   );

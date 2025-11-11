@@ -25,7 +25,10 @@ export function VersionCheck() {
   const [count, setCount] = useState<string | number>("...");
   const [debug, setDebug] = comms.var("debug");
 
-  useKey("f2", () => setDebug(!debug));
+  useKey("F2", () => {
+    setDebug((x) => !x);
+  });
+  // console.log(`Debug mode ${debug ? "enabled" : "disabled"}`);
 
   useEffect(() => {
     const es = new ReconnectingEventSource(`/api/active`, {});
