@@ -102,6 +102,32 @@ export const artifactSettings = artifact.table("settings", {
 
 //#endregion
 
+//#region Artifact
+export const endgame = pgSchema("endgame");
+
+export const endgameSubmissions = endgame.table("submissions", {
+  id: text().primaryKey().$defaultFn(uuidv7),
+  name: text().notNull(),
+  user: text().notNull(),
+  slip: bytea().notNull(),
+  char: text()
+    .notNull()
+    .references(() => characters.name, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+  queue: serial(),
+  checked: boolean().notNull().default(false),
+});
+
+export const endgameSettings = endgame.table("settings", {
+  id: boolean().primaryKey().default(true),
+  locked: boolean().notNull().default(false),
+  limit: integer().notNull().default(-1),
+});
+
+//#endregion
+
 //#region Tierlist
 export const tierlist = pgSchema("tierlist");
 
