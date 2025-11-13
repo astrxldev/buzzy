@@ -80,10 +80,14 @@ export default function CommsProvider({
 export const comms = {
   var(name: keyof WebsiteComms) {
     const comms = use(CommsContext);
-    if(!comms.active) {
-      console.warn("Inter-component communication used outside of provider. Using local state instead.");
+    if (!comms.active) {
+      console.warn(
+        "Inter-component communication used outside of provider. Using local state instead.",
+      );
     }
-    const [state, setState] = useState(comms.active?comms.get(name): undefined);
+    const [state, setState] = useState(
+      comms.active ? comms.get(name) : undefined,
+    );
     useEffect(() => {
       function listener(value: WebsiteComms[typeof name]) {
         setState(value);
@@ -97,7 +101,7 @@ export const comms = {
         | ((prev: WebsiteComms[typeof name]) => WebsiteComms[typeof name]),
     ) {
       const v = typeof value === "function" ? value(comms.get(name)) : value;
-      if(comms.active) comms.set(name, v);
+      if (comms.active) comms.set(name, v);
       else setState(v);
     }
 

@@ -24,7 +24,7 @@ import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
 import { getArtifactConfig } from "@/lib/api";
 import { db } from "@/lib/db";
 import { characters, submissions } from "@/lib/db/schema";
-import { PageTransition } from "../transition";
+import { PageTransition } from "../../transition";
 import { CharacterChooser, ClearCookie, Disclaimer } from "./client";
 import { ArtifactFormWrapper } from "./form";
 import { LiveButton } from "./live";

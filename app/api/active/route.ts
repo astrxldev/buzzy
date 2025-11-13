@@ -2,7 +2,7 @@ import { sse } from "@/lib/utils";
 
 const VERSION = crypto.randomUUID();
 
-export function GET() {
+export function GET({ signal }: Request) {
   sse.publish(VERSION, {
     topic: "active",
     event: "version",
@@ -16,5 +16,6 @@ export function GET() {
     onDisconnect() {
       sse.publish(sse.count("active"), { topic: "active", event: "count" });
     },
+    signal,
   });
 }

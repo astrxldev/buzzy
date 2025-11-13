@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { db } from "@/lib/db";
 import { tierlistTypes, tierlistVersions } from "@/lib/db/schema";
-import { PageTransition } from "../transition";
+import { PageTransition } from "../../transition";
 
 export const metadata = {
   title: "จัดเทียร์ลิสต์",

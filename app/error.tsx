@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Qiqi from "#/assets/qiqi.webp";
+import Background from "#/bg.jpg";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
@@ -45,52 +46,59 @@ export default function ErrorPage({
   }, [error]);
 
   return (
-    <div className="h-full w-full bg-[#8225] backdrop-hue-rotate-60 backdrop-blur-md flex flex-col gap-2 justify-center items-center">
-      <div className="h-full flex flex-col gap-2 justify-center items-center">
-        <div className="p-4 pb-12 bg-white shadow-lg rounded-sm rotate-1 max-sm:landscape:hidden">
-          <Image
-            src={Qiqi}
-            alt="Qiqi"
-            className="bg-gray-300 w-full vintage-filter"
-          />
-        </div>
-        <h2 className="font-bold text-2xl">เกิดข้อผิดพลาดขึ้น</h2>
-        <span>{message || <Skeleton className="h-6 w-40" />}</span>
-        <div className="flex gap-2">
-          <Link href="/">
+    <>
+      <Image
+        src={Background}
+        alt="Background"
+        className="z-[-1] opacity-20 object-cover fixed top-0 left-0 w-full h-full"
+      />
+      <div className="h-full w-full bg-[#8225] backdrop-hue-rotate-60 backdrop-blur-md flex flex-col gap-2 justify-center items-center">
+        <div className="h-full flex flex-col gap-2 justify-center items-center">
+          <div className="p-4 pb-12 bg-white shadow-lg rounded-sm rotate-1 max-sm:landscape:hidden">
+            <Image
+              src={Qiqi}
+              alt="Qiqi"
+              className="bg-gray-300 w-full vintage-filter"
+            />
+          </div>
+          <h2 className="font-bold text-2xl">เกิดข้อผิดพลาดขึ้น</h2>
+          <span>{message || <Skeleton className="h-6 w-40" />}</span>
+          <div className="flex gap-2">
+            <Link href="/">
+              <Button
+                onClick={() => {
+                  goHome(true);
+                }}
+                disabled={goingHome}
+                variant="destructive"
+              >
+                {goingHome ? <Spinner /> : <Home />}
+                กลับหน้าแรก
+              </Button>
+            </Link>
             <Button
-              onClick={() => {
-                goHome(true);
-              }}
-              disabled={goingHome}
-              variant="destructive"
-            >
-              {goingHome ? <Spinner /> : <Home />}
-              กลับหน้าแรก
-            </Button>
-          </Link>
-          <Button
-            onClick={
-              // Attempt to recover by trying to re-render the segment
-              () => {
-                setLoading(true);
-                setTimeout(() => reset(), 500);
+              onClick={
+                // Attempt to recover by trying to re-render the segment
+                () => {
+                  setLoading(true);
+                  setTimeout(() => reset(), 500);
+                }
               }
-            }
-            disabled={loading}
-            variant="secondary"
-          >
-            {loading ? <Spinner /> : <RefreshCw />}
-            ลองใหม่
-          </Button>
+              disabled={loading}
+              variant="secondary"
+            >
+              {loading ? <Spinner /> : <RefreshCw />}
+              ลองใหม่
+            </Button>
+          </div>
         </div>
+        <Link href="https://status.gunshiz.top" className="m-2">
+          <Button variant="link" className="text-secondary-foreground">
+            <Activity />
+            สถานะเว็บไซต์
+          </Button>
+        </Link>
       </div>
-      <Link href="https://status.gunshiz.top" className="m-2">
-        <Button variant="link" className="text-secondary-foreground">
-          <Activity />
-          สถานะเว็บไซต์
-        </Button>
-      </Link>
-    </div>
+    </>
   );
 }
