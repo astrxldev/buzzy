@@ -13,7 +13,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
-import { PageTransition } from "./transition";
+import { PageTransition } from "../transition";
 
 export default function Home() {
   return (
