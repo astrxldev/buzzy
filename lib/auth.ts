@@ -38,5 +38,5 @@ export async function apiAuthCheck() {
 
   // console.log(session);
 
-  return session?.user;
+  return session?.user.role === "admin" ? session.user : null;
 }

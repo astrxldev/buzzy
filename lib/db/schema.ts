@@ -109,13 +109,7 @@ export const endgameSubmissions = endgame.table("submissions", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
   user: text().notNull(),
-  slip: bytea().notNull(),
-  char: text()
-    .notNull()
-    .references(() => characters.name, {
-      onDelete: "cascade",
-      onUpdate: "cascade",
-    }),
+  expires: timestamp().$defaultFn(() => new Date(Date.now() + 15 * 60 * 1000)), // 15 minutes to pay
   queue: serial(),
   checked: boolean().notNull().default(false),
 });
@@ -244,6 +238,10 @@ export const user = pgTable("user", {
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
+  role: text("role"),
+  banned: boolean("banned").default(false),
+  banReason: text("ban_reason"),
+  banExpires: timestamp("ban_expires"),
 });
 
 export const session = pgTable("session", {
@@ -259,6 +257,7 @@ export const session = pgTable("session", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  impersonatedBy: text("impersonated_by"),
 });
 
 export const account = pgTable("account", {
