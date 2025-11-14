@@ -5,6 +5,7 @@ import type { PgDatabase } from "drizzle-orm/pg-core";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
+import type { TypedFormData } from "@/app/(ui)/endgame/type";
 import { apiAuthCheck } from "./auth";
 import { uidRegex } from "./const";
 import { db } from "./db";
@@ -36,11 +37,17 @@ export async function getArtifactConfig() {
 }
 
 export async function submitArtifact(formData: FormData) {
+  const form = formData as unknown as TypedFormData<{
+    name: string;
+    uid: string;
+    character: string;
+    comment: string;
+  }>;
   const config = await getArtifactConfig();
-  const name = formData.get("name")?.toString();
-  const uid = formData.get("uid")?.toString();
-  const character = formData.get("character")?.toString();
-  const comment = formData.get("comment")?.toString() || "";
+  const name = form.get("name")?.toString();
+  const uid = form.get("uid")?.toString();
+  const character = form.get("character")?.toString();
+  const comment = form.get("comment")?.toString() || "";
   if (!name || !uid || !character) return "กรุณากรอกข้อมูลให้ครบถ้วน";
   if (name.length > 32) return "ชื่อยาวเกินไป ต้องไม่เกิน 32 ตัวอักษร";
   if (!uidRegex.test(uid)) return "UID ไม่ถูกต้อง ต้องเป็นเลข 9 หลัก";
