@@ -53,7 +53,7 @@ async function main() {
     versions.map((v) =>
       db.transaction(async (tx) => {
         const data: BuzzierTierListData = await fetch(
-          `https://buzz.gunshiz.top/api/tierlist/${v.source}`,
+          `https://buzz.sudloh.com/api/tierlist/${v.source}`,
         ).then((r) => r.json());
         if (
           Object.keys({ ...data.badges, ...data.comments, ...data.list })

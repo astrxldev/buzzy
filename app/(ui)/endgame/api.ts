@@ -27,8 +27,11 @@ export async function getEndgameConfig() {
   const full = ngm?.limit !== -1 && count >= (ngm?.limit || 0);
 
   return {
+    // @ts-expect-error
     locked: false,
+    // @ts-expect-error
     limit: -1,
+    // @ts-expect-error
     enka: false,
     count,
     full,

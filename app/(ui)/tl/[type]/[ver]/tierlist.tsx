@@ -7,13 +7,7 @@ import {
   useDroppable,
 } from "@dnd-kit/core";
 import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
-import {
-  Calculator,
-  ChevronDown,
-  ChevronUp,
-  Smartphone,
-  X,
-} from "lucide-react";
+import { Calculator, ChevronDown, ChevronUp, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -53,6 +47,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { tlPlacements, tlState } from "@/lib/api";
+import { comms } from "@/lib/comms";
 import type {
   characters,
   tierlistBadges,
@@ -127,6 +122,7 @@ export function TierList({
     download: boolean;
     ev: "unknown" | "connecting" | "ready";
   }>({ upload: false, download: false, ev: "unknown" });
+  const [updated] = comms.var("updated");
 
   //#region error handling
   useEffect(() => {
@@ -345,14 +341,14 @@ export function TierList({
         onDragEnd={handleDragEnd}
       >
         <div className="flex flex-col justify-between h-full">
-          <Blocker inner className="not-portrait:hidden md:hidden">
+          {/*}<Blocker inner className="not-portrait:hidden md:hidden">
             <div className="flex flex-col items-center font-bold text-2xl gap-16">
               <Smartphone size={128} className="animate-phonerotate" />
               โปรดปรับจอเป็นแนวนอน
             </div>
-          </Blocker>
-          {version.disclaimer && disclaimer ? (
-            <Blocker inner className="hidden not-portrait:block md:block">
+          </Blocker>*/}
+          {version.disclaimer && disclaimer && !updated ? (
+            <Blocker inner className=" not-portrait:block md:block">
               <Image
                 src={`/cdn/${version.disclaimer}`}
                 alt="Disclaimer"

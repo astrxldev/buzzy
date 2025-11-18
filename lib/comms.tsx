@@ -1,10 +1,23 @@
 "use client";
 
-import { createContext, use, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  use,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
-type WebsiteComms = Partial<{ manual: boolean; debug: boolean }>;
+type WebsiteComms = Partial<{
+  manual: boolean;
+  debug: boolean;
+  connected: boolean;
+  updated: boolean;
+  _raw: Record<string, unknown>;
+}>;
 
-type WebsiteSignals = { beforeSubmit: undefined } & WebsiteComms;
+type WebsiteSignals = { beforeSubmit?: undefined } & WebsiteComms;
 
 type WebsiteCommsMutator = {
   get<K extends keyof WebsiteComms>(key: K): WebsiteComms[K];
@@ -45,13 +58,20 @@ export default function CommsProvider({
     [K in keyof WebsiteSignals]?: Array<(value: WebsiteSignals[K]) => void>;
   }>({});
 
+  const set: WebsiteCommsMutator["set"] = (k, v) => {
+    storeRef.current = { ...storeRef.current, [k]: v };
+    if (k !== "_raw") {
+      console.log(`SET ${k} = ${v}`);
+      const { _raw, ...withoutRaw } = storeRef.current;
+      set("_raw", withoutRaw);
+    }
+    (listeners.current[k] || []).map((l) => l(v));
+    forceUpdate({});
+  };
+
   const contextValue = useRef<WebsiteCommsMutator>({
     get: (k) => storeRef.current[k],
-    set: (k, v) => {
-      storeRef.current = { ...storeRef.current, [k]: v };
-      (listeners.current[k] || []).map((l) => l(v));
-      forceUpdate({});
-    },
+    set,
     on: (k, listener) => {
       // @ts-expect-error
       listeners.current[k] = [...(listeners.current[k] || []), listener];
@@ -95,15 +115,18 @@ export const comms = {
       return comms.on(name, listener);
     }, [name]);
 
-    function mutator(
-      value:
-        | WebsiteComms[typeof name]
-        | ((prev: WebsiteComms[typeof name]) => WebsiteComms[typeof name]),
-    ) {
-      const v = typeof value === "function" ? value(comms.get(name)) : value;
-      if (comms.active) comms.set(name, v);
-      else setState(v);
-    }
+    const mutator = useCallback(
+      (
+        value:
+          | WebsiteComms[typeof name]
+          | ((prev: WebsiteComms[typeof name]) => WebsiteComms[typeof name]),
+      ) => {
+        const v = typeof value === "function" ? value(comms.get(name)) : value;
+        if (comms.active) comms.set(name, v);
+        else setState(v);
+      },
+      [name],
+    );
 
     return [state, mutator] as const;
   },
@@ -120,5 +143,8 @@ export const comms = {
     useEffect(() => {
       return comms.on(key, listener);
     }, [comms, key, listener]);
+  },
+  raw() {
+    return [comms.var("_raw")[0]];
   },
 };

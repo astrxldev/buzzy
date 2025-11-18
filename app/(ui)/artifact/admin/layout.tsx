@@ -24,7 +24,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import { getArtifactConfig, random, wipe } from "@/lib/api";
-import { apiAuthCheck } from "@/lib/auth";
+import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { submissions } from "@/lib/db/schema";
 import { LimitManager, SubmissionList, Watcher } from "./client";
@@ -34,7 +34,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  if (!(await apiAuthCheck())) redirect("/");
+  if (!(await adminCheck())) redirect("/");
   const subs = await db
     .select({
       id: submissions.id,
