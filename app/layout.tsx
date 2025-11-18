@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.BASE_URL || "https://buzz.gunshiz.top"),
+  metadataBase: new URL(process.env.BASE_URL || "https://buzz.sudloh.com"),
   title: "เกนชินไม่ใช่เกมมือถือ",
   description: "ระบบอีเวนท์ของเกนชินไม่ใช่เกมมือถือ",
   icons: `/favicon.webp`, // TODO: CHANGE BACK TO buzz

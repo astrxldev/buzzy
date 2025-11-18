@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 import type { TypedFormData } from "@/app/(ui)/endgame/type";
-import { apiAuthCheck } from "./auth";
+import { adminCheck } from "./auth";
 import { uidRegex } from "./const";
 import { db } from "./db";
 import { cdnReferences } from "./db/references";
@@ -83,7 +83,7 @@ export async function submitArtifact(formData: FormData) {
 }
 
 export async function toggleCheck(submissionId: string) {
-  if (!(await apiAuthCheck())) throw "Unauthorized";
+  if (!(await adminCheck())) throw "Unauthorized";
   await db
     .update(submissions)
     .set({
@@ -97,7 +97,7 @@ export async function toggleCheck(submissionId: string) {
 }
 
 export async function toggleLock() {
-  if (!(await apiAuthCheck())) throw "Unauthorized";
+  if (!(await adminCheck())) throw "Unauthorized";
   const existing = await db
     .update(artifactSettings)
     .set({
@@ -115,7 +115,7 @@ export async function toggleLock() {
 }
 
 export async function setLimit(limit: number) {
-  if (!(await apiAuthCheck())) throw "Unauthorized";
+  if (!(await adminCheck())) throw "Unauthorized";
 
   if (
     (
@@ -135,7 +135,7 @@ export async function setLimit(limit: number) {
 }
 
 export async function wipe() {
-  if (!(await apiAuthCheck())) throw "Unauthorized";
+  if (!(await adminCheck())) throw "Unauthorized";
   await db.delete(submissions);
   await db.execute(
     sql`ALTER SEQUENCE artifact.submissions_queue_seq RESTART WITH 1`,
@@ -148,7 +148,7 @@ export async function wipe() {
 }
 
 export async function random() {
-  if (!(await apiAuthCheck())) throw "Unauthorized";
+  if (!(await adminCheck())) throw "Unauthorized";
   const [sub] = await db
     .select()
     .from(submissions)
@@ -162,7 +162,7 @@ export async function random() {
 export async function tlState(
   data: Partial<typeof tierlistStates.$inferInsert>,
 ) {
-  if (!(await apiAuthCheck())) throw "Unauthorized";
+  if (!(await adminCheck())) throw "Unauthorized";
   const [existing] = await db
     .select()
     .from(tierlistStates)
@@ -200,7 +200,7 @@ export async function tlPlacements(
   list: string,
   placements: Record<string, string[]>,
 ) {
-  if (!(await apiAuthCheck())) throw "Unauthorized";
+  if (!(await adminCheck())) throw "Unauthorized";
 
   // biome-ignore lint/correctness/noUnusedVariables: immutable property removal
   const { untiered, ...placementObj } = placements;
@@ -284,7 +284,7 @@ export async function actionLog(text: string, details?: unknown) {
   after(async () => {
     // If not running in Next.js, skip.
     if (typeof process.versions.bun !== "undefined") return;
-    const session = await apiAuthCheck();
+    const session = await adminCheck();
 
     const res = await db
       .insert(auditLog)

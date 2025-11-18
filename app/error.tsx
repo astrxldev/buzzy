@@ -92,7 +92,7 @@ export default function ErrorPage({
             </Button>
           </div>
         </div>
-        <Link href="https://status.gunshiz.top" className="m-2">
+        <Link href="https://status.sudloh.com" className="m-2">
           <Button variant="link" className="text-secondary-foreground">
             <Activity />
             สถานะเว็บไซต์

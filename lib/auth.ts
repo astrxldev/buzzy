@@ -22,6 +22,7 @@ export const auth = betterAuth({
     "http://astral:3000",
     "http://localhost:3000",
     "https://dev3000.dgnr.us",
+    "http://m.dgnr.us",
   ],
   database: drizzleAdapter(db, {
     provider: "pg", // or "mysql", "sqlite"
@@ -29,7 +30,7 @@ export const auth = betterAuth({
   }),
 });
 
-export async function apiAuthCheck() {
+export async function adminCheck() {
   "use server";
 
   const session = await auth.api.getSession({

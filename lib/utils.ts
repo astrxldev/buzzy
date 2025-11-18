@@ -13,6 +13,8 @@ type ServerEventSource = {
   id: number;
 };
 
+type EventSourceMOTD = { event?: string; data: unknown };
+
 export class EventSourceManager {
   private list: ServerEventSource[] = [];
   private id = 0;
@@ -21,16 +23,27 @@ export class EventSourceManager {
     {
       onDisconnect,
       signal,
-    }: { onDisconnect?: () => void; signal?: AbortSignal } = {},
+      motd,
+    }: {
+      onDisconnect?: () => void;
+      signal?: AbortSignal;
+      motd?: EventSourceMOTD | EventSourceMOTD[];
+    } = {},
   ): Response {
     let timeout: NodeJS.Timeout | undefined;
     this.id++;
     if (this.id > 100000) this.id = 0;
     const id = this.id;
-    console.log(` SUB ${topic}#${id} (C${this.list.length})`);
+    console.log(
+      ` SUB ${topic}#${id} (C${this.list.length})`,
+    );
 
     const push = (s: ServerEventSource) => {
       this.list.push(s);
+
+      // Send MOTD
+      if (Array.isArray(motd)) motd.map((m) => s.send(m.data, m.event));
+      else if (motd) s.send(motd.data, motd.event);
     };
     const remove = (id: number) => {
       if (this.list.findIndex((e) => e.id === id) < 0) return;
@@ -99,7 +112,7 @@ export class EventSourceManager {
     { event, topic = "_global" }: { event?: string; topic?: string },
   ) {
     console.log(` PUB #${topic}`);
-    setImmediate(() => {
+    queueMicrotask(() => {
       for (const s of this.list) {
         if (s.topic !== topic) continue;
         try {

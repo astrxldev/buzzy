@@ -46,7 +46,7 @@ export default function Home() {
                       <ItemTitle>
                         <span className="hidden md:block">เสือกไอดีชาวบ้าน</span>
                         <span className="block md:hidden">
-                          ตรวจแฟลกเกนชินรายแพทช์
+                          ตรวจแฟกต์เกนชินรายแพทช์
                         </span>
                       </ItemTitle>
                       <ItemDescription className="line-clamp-none hidden md:block">
@@ -110,7 +110,7 @@ export default function Home() {
             </CardContent>
             <CardFooter>
               <p className="text-xs text-center text-muted-foreground">
-                buzz.gunshiz.top is not affiliated with HoYoverse. Game content
+                buzz.sudloh.com is not affiliated with HoYoverse. Game content
                 and materials are trademarks and copyrights of HoYoverse.
               </p>
             </CardFooter>

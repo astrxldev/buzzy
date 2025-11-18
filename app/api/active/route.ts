@@ -3,10 +3,6 @@ import { sse } from "@/lib/utils";
 const VERSION = crypto.randomUUID();
 
 export function GET({ signal }: Request) {
-  sse.publish(VERSION, {
-    topic: "active",
-    event: "version",
-  });
   // +1 because this connection is not yet counted
   sse.publish(sse.count("active") + 1, {
     topic: "active",
@@ -17,6 +13,10 @@ export function GET({ signal }: Request) {
     onDisconnect() {
       // no need to -1 because this connection is already removed
       sse.publish(sse.count("active"), { topic: "active", event: "count" });
+    },
+    motd: {
+      data: VERSION,
+      event: "version",
     },
     signal,
   });

@@ -68,7 +68,7 @@ export default function ErrorPage() {
               กลับหน้าแรก
             </Button>
           </Link>
-          <Link href="https://status.gunshiz.top">
+          <Link href="https://status.sudloh.com">
             <Button variant="link" className="text-secondary-foreground">
               <Activity />
               สถานะเว็บไซต์
