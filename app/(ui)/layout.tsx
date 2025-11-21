@@ -1,7 +1,7 @@
 import { AnimatePresence } from "framer-motion";
-import Image from "next/image";
 import { Toaster } from "sonner";
 import Background from "#/bg.jpg";
+import Image from "@/components/image";
 import Providers, { VersionCheck } from "../client";
 
 export default function UiLayout({ children }: { children: React.ReactNode }) {

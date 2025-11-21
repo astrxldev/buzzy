@@ -1,11 +1,11 @@
 "use client"; // Error boundaries must be Client Components
 
 import { Activity, Home } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Lost from "#/assets/lost_traveler.webp";
 import Background from "#/bg.jpg";
+import Image from "@/components/image";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
@@ -16,21 +16,22 @@ export default function ErrorPage() {
 
   useEffect(() => {
     const messages = [
-      "ไม่เจอเส้นทาง... เหมือนหลงในเทวสถานอีกแล้ว",
-      "ไพม่อนบอกว่า หน้านี้ไม่มีอยู่จริง...",
-      "อาร์ติแฟกต์ชิ้นนี้... หายไปในอากาศ",
-      "โดนลบโดยอาร์คอนข้อมูล...",
-      "พอร์ทัลนี้ปิดปรับปรุงชั่วคราว (หรือถาวรก็ไม่รู้)",
-      "เหมือนจะเจอ แต่กลายเป็น DEF อีกแล้ว...",
-      "เอเธอร์เดินผิดมิติ...",
-      "หลุดเควสกลางทาง หน้านี้หายไปแล้ว",
-      "ระบบแจ้งว่า '404 Element Not Found'",
-      "แช่แข็งโดยหน้าเพจว่างเปล่า...",
-      "ค้นหามาหลายชั้น ยังไม่เจอชิ้นนี้เลย",
-      "โดนรีเซ็ตอินสแตนซ์ หน้านี้กลับเป็นศูนย์",
-      "เพจนี้เหมือนคริไม่ติด... ว่างเปล่า",
-      "หลงเข้าชั้น Abyss ที่ไม่มีทางออก",
-      "ไพม่อนกิน URL ไปหมดแล้ว...",
+      "หลุดเรทอีกแล้ว...",
+      "stamina หมด จมน้ำตาย...",
+      "โดน Hilichurl(s) ดับ...",
+      "Paimon กินหน้านี้ไปแล้ว...",
+      "ไม่เหลือเพชรให้สุ่มแล้ว...",
+      "ไม่ติดคริอีกแล้ว...",
+      "ลงแต่ Def อีกแล้ว...",
+      "เกลือแฟลกอีกแล้ว...",
+      "น้ำแช่แข็งหน้านี้ไปแล้ว...",
+      "กดผิด เผลอลบหน้านี้ทิ้ง...",
+      "Zhongli ไม่อนุญาตให้ผ่าน...",
+      "ได้ไม่ครบ 36 ดาวอีกแล้ว...",
+      "Venti ไม่อนุญาตให้ผ่าน...",
+      "Aether เดินสะดุดสายเซิพ...",
+      "กด E แทน Q อีกแล้ว...",
+      "บุสทำลายหน้านี้ไปแล้ว...",
     ];
 
     setMessage(messages[Math.floor(Math.random() * messages.length)]);

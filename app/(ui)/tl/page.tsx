@@ -1,6 +1,6 @@
 import { desc } from "drizzle-orm";
-import Image from "next/image";
 import Link from "next/link";
+import Image from "@/components/image";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { db } from "@/lib/db";
 import { tierlistTypes, tierlistVersions } from "@/lib/db/schema";

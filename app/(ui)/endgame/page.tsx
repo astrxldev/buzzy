@@ -1,11 +1,12 @@
 import { eq } from "drizzle-orm";
 import { BookAlert, CircleDollarSign, SendHorizonal } from "lucide-react";
 import { cookies } from "next/headers";
-import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
+import banner from "#/logos/artifact.webp";
 import { PageTransition } from "@/app/transition";
 import { Blocker } from "@/components/blocker";
+import Image from "@/components/image";
 import { SimpleTooltip } from "@/components/tooltip";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +31,6 @@ import { ArtifactFormWrapper } from "../artifact/form";
 import { LiveButton } from "../artifact/live";
 import { RulesDialog } from "../artifact/rules";
 import { getEndgameConfig } from "./api";
-import banner from "#/logos/artifact.webp";
 
 export default async function EndgamePage() {
   const cookie = await cookies();

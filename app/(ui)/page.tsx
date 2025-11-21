@@ -1,9 +1,9 @@
 import { ChevronRightIcon } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import Banner from "#/banner.webp";
 import ArtifactLogo from "#/logos/artifact.webp";
 import TierlistLogo from "#/logos/tierlist.webp";
+import Image from "@/components/image";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
   Item,
@@ -46,11 +46,11 @@ export default function Home() {
                       <ItemTitle>
                         <span className="hidden md:block">เสือกไอดีชาวบ้าน</span>
                         <span className="block md:hidden">
-                          ตรวจแฟกต์เกนชินรายแพทช์
+                          ตรวจแฟกต์เกนชินในไลฟ์
                         </span>
                       </ItemTitle>
                       <ItemDescription className="line-clamp-none hidden md:block">
-                        ใครอยากให้ดูอาร์ติแฟกต์ให้ในไลฟ์ ไปกรอกแบบฟอร์มได้เลย
+                        ระบบลงคิวดูอาร์ติแฟกต์เกนชินในไลฟ์สตรีม
                       </ItemDescription>
                     </ItemContent>
                     <ItemActions>
@@ -64,16 +64,16 @@ export default function Home() {
                     <ItemMedia className="justify-center">
                       <Image
                         src={ArtifactLogo}
-                        alt="รับลงเอนเกคอนเทนต์"
+                        alt="รับกรรมแทนคนดู"
                         className="w-[calc(100svw-112px)] md:w-22"
                         width={500}
                         height={500}
                       />
                     </ItemMedia>
                     <ItemContent>
-                      <ItemTitle>รับลงเอนเกคอนเทนต์</ItemTitle>
+                      <ItemTitle>รับกรรมแทนคนดู</ItemTitle>
                       <ItemDescription className="line-clamp-none hidden md:block">
-                        ใครอยากให้ดูอาร์ติแฟกต์ให้ในไลฟ์ ไปกรอกแบบฟอร์มได้เลย
+                        ระบบลงคิวดูอาร์ติแฟกต์เกนชินในไลฟ์สตรีม
                       </ItemDescription>
                     </ItemContent>
                     <ItemActions>
@@ -96,9 +96,7 @@ export default function Home() {
                     <ItemContent>
                       <ItemTitle>จัดเทียร์ลิสต์</ItemTitle>
                       <ItemDescription className="line-clamp-none hidden md:block">
-                        เทียร์ลิสต์เมต้าตัวละครของอบิสแพทช์นั้นๆเท่านั้น
-                        ซึ่งจะเปลี่ยนไปในแต่ละแพทช์ตามความสามารถของตัวละครในการรับมือกับอบิสแพทช์นั้นๆ
-                        ไม่ใช่เทียร์ลิสต์ภาพรวมของตัวละคร
+                        ระบบจัดเทียร์ลิสต์ตัวละครของคอนเท้น Abyss และ Stygain
                       </ItemDescription>
                     </ItemContent>
                     <ItemActions>
