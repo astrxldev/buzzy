@@ -8,7 +8,6 @@ import {
 } from "@dnd-kit/core";
 import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import { Calculator, ChevronDown, ChevronUp, X } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   Fragment,
@@ -26,6 +25,7 @@ import Qiqi from "#/assets/qiqi.webp";
 import BadgeSP from "#/assets/sp.webp";
 import BadgeSSS from "#/assets/sss.webp";
 import { Blocker } from "@/components/blocker";
+import Image from "@/components/image";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

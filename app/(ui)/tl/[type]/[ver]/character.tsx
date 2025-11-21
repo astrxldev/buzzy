@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 import AmberIcon from "#/amber.png";
+import Image from "@/components/image";
 import { SimpleTooltip } from "@/components/tooltip";
 import { Button } from "@/components/ui/button";
 import {

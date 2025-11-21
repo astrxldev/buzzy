@@ -1,8 +1,8 @@
 import { TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip";
 import { TvMinimalPlay } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import type { YoutubeLiveInfo } from "@/app/api/live/route";
+import Image from "@/components/image";
 import { Button } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
 

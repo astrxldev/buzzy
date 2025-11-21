@@ -1,6 +1,6 @@
 "use client";
 import { AutoTextSize } from "auto-text-size";
-import Image from "next/image";
+import Image from "@/components/image";
 import type { characters } from "@/lib/db/schema";
 
 // TODO: Change amber type

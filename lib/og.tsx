@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-/** biome-ignore-all lint/performance/noImgElement: og no next/image */
+/** biome-ignore-all lint/performance/noImgElement: og no @/components/image */
 
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
