@@ -36,7 +36,7 @@ type WebsiteCommsMutator = {
 
 export const CommsContext = createContext<WebsiteCommsMutator>({
   get: () => {
-    console.error("Inter-component communication used outside of provider.");
+    console.error("ICC used outside of provider.");
     return undefined;
   },
   set: () => undefined,
@@ -52,44 +52,37 @@ export default function CommsProvider({
   children: React.ReactNode;
 }) {
   const storeRef = useRef<WebsiteComms>({});
-  const [, forceUpdate] = useState({});
 
   const listeners = useRef<{
     [K in keyof WebsiteSignals]?: Array<(value: WebsiteSignals[K]) => void>;
   }>({});
 
-  const set: WebsiteCommsMutator["set"] = (k, v) => {
-    storeRef.current = { ...storeRef.current, [k]: v };
-    if (k !== "_raw") {
-      console.log(`SET ${k} = ${v}`);
-      const { _raw, ...withoutRaw } = storeRef.current;
-      set("_raw", withoutRaw);
-    }
-    (listeners.current[k] || []).map((l) => l(v));
-    forceUpdate({});
-  };
-
   const contextValue = useRef<WebsiteCommsMutator>({
     get: (k) => storeRef.current[k],
-    set,
-    on: (k, listener) => {
-      // @ts-expect-error
-      listeners.current[k] = [...(listeners.current[k] || []), listener];
-      return () => {
-        // @ts-expect-error
-        listeners.current[k] = listeners.current[k]?.filter(
-          (l) => l !== listener,
-        );
-      };
+    set(k, v) {
+      storeRef.current = { ...storeRef.current, [k]: v };
+      // prevent infinite recursion
+      if (k !== "_raw") {
+        console.log(`SET ${k} = ${v}`);
+        const { _raw, ...withoutRaw } = storeRef.current;
+        contextValue.current.set("_raw", withoutRaw);
+      }
+      contextValue.current.emit(k, v);
     },
-    off: (k, listener) => {
-      // @ts-expect-error
+    on(k, listener) {
+      // @ts-expect-error typescript screams for some impossible static type conflict
+      listeners.current[k] = [...(listeners.current[k] || []), listener];
+      return () => contextValue.current.off(k, listener);
+    },
+    off(k, listener) {
+      // @ts-expect-error typescript screams for some impossible static type conflict
       listeners.current[k] = (listeners.current[k] || []).filter(
         (l) => l !== listener,
       );
     },
     emit: (k, value) => {
-      (listeners.current[k] || []).map((l) => l(value));
+      // biome-ignore lint/suspicious/useIterableCallbackReturn: l returns void
+      (listeners.current[k] || []).forEach((l) => l(value));
     },
     active: true,
   });
@@ -101,9 +94,7 @@ export const comms = {
   var(name: keyof WebsiteComms) {
     const comms = use(CommsContext);
     if (!comms.active) {
-      console.warn(
-        "Inter-component communication used outside of provider. Using local state instead.",
-      );
+      console.warn("ICC used outside of provider. Using local state instead.");
     }
     const [state, setState] = useState(
       comms.active ? comms.get(name) : undefined,
@@ -135,14 +126,17 @@ export const comms = {
     listener: (ev: WebsiteSignals[K]) => void,
   ) {
     const comms = use(CommsContext);
-    if (!comms.active) {
-      console.warn(
-        "Inter-component communication used outside of provider. No events will be emitted.",
-      );
-    }
+    const listenerRef = useRef(listener);
+
     useEffect(() => {
-      return comms.on(key, listener);
-    }, [comms, key, listener]);
+      listenerRef.current = listener;
+    }, [listener]);
+    useEffect(() => {
+      const stableListener = (value: WebsiteSignals[K]) => {
+        listenerRef.current(value);
+      };
+      return comms.on(key, stableListener);
+    }, [comms, key]);
   },
   raw() {
     return [comms.var("_raw")[0]];
