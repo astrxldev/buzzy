@@ -159,7 +159,9 @@ function Placeholder({ className, ...props }: React.ComponentProps<"div">) {
 
 export function Disclaimer() {
   const [agreed, setAgreed] = useState(false);
-  if (agreed) return;
+  const [updated] = comms.var("updated");
+
+  if (agreed || updated) return;
   return (
     <Blocker>
       <RulesDialog onOpenChange={(set) => !set && setAgreed(true)}>

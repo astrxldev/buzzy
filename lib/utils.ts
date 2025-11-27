@@ -117,7 +117,9 @@ export class EventSourceManager {
         if (s.topic !== topic) continue;
         try {
           s.send(data, event);
-        } catch {}
+        } catch (error) {
+          console.error(`  ERR #${topic}#${s.id}, ${error}`);
+        }
       }
     });
   }

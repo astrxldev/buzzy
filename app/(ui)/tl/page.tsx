@@ -29,7 +29,7 @@ export default async function TierlistSelectionPage() {
         {vers.map((t) => (
           <div className="flex flex-col gap-1" key={t.id}>
             <div className="font-bold text-4xl">
-              <div className="px-2 py-1 border border-dashed w-min rounded-md bg-[#2228]">
+              <div className="px-2 py-1 border w-min rounded-md bg-[#2228]">
                 {t.name}
               </div>
             </div>

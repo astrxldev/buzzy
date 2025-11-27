@@ -31,3 +31,5 @@ export default async function ArtifactCountWidget() {
     </div>
   );
 }
+
+export const dynamic = "force-dynamic";

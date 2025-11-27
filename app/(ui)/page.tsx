@@ -2,6 +2,7 @@ import { ChevronRightIcon } from "lucide-react";
 import Link from "next/link";
 import Banner from "#/banner.webp";
 import ArtifactLogo from "#/logos/artifact.webp";
+import RubgramLogo from "#/logos/rubgram.webp";
 import TierlistLogo from "#/logos/tierlist.webp";
 import Image from "@/components/image";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -37,17 +38,14 @@ export default function Home() {
                       <Image
                         src={ArtifactLogo}
                         alt="เสือกไอดีชาวบ้าน"
-                        className="w-[calc(100svw-112px)] md:w-22"
+                        className="w-22"
                         width={500}
                         height={500}
                       />
                     </ItemMedia>
                     <ItemContent>
                       <ItemTitle>
-                        <span className="hidden md:block">เสือกไอดีชาวบ้าน</span>
-                        <span className="block md:hidden">
-                          ตรวจแฟกต์เกนชินในไลฟ์
-                        </span>
+                        <span>เสือกไอดีชาวบ้าน</span>
                       </ItemTitle>
                       <ItemDescription className="line-clamp-none hidden md:block">
                         ระบบลงคิวดูอาร์ติแฟกต์เกนชินในไลฟ์สตรีม
@@ -59,28 +57,36 @@ export default function Home() {
                   </Link>
                 </Item>
 
-                {/* <Item variant="outline" asChild>
-                  <Link href="/endgame">
-                    <ItemMedia className="justify-center">
-                      <Image
-                        src={ArtifactLogo}
-                        alt="รับกรรมแทนคนดู"
-                        className="w-[calc(100svw-112px)] md:w-22"
-                        width={500}
-                        height={500}
-                      />
-                    </ItemMedia>
-                    <ItemContent>
-                      <ItemTitle>รับกรรมแทนคนดู</ItemTitle>
-                      <ItemDescription className="line-clamp-none hidden md:block">
-                        ระบบลงคิวดูอาร์ติแฟกต์เกนชินในไลฟ์สตรีม
-                      </ItemDescription>
-                    </ItemContent>
-                    <ItemActions>
-                      <ChevronRightIcon className="size-4" />
-                    </ItemActions>
-                  </Link>
-                </Item> */}
+                {
+                  <Item variant="outline" asChild>
+                    <Link href="/rubgram">
+                      <ItemMedia className="justify-center">
+                        <Image
+                          src={RubgramLogo}
+                          alt="รับกรรมแทนคนดู"
+                          className="w-22"
+                          width={500}
+                          height={500}
+                        />
+                      </ItemMedia>
+                      <ItemContent>
+                        <ItemTitle>
+                          <span className="hidden md:block">
+                            รับกรรมแทนทางบ้าน
+                          </span>
+                          <span className="block md:hidden">เร็วๆนี้</span>
+                        </ItemTitle>
+                        <ItemDescription className="line-clamp-none hidden md:block">
+                          รับเล่นคอนเท้น Endgame แทนคนดู{" "}
+                          <span className="text-red-500">ไม่ฟรีนะคับ</span>
+                        </ItemDescription>
+                      </ItemContent>
+                      <ItemActions>
+                        <ChevronRightIcon className="size-4" />
+                      </ItemActions>
+                    </Link>
+                  </Item>
+                }
 
                 <Item variant="outline" asChild>
                   <Link href="/tl">
@@ -94,7 +100,9 @@ export default function Home() {
                       />
                     </ItemMedia>
                     <ItemContent>
-                      <ItemTitle>จัดเทียร์ลิสต์</ItemTitle>
+                      <ItemTitle>
+                        <span>จัดเทียร์ลิสต์</span>
+                      </ItemTitle>
                       <ItemDescription className="line-clamp-none hidden md:block">
                         ระบบจัดเทียร์ลิสต์ตัวละครของคอนเท้น Abyss และ Stygain
                       </ItemDescription>
