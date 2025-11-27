@@ -4,8 +4,7 @@ import { and, eq, inArray, not, or, sql } from "drizzle-orm";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { after } from "next/server";
-import type { TypedFormData } from "@/app/(ui)/endgame/type";
+import type { TypedFormData } from "@/app/(ui)/rubgram/type";
 import { adminCheck } from "./auth";
 import { uidRegex } from "./const";
 import { db } from "./db";
@@ -93,7 +92,7 @@ export async function toggleCheck(submissionId: string) {
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
-  actionLog(`Toggled an artifact submission check mark`);
+  await actionLog(`Toggled an artifact submission check mark`);
 }
 
 export async function toggleLock() {
@@ -109,7 +108,7 @@ export async function toggleLock() {
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
-  actionLog(
+  await actionLog(
     `${(existing.length ? existing[0].locked : true) ? "Locked" : "Unlocked"} artifact submission`,
   );
 }
@@ -131,7 +130,7 @@ export async function setLimit(limit: number) {
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
-  actionLog(`Set artifact submit limit to ${limit < 0 ? "unlimited" : limit}`);
+  await actionLog(`Set artifact submit limit to ${limit < 0 ? "unlimited" : limit}`);
 }
 
 export async function wipe() {
@@ -143,7 +142,7 @@ export async function wipe() {
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
-  actionLog(`Deleted artifact submissions`);
+  await actionLog(`Deleted artifact submissions`);
   redirect("/artifact/admin");
 }
 
@@ -192,7 +191,7 @@ export async function tlState(
 
   revalidatePath(`/api/tl/${list}/states`);
 
-  actionLog(`Updated a state in tierlist ${list}`, data);
+  await actionLog(`Updated a state in tierlist ${list}`, data);
   sse.publish(states, { topic: `tl-${list}`, event: "update_states" });
 }
 
@@ -214,7 +213,7 @@ export async function tlPlacements(
 
   revalidatePath(`/api/tl/${list}`);
 
-  actionLog(`Updated a placement in tierlist ${list}`);
+  await actionLog(`Updated a placement in tierlist ${list}`);
   sse.publish(placements, { topic: `tl-${list}`, event: "update_placements" });
 }
 
@@ -227,7 +226,7 @@ export async function cdnDelete(ids: string[], force = false) {
       const refs = await checkCdnRefs(id);
       if (refs.length) {
         revalidatePath("/cdn/admin");
-        actionLog(
+        await actionLog(
           `Deleted ${deleted}/${ids.length}(Incomplete) files`,
           ids.slice(0, deleted),
         );
@@ -238,7 +237,7 @@ export async function cdnDelete(ids: string[], force = false) {
     }
   revalidatePath("/cdn/admin");
 
-  actionLog(`Deleted ${deleted} files`, ids);
+  await actionLog(`Deleted ${deleted} files`, ids);
 }
 
 export async function checkCdnRefs(
@@ -272,7 +271,7 @@ export async function cdnify(
     })
     .returning({ id: cdn.id });
 
-  actionLog(`File uploaded: ${name || `[${id}]`} (${b2s(data.size)})`);
+  await actionLog(`File uploaded: ${name || `[${id}]`} (${b2s(data.size)})`);
 
   try {
     revalidatePath("/admin/cdn");
@@ -281,27 +280,25 @@ export async function cdnify(
 }
 
 export async function actionLog(text: string, details?: unknown) {
-  after(async () => {
-    // If not running in Next.js, skip.
-    if (typeof process.versions.bun !== "undefined") return;
-    const session = await adminCheck();
+  // If not running in Next.js, skip.
+  if (typeof process.versions.bun !== "undefined") return;
+  const session = await adminCheck();
 
-    const res = await db
-      .insert(auditLog)
-      .values({
-        author: session?.name,
-        text,
-        details,
-      })
-      .returning()
-      .catch(() =>
-        console.error(
-          `Error logging audit log, printing it here:\n${session?.name || "[Unknown User]"} - ${text}`,
-        ),
-      );
+  const res = await db
+    .insert(auditLog)
+    .values({
+      author: session?.name,
+      text,
+      details,
+    })
+    .returning()
+    .catch(() =>
+      console.error(
+        `Error logging audit log, printing it here:\n${session?.name || "[Unknown User]"} - ${text}`,
+      ),
+    );
 
-    revalidatePath("/admin/log");
+  revalidatePath("/admin/log");
 
-    if (res) sse.publish(res, { topic: "log" });
-  });
+  if (res) sse.publish(res, { topic: "log" });
 }

@@ -10,12 +10,6 @@ export const auth = betterAuth({
     enabled: true,
     disableSignUp: true,
   },
-  socialProviders: {
-    discord: {
-      enabled: true,
-      clientId: "1397024670355554336",
-    },
-  },
   plugins: [admin()],
   trustedOrigins: [
     "http://nyx:3000",

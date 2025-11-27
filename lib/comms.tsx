@@ -14,6 +14,7 @@ type WebsiteComms = Partial<{
   debug: boolean;
   connected: boolean;
   updated: boolean;
+  "rubgram.services": ("abyss" | "theater" | "stygian")[];
   _raw: Record<string, unknown>;
 }>;
 
@@ -91,7 +92,14 @@ export default function CommsProvider({
 }
 
 export const comms = {
-  var(name: keyof WebsiteComms) {
+  var<K extends keyof WebsiteComms>(
+    name: K,
+  ): [
+    WebsiteComms[K],
+    (
+      value: WebsiteComms[K] | ((prev: WebsiteComms[K]) => WebsiteComms[K]),
+    ) => void,
+  ] {
     const comms = use(CommsContext);
     if (!comms.active) {
       console.warn("ICC used outside of provider. Using local state instead.");

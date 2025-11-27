@@ -71,10 +71,10 @@ export default async function AdminLayout({
               <Link href="/admin">
                 <SidebarMenuButton
                   asChild
-                  className="data-[slot=sidebar-menu-button]:!p-1.5"
+                  className="data-[slot=sidebar-menu-button]:p-1.5!"
                 >
                   <span>
-                    <Computer className="!size-5" />
+                    <Computer className="size-5!" />
                     <span className="text-base font-semibold">Buzzy Inc.</span>
                   </span>
                 </SidebarMenuButton>
