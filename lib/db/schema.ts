@@ -3,6 +3,7 @@ import {
   boolean,
   integer,
   jsonb,
+  numeric,
   pgEnum,
   pgSchema,
   pgTable,
@@ -11,6 +12,7 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { uuidv7 } from "uuidv7";
+import type { SlipokResponse } from "@/app/(ui)/rubgram/api";
 import { bytea } from "./custom";
 
 export const element = pgEnum("character_element", [
@@ -98,6 +100,72 @@ export const artifactSettings = artifact.table("settings", {
   id: boolean().primaryKey().default(true),
   locked: boolean().notNull().default(false),
   limit: integer().notNull().default(-1),
+});
+
+//#endregion
+
+//#region Endgame
+export const endgame = pgSchema("endgame");
+
+export const endgameServer = endgame.enum("server", ["as", "eu", "us", "tw"]);
+export const endgameService = endgame.enum("service", [
+  "abyss",
+  "theater",
+  "stygian",
+]);
+
+export const endgameSubmissions = endgame.table("submissions", {
+  id: text().primaryKey().$defaultFn(uuidv7),
+  name: text().notNull(),
+  user: text()
+    .notNull()
+    .references(() => endgameDiscord.uid, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+  expires: timestamp().$defaultFn(() => new Date(Date.now() + 20 * 60 * 1000)), // 20 minutes to pay
+  queue: serial(),
+  server: endgameServer().notNull(),
+  service: endgameService().array().notNull(),
+  price: integer().notNull(), // calculated on submission
+  slip: text().references(() => endgameSlips.id), // not paid = null
+  checked: boolean().notNull().default(false),
+});
+
+// deleted submissions
+export const endgameArchive = endgame.table("archive", {
+  id: text().primaryKey().$defaultFn(uuidv7),
+  name: text().notNull(),
+  user: text()
+    .notNull()
+    .references(() => endgameDiscord.uid, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+  server: endgameServer().notNull(),
+  service: endgameService().array().notNull(),
+});
+
+export const endgameSlips = endgame.table("slips", {
+  id: text().primaryKey().$defaultFn(uuidv7),
+  slip: bytea().notNull(),
+  ref: text().unique().notNull(),
+  amount: numeric().notNull(),
+  data: jsonb().$type<SlipokResponse>().notNull(),
+});
+
+export const endgameSettings = endgame.table("settings", {
+  id: boolean().primaryKey().default(true),
+  locked: boolean().notNull().default(false),
+  limit: integer().notNull().default(-1),
+  free: integer().notNull().default(0),
+});
+
+export const endgameDiscord = endgame.table("discord", {
+  uid: text().primaryKey(), // user snowflake
+  display: text().notNull(),
+  username: text().notNull(),
+  token: text().notNull().$defaultFn(uuidv7), // for accessing existing user with cookie.
 });
 
 //#endregion
@@ -218,6 +286,10 @@ export const user = pgTable("user", {
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
+  role: text("role"),
+  banned: boolean("banned").default(false),
+  banReason: text("ban_reason"),
+  banExpires: timestamp("ban_expires"),
 });
 
 export const session = pgTable("session", {
@@ -233,6 +305,7 @@ export const session = pgTable("session", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  impersonatedBy: text("impersonated_by"),
 });
 
 export const account = pgTable("account", {

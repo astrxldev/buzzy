@@ -13,33 +13,53 @@ type ServerEventSource = {
   id: number;
 };
 
-declare global {
-  var sseList: ServerEventSource[];
-}
-
-if (!globalThis.sseList) {
-  globalThis.sseList = [];
-}
+type EventSourceMOTD = { event?: string; data: unknown };
 
 export class EventSourceManager {
+  private list: ServerEventSource[] = [];
   private id = 0;
-  new(topic = "_global"): Response {
+  new(
+    topic = "_global",
+    {
+      onDisconnect,
+      signal,
+      motd,
+    }: {
+      onDisconnect?: () => void;
+      signal?: AbortSignal;
+      motd?: EventSourceMOTD | EventSourceMOTD[];
+    } = {},
+  ): Response {
     let timeout: NodeJS.Timeout | undefined;
     this.id++;
     if (this.id > 100000) this.id = 0;
     const id = this.id;
-    console.log(` SUB ${topic}#${id}`);
+    console.log(
+      ` SUB ${topic}#${id} (C${this.list.length})`,
+    );
 
     const push = (s: ServerEventSource) => {
-      globalThis.sseList.push(s);
+      this.list.push(s);
+
+      // Send MOTD
+      if (Array.isArray(motd)) motd.map((m) => s.send(m.data, m.event));
+      else if (motd) s.send(motd.data, motd.event);
     };
     const remove = (id: number) => {
-      globalThis.sseList = globalThis.sseList.toSpliced(
-        globalThis.sseList.findIndex((e) => e.id === id),
+      if (this.list.findIndex((e) => e.id === id) < 0) return;
+      console.log(` DSC ${topic}#${id}`);
+      this.list = this.list.toSpliced(
+        this.list.findIndex((e) => e.id === id),
         1,
       );
-      console.log(` SUB ${topic}#${id}`);
+      onDisconnect?.();
     };
+
+    signal?.addEventListener("abort", () => {
+      clearInterval(timeout);
+      remove(id);
+    });
+
     return new Response(
       new ReadableStream({
         start(controller) {
@@ -62,6 +82,7 @@ export class EventSourceManager {
             id,
           };
           timeout = setInterval(() => {
+            if (controller.desiredSize === null) return res.close();
             try {
               res.write(`:ping\n\n`);
             } catch {
@@ -69,6 +90,10 @@ export class EventSourceManager {
             }
           }, 5000);
           push(res);
+        },
+        cancel() {
+          clearTimeout(timeout);
+          remove(id);
         },
       }),
       {
@@ -87,18 +112,20 @@ export class EventSourceManager {
     { event, topic = "_global" }: { event?: string; topic?: string },
   ) {
     console.log(` PUB #${topic}`);
-    setImmediate(() => {
-      for (const s of globalThis.sseList) {
+    queueMicrotask(() => {
+      for (const s of this.list) {
         if (s.topic !== topic) continue;
         try {
           s.send(data, event);
-        } catch {}
+        } catch (error) {
+          console.error(`  ERR #${topic}#${s.id}, ${error}`);
+        }
       }
     });
   }
 
   count(topic = "_global") {
-    return sseList.reduce((c, s) => c + (s.topic === topic ? 1 : 0), 0);
+    return this.list.reduce((c, s) => c + (s.topic === topic ? 1 : 0), 0);
   }
 }
 

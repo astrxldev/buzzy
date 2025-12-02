@@ -4,8 +4,8 @@ import { and, eq, inArray, not, or, sql } from "drizzle-orm";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { after } from "next/server";
-import { apiAuthCheck } from "./auth";
+import type { TypedFormData } from "@/app/(ui)/rubgram/type";
+import { adminCheck } from "./auth";
 import { uidRegex } from "./const";
 import { db } from "./db";
 import { cdnReferences } from "./db/references";
@@ -36,11 +36,17 @@ export async function getArtifactConfig() {
 }
 
 export async function submitArtifact(formData: FormData) {
+  const form = formData as unknown as TypedFormData<{
+    name: string;
+    uid: string;
+    character: string;
+    comment: string;
+  }>;
   const config = await getArtifactConfig();
-  const name = formData.get("name")?.toString();
-  const uid = formData.get("uid")?.toString();
-  const character = formData.get("character")?.toString();
-  const comment = formData.get("comment")?.toString() || "";
+  const name = form.get("name")?.toString();
+  const uid = form.get("uid")?.toString();
+  const character = form.get("character")?.toString();
+  const comment = form.get("comment")?.toString() || "";
   if (!name || !uid || !character) return "กรุณากรอกข้อมูลให้ครบถ้วน";
   if (name.length > 32) return "ชื่อยาวเกินไป ต้องไม่เกิน 32 ตัวอักษร";
   if (!uidRegex.test(uid)) return "UID ไม่ถูกต้อง ต้องเป็นเลข 9 หลัก";
@@ -76,7 +82,7 @@ export async function submitArtifact(formData: FormData) {
 }
 
 export async function toggleCheck(submissionId: string) {
-  if (!(await apiAuthCheck())) throw "Unauthorized";
+  if (!(await adminCheck())) throw "Unauthorized";
   await db
     .update(submissions)
     .set({
@@ -86,11 +92,11 @@ export async function toggleCheck(submissionId: string) {
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
-  actionLog(`Toggled an artifact submission check mark`);
+  await actionLog(`Toggled an artifact submission check mark`);
 }
 
 export async function toggleLock() {
-  if (!(await apiAuthCheck())) throw "Unauthorized";
+  if (!(await adminCheck())) throw "Unauthorized";
   const existing = await db
     .update(artifactSettings)
     .set({
@@ -102,13 +108,13 @@ export async function toggleLock() {
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
-  actionLog(
+  await actionLog(
     `${(existing.length ? existing[0].locked : true) ? "Locked" : "Unlocked"} artifact submission`,
   );
 }
 
 export async function setLimit(limit: number) {
-  if (!(await apiAuthCheck())) throw "Unauthorized";
+  if (!(await adminCheck())) throw "Unauthorized";
 
   if (
     (
@@ -124,11 +130,11 @@ export async function setLimit(limit: number) {
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
-  actionLog(`Set artifact submit limit to ${limit < 0 ? "unlimited" : limit}`);
+  await actionLog(`Set artifact submit limit to ${limit < 0 ? "unlimited" : limit}`);
 }
 
 export async function wipe() {
-  if (!(await apiAuthCheck())) throw "Unauthorized";
+  if (!(await adminCheck())) throw "Unauthorized";
   await db.delete(submissions);
   await db.execute(
     sql`ALTER SEQUENCE artifact.submissions_queue_seq RESTART WITH 1`,
@@ -136,12 +142,12 @@ export async function wipe() {
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
-  actionLog(`Deleted artifact submissions`);
+  await actionLog(`Deleted artifact submissions`);
   redirect("/artifact/admin");
 }
 
 export async function random() {
-  if (!(await apiAuthCheck())) throw "Unauthorized";
+  if (!(await adminCheck())) throw "Unauthorized";
   const [sub] = await db
     .select()
     .from(submissions)
@@ -155,7 +161,7 @@ export async function random() {
 export async function tlState(
   data: Partial<typeof tierlistStates.$inferInsert>,
 ) {
-  if (!(await apiAuthCheck())) throw "Unauthorized";
+  if (!(await adminCheck())) throw "Unauthorized";
   const [existing] = await db
     .select()
     .from(tierlistStates)
@@ -185,7 +191,7 @@ export async function tlState(
 
   revalidatePath(`/api/tl/${list}/states`);
 
-  actionLog(`Updated a state in tierlist ${list}`, data);
+  await actionLog(`Updated a state in tierlist ${list}`, data);
   sse.publish(states, { topic: `tl-${list}`, event: "update_states" });
 }
 
@@ -193,7 +199,7 @@ export async function tlPlacements(
   list: string,
   placements: Record<string, string[]>,
 ) {
-  if (!(await apiAuthCheck())) throw "Unauthorized";
+  if (!(await adminCheck())) throw "Unauthorized";
 
   // biome-ignore lint/correctness/noUnusedVariables: immutable property removal
   const { untiered, ...placementObj } = placements;
@@ -207,7 +213,7 @@ export async function tlPlacements(
 
   revalidatePath(`/api/tl/${list}`);
 
-  actionLog(`Updated a placement in tierlist ${list}`);
+  await actionLog(`Updated a placement in tierlist ${list}`);
   sse.publish(placements, { topic: `tl-${list}`, event: "update_placements" });
 }
 
@@ -220,7 +226,7 @@ export async function cdnDelete(ids: string[], force = false) {
       const refs = await checkCdnRefs(id);
       if (refs.length) {
         revalidatePath("/cdn/admin");
-        actionLog(
+        await actionLog(
           `Deleted ${deleted}/${ids.length}(Incomplete) files`,
           ids.slice(0, deleted),
         );
@@ -231,7 +237,7 @@ export async function cdnDelete(ids: string[], force = false) {
     }
   revalidatePath("/cdn/admin");
 
-  actionLog(`Deleted ${deleted} files`, ids);
+  await actionLog(`Deleted ${deleted} files`, ids);
 }
 
 export async function checkCdnRefs(
@@ -265,7 +271,7 @@ export async function cdnify(
     })
     .returning({ id: cdn.id });
 
-  actionLog(`File uploaded: ${name || `[${id}]`} (${b2s(data.size)})`);
+  await actionLog(`File uploaded: ${name || `[${id}]`} (${b2s(data.size)})`);
 
   try {
     revalidatePath("/admin/cdn");
@@ -274,27 +280,25 @@ export async function cdnify(
 }
 
 export async function actionLog(text: string, details?: unknown) {
-  after(async () => {
-    // If not running in Next.js, skip.
-    if (typeof process.versions.bun !== "undefined") return;
-    const session = await apiAuthCheck();
+  // If not running in Next.js, skip.
+  if (typeof process.versions.bun !== "undefined") return;
+  const session = await adminCheck();
 
-    const res = await db
-      .insert(auditLog)
-      .values({
-        author: session?.name,
-        text,
-        details,
-      })
-      .returning()
-      .catch(() =>
-        console.error(
-          `Error logging audit log, printing it here:\n${session?.name || "[Unknown User]"} - ${text}`,
-        ),
-      );
+  const res = await db
+    .insert(auditLog)
+    .values({
+      author: session?.name,
+      text,
+      details,
+    })
+    .returning()
+    .catch(() =>
+      console.error(
+        `Error logging audit log, printing it here:\n${session?.name || "[Unknown User]"} - ${text}`,
+      ),
+    );
 
-    revalidatePath("/admin/log");
+  revalidatePath("/admin/log");
 
-    if (res) sse.publish(res, { topic: "log" });
-  });
+  if (res) sse.publish(res, { topic: "log" });
 }

@@ -71,6 +71,7 @@ COPY --from=builder /home/container/.env ./.env
 COPY --from=builder /home/container/.next ./.next
 
 COPY --from=builder /home/container/util ./util
+COPY --from=builder /home/container/lib ./lib
 COPY --from=builder /home/container/tsconfig.json ./tsconfig.json
 
 CMD ["bun", "start"]

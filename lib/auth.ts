@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { admin } from "better-auth/plugins";
 import { headers } from "next/headers";
 import { db } from "$/db"; // your drizzle instance
 import * as schema from "$/db/schema";
@@ -9,11 +10,13 @@ export const auth = betterAuth({
     enabled: true,
     disableSignUp: true,
   },
+  plugins: [admin()],
   trustedOrigins: [
     "http://nyx:3000",
     "http://astral:3000",
     "http://localhost:3000",
     "https://dev3000.dgnr.us",
+    "http://m.dgnr.us",
   ],
   database: drizzleAdapter(db, {
     provider: "pg", // or "mysql", "sqlite"
@@ -21,7 +24,7 @@ export const auth = betterAuth({
   }),
 });
 
-export async function apiAuthCheck() {
+export async function adminCheck() {
   "use server";
 
   const session = await auth.api.getSession({
@@ -30,5 +33,5 @@ export async function apiAuthCheck() {
 
   // console.log(session);
 
-  return session?.user;
+  return session?.user.role === "admin" ? session.user : null;
 }

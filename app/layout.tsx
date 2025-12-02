@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
 import { Anuphan, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AnimatePresence } from "framer-motion";
-import Image from "next/image";
-import { Toaster } from "sonner";
-import Background from "#/bg.jpg";
-import Providers, { VersionCheck } from "./client";
 
 const anuphan = Anuphan({
   variable: "--font-anuphan",
@@ -18,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.BASE_URL || "https://buzz.gunshiz.top"),
+  metadataBase: new URL(process.env.BASE_URL || "https://buzz.sudloh.com"),
   title: "เกนชินไม่ใช่เกมมือถือ",
   description: "ระบบอีเวนท์ของเกนชินไม่ใช่เกมมือถือ",
   icons: `/favicon.webp`, // TODO: CHANGE BACK TO buzz
@@ -40,16 +35,7 @@ export default function RootLayout({
       <body
         className={`${anuphan.variable} ${geistMono.variable} font-sans antialiased h-full`}
       >
-        <Image
-          src={Background}
-          alt="Background"
-          className="z-[-1] opacity-20 object-cover fixed top-0 left-0 w-full h-full"
-        />
-        <Providers>
-          <AnimatePresence mode="wait">{children}</AnimatePresence>
-        </Providers>
-        <Toaster theme="dark" richColors closeButton />
-        <VersionCheck />
+        {children}
       </body>
     </html>
   );
