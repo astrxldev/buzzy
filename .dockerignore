@@ -5,3 +5,9 @@ data
 .git
 .env.local
 .next
+
+Dockerfile
+docker-compose.yml
+nginx
+test-results
+playwright-report

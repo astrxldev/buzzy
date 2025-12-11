@@ -1,5 +1,5 @@
 import { ps } from "@/lib/db/redis";
 
 export async function GET() {
-  return ps.new("artifact");
+  return ps.new("rubgram");
 }

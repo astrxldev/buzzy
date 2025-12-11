@@ -11,6 +11,7 @@ import {
 } from "drizzle-orm";
 import {
   AlertCircle,
+  ArrowLeft,
   BookAlert,
   CircleDollarSign,
   SendHorizonal,
@@ -24,6 +25,16 @@ import { PageTransition } from "@/app/transition";
 import { Blocker } from "@/components/blocker";
 import Image from "@/components/image";
 import { SimpleTooltip } from "@/components/tooltip";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -54,6 +65,7 @@ import { endgameSubmissions } from "@/lib/db/schema";
 import { LiveButton } from "../artifact/live";
 import { getDiscordSession, getEndgameConfig } from "./api";
 import {
+  CancelButton,
   ClearCookie,
   Countdown,
   DownloadButton,
@@ -270,6 +282,29 @@ export default async function EndgamePage() {
                 </RulesDialog>
                 <TooltipContent>อ่านกฏการลงคิว</TooltipContent>
               </Tooltip>
+              {q && (
+                    <AlertDialog>
+                      <SimpleTooltip text="ยกเลิกคิว">
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive" type="button">
+                            <ArrowLeft />
+                          </Button>
+                        </AlertDialogTrigger>
+                      </SimpleTooltip>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>แน่ใจเหรอ</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            ต้องการยกเลิกคิวของคุณหรือไม่
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>ไม่ใช่</AlertDialogCancel>
+                          <CancelButton sid={sid!.value} />
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
               <Suspense>
                 <LiveButton />
               </Suspense>

@@ -2,7 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export default function AutoFitText({ children, className }: { children: string, className?: string }) {
+export default function AutoFitText({
+  children,
+  className,
+}: {
+  children: string;
+  className?: string;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState(10); // will update instantly

@@ -4,7 +4,7 @@ import { VersionCheck } from "@/app/client";
 import AutoFitText from "@/components/fit";
 import { getArtifactConfig } from "@/lib/api";
 import { db } from "@/lib/db";
-import { submissions } from "@/lib/db/schema";
+import { endgameSubmissions } from "@/lib/db/schema";
 
 const kanit = Kanit({
   variable: "--font-kanit",
@@ -14,7 +14,7 @@ const kanit = Kanit({
 
 export default async function ArtifactCountWidget() {
   const config = await getArtifactConfig();
-  const count = await db.$count(submissions);
+  const count = await db.$count(endgameSubmissions);
 
   const display = `${count} / ${config.limit < 0 ? "∞" : config.limit}`;
 

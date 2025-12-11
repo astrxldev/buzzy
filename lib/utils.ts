@@ -13,7 +13,7 @@ type ServerEventSource = {
   id: number;
 };
 
-type EventSourceMOTD = { event?: string; data: unknown };
+type EventSourceMOTD = { event?: string; data: string };
 
 export class EventSourceManager {
   private list: ServerEventSource[] = [];
@@ -34,9 +34,7 @@ export class EventSourceManager {
     this.id++;
     if (this.id > 100000) this.id = 0;
     const id = this.id;
-    console.log(
-      ` SUB ${topic}#${id} (C${this.list.length})`,
-    );
+    console.log(` SUB ${topic}#${id} (C${this.list.length})`);
 
     const push = (s: ServerEventSource) => {
       this.list.push(s);

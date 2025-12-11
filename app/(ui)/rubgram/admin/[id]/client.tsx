@@ -1,9 +1,17 @@
 "use client";
 
-import { Copy, CopyCheck, Loader2 } from "lucide-react";
+import {
+  Check,
+  Copy,
+  CopyCheck,
+  Loader2,
+  MessageSquareWarning,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
+import { discordCall } from "../../api";
 
 export function EnkaBrowser({ uid }: { uid: string }) {
   const [id, setId] = useState(uid);
@@ -39,8 +47,39 @@ export function CopyButton({ text }: { text: string }) {
     setTimeout(() => setCopied(false), 2000);
   }
   return (
-    <Button variant="ghost" size="icon" onClick={copy} disabled={copied}>
-      {copied ? <CopyCheck /> : <Copy />}
+    <Button variant="link" onClick={copy} disabled={copied} className="text-white">
+      {copied ? <CopyCheck /> : <Copy />} คัดลอก username
+    </Button>
+  );
+}
+
+export function CallButton({ user }: { user: string }) {
+  const [state, setState] = useState<"ready" | "loading" | "success" | "error">(
+    "ready",
+  );
+  return (
+    <Button
+      disabled={state === "loading"}
+      onClick={() => {
+        setState("loading");
+        discordCall(user).then((r) => setState(r ? "success" : "error"));
+      }}
+      variant={
+        state === "error"
+          ? "destructive"
+          : state === "success"
+            ? "secondary"
+            : "default"
+      }
+    >
+      {state === "success" ? (
+        <Check />
+      ) : state === "loading" ? (
+        <Spinner />
+      ) : (
+        <MessageSquareWarning />
+      )}
+      กดเรียกผ่านดิสคอร์ด
     </Button>
   );
 }

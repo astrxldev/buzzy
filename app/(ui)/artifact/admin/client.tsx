@@ -219,7 +219,7 @@ export function Watcher() {
           count.current = r;
         })
         .catch((e) => console.error("Fetching artifact count failed", e));
-    }, 60000);
+    }, 120000);
     return () => {
       es.close();
       clearInterval(interval);

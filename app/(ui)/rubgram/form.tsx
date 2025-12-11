@@ -1,5 +1,6 @@
 "use client";
 
+import { useProgress } from "@bprogress/next";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -14,7 +15,10 @@ export function EndgameFormWrapper({
   ...props
 }: React.ComponentProps<"form"> & { type: "registration" | "payment" }) {
   const router = useRouter();
+  const { start, stop } = useProgress();
   async function submit(data: FormData) {
+    start();
+
     ({ registration: submitEndgame, payment: submitEndgamePayment })
       [type](data as unknown as EndgameFormData & EndgamePaymentFormData)
       .then((q) => {
@@ -28,7 +32,8 @@ export function EndgameFormWrapper({
         }
         router.refresh();
       })
-      .catch((e) => toast.error(`${e.message || e}`));
+      .catch((e) => toast.error(`${e.message || e}`))
+      .finally(stop);
   }
   return (
     <form

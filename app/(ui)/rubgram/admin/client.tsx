@@ -34,8 +34,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { setLimit, toggleCheck, toggleLock } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { setFree, setLimit, toggleCheck, toggleLock } from "../api";
 
 export function SidebarLink({
   submission,
@@ -54,7 +54,7 @@ export function SidebarLink({
 
   return (
     <Link
-      href={`/artifact/admin/${submission.id}`}
+      href={`/rubgram/admin/${submission.id}`}
       className={cn(
         className,
         id === submission.id && "bg-accent text-accent-foreground",
@@ -87,9 +87,10 @@ export function LimitManager({
   length,
   ...props
 }: React.ComponentProps<typeof SidebarMenu> & {
-  config: Awaited<ReturnType<typeof import("@/lib/api").getArtifactConfig>>;
+  config: Awaited<ReturnType<typeof import("../api").getEndgameConfig>>;
   length: number;
 }) {
+  const [dialog, setDialog] = useState(1);
   return (
     <SidebarMenu {...props}>
       <SidebarMenuItem>
@@ -132,48 +133,98 @@ export function LimitManager({
             </DropdownMenuTrigger>
             <DropdownMenuContent side="right" align="end">
               <DialogTrigger asChild>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    setDialog(1);
+                  }}
+                >
                   <span>ตั้ง Limit</span>
                 </DropdownMenuItem>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>ตั้ง Limit</DialogTitle>
-                </DialogHeader>
-                <form
-                  id="limit-form"
-                  action={async (data: FormData) =>
-                    setLimit(Number(data.get("limit")) || -1)
-                  }
-                >
-                  <Input
-                    id="limit"
-                    name="limit"
-                    type="number"
-                    placeholder="ไม่จำกัด"
-                    defaultValue={config.limit >= 0 ? config.limit : ""}
-                  />
-                </form>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant="outline">ยกเลิก</Button>
-                  </DialogClose>
-                  <DialogClose asChild>
-                    <Button type="submit" form="limit-form">
-                      บันทึกการเปลี่ยนแปลง
-                    </Button>
-                  </DialogClose>
-                </DialogFooter>
-              </DialogContent>
               <DropdownMenuItem onClick={toggleLock}>
                 <span>{config.locked && "เ"}ปิดรับ</span>
               </DropdownMenuItem>
+              <DialogTrigger asChild>
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    setDialog(2);
+                  }}
+                >
+                  <span>ตั้งจำนวนคิวฟรี</span>
+                </DropdownMenuItem>
+              </DialogTrigger>
             </DropdownMenuContent>
           </DropdownMenu>
+          {dialog === 1 ? (
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>ตั้ง Limit</DialogTitle>
+              </DialogHeader>
+              <form
+                id="limit-form"
+                action={async (data: FormData) =>
+                  setLimit(Number(data.get("limit")) || -1)
+                }
+              >
+                <Input
+                  id="limit"
+                  name="limit"
+                  type="number"
+                  placeholder="ไม่จำกัด"
+                  defaultValue={config.limit >= 0 ? config.limit : ""}
+                  autoFocus
+                />
+              </form>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">ยกเลิก</Button>
+                </DialogClose>
+                <DialogClose asChild>
+                  <Button type="submit" form="limit-form">
+                    บันทึกการเปลี่ยนแปลง
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          ) : (
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>ตั้งจำนวนคิวฟรี</DialogTitle>
+              </DialogHeader>
+              <form
+                id="free-form"
+                action={async (data: FormData) =>
+                  setFree(Number(data.get("free")) || 0)
+                }
+              >
+                <Input
+                  id="free"
+                  name="free"
+                  type="number"
+                  placeholder="ไม่ฟรีเลย"
+                  defaultValue={config.free >= 0 ? config.free : ""}
+                  autoFocus
+                />
+              </form>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">ยกเลิก</Button>
+                </DialogClose>
+                <DialogClose asChild>
+                  <Button type="submit" form="free-form">
+                    บันทึกการเปลี่ยนแปลง
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          )}
         </Dialog>
         <SidebarMenuBadge>
           {length}
           {config.limit >= 0 ? `/${config.limit}` : ""}
+          {config.free > 0 ? ` (ฟรี ${config.free})` : ""}
         </SidebarMenuBadge>
       </SidebarMenuItem>
     </SidebarMenu>
@@ -208,17 +259,17 @@ export function Watcher() {
   const router = useRouter();
   const count = useRef<number | undefined>(undefined);
   useEffect(() => {
-    const es = new EventSource(`/api/artifact/ev`);
+    const es = new EventSource(`/api/rubgram/ev`);
     es.addEventListener("update", () => router.refresh());
     const interval = setInterval(() => {
-      fetch("/api/artifact/count")
+      fetch("/api/rubgram/count")
         .then((r) => r.json())
         .then((r) => {
           if (typeof count.current === "undefined") count.current = r;
           if (count.current !== r) router.refresh();
           count.current = r;
         })
-        .catch((e) => console.error("Fetching artifact count failed", e));
+        .catch((e) => console.error("Fetching rubgram count failed", e));
     }, 60000);
     return () => {
       es.close();

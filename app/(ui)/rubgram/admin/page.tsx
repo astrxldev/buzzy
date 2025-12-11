@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "เสือกไอดีชาวบ้าน (แอดมิน)",
+  title: "รับกรรมแทนทางบ้าน (แอดมิน)",
 };
 
 export default function AdminPage() {

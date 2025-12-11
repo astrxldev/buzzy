@@ -1,7 +1,8 @@
 "use client";
 
-import { ArrowRight, Download, LogIn, ScrollText } from "lucide-react";
+import { ArrowRight, Check, Download, LogIn, ScrollText } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Blocker } from "@/components/blocker";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
@@ -14,8 +15,10 @@ import {
   MultiSelectTrigger,
   MultiSelectValue,
 } from "@/components/ui/multi-select";
+import { Spinner } from "@/components/ui/spinner";
 import { comms } from "@/lib/comms";
-import { calcPrice, type getDiscordSession, loginDiscord } from "./api";
+import { cn } from "@/lib/utils";
+import { calcPrice, cancel, type getDiscordSession, loginDiscord } from "./api";
 import { RulesDialog } from "./rules";
 
 export function WelcomeScreening({
@@ -94,7 +97,14 @@ export function ServiceSelector() {
       <span className="text-xs text-muted-foreground -mt-1">
         เลือกทั้งหมด ลดให้ 10 บาท
       </span>
-      <select hidden id="service" name="service" multiple value={selected}>
+      <select
+        hidden
+        id="service"
+        name="service"
+        multiple
+        value={selected}
+        onChange={() => {}}
+      >
         <option value="abyss" />
         <option value="theater" />
         <option value="stygian" />
@@ -121,13 +131,13 @@ export function SlipUpload() {
   return (
     <>
       <Button
-        className="w-full bg-emerald-600!"
+        className={cn("w-full", isSelected && "bg-emerald-600!")}
         size="sm"
         type="button"
         onClick={() => ref.current?.click()}
-        variant={isSelected ? "default" : "destructive"}
+        variant="destructive"
       >
-        <ScrollText /> อัพโหลดสลิป
+        {isSelected ? <Check /> : <ScrollText />} อัพโหลดสลิป
       </Button>
       <input
         ref={ref}
@@ -182,6 +192,25 @@ export function Countdown({ time }: { time: Date }) {
       {minutes.toString().padStart(2, "0")}:
       {seconds.toString().padStart(2, "0")}
     </span>
+  );
+}
+
+export function CancelButton({ sid }: { sid: string }) {
+  const [loading, setLoading] = useState(false);
+  const [, setServices] = comms.var("rubgram.services");
+
+  return (
+    <Button
+      variant="destructive"
+      onClick={() => {
+        setLoading(true);
+        cancel(sid).then(() => toast.success("คิวยกเลิกแล้ว"));
+        setServices([]);
+      }}
+      disabled={loading}
+    >
+      {loading && <Spinner />}ยกเลิก
+    </Button>
   );
 }
 

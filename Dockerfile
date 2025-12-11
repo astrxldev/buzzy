@@ -74,4 +74,7 @@ COPY --from=builder /home/container/util ./util
 COPY --from=builder /home/container/lib ./lib
 COPY --from=builder /home/container/tsconfig.json ./tsconfig.json
 
+# Deployment versioning
+RUN bun -e "Bun.write('.version', Bun.randomUUIDv7())"
+
 CMD ["bun", "start"]

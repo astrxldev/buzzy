@@ -173,7 +173,7 @@ export function Disclaimer() {
   );
 }
 
-export async function ClearCookie() {
+export function ClearCookie() {
   // biome-ignore lint/suspicious/noTsIgnore: typescript issue
   // @ts-ignore
   cookieStore.delete("sid");
@@ -181,9 +181,9 @@ export async function ClearCookie() {
 }
 
 export function WarningDialog() {
-  const [manual, setManual] = comms.var("manual");
+  const [_manual, _setManual] = comms.var("manual");
 
   comms.event("beforeSubmit", () => {
-    manual;
+    _manual;
   });
 }

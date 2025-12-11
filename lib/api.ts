@@ -8,6 +8,7 @@ import type { TypedFormData } from "@/app/(ui)/rubgram/type";
 import { adminCheck } from "./auth";
 import { uidRegex } from "./const";
 import { db } from "./db";
+import { ps } from "./db/redis";
 import { cdnReferences } from "./db/references";
 import {
   artifactSettings,
@@ -19,7 +20,7 @@ import {
   tierlistStates,
   tierlistVersions,
 } from "./db/schema";
-import { b2s, sse } from "./utils";
+import { b2s } from "./utils";
 
 export async function getCharacters(chars: string[]) {
   return await db
@@ -77,7 +78,7 @@ export async function submitArtifact(formData: FormData) {
     })
     .returning({ queue: submissions.queue, id: submissions.id });
   revalidatePath("/artifact/admin");
-  sse.publish({}, { topic: "artifact-ev", event: "update" });
+  ps.publish({}, { topic: "artifact", event: "update" });
   return queue;
 }
 
@@ -130,7 +131,9 @@ export async function setLimit(limit: number) {
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
-  await actionLog(`Set artifact submit limit to ${limit < 0 ? "unlimited" : limit}`);
+  await actionLog(
+    `Set artifact submit limit to ${limit < 0 ? "unlimited" : limit}`,
+  );
 }
 
 export async function wipe() {
@@ -192,7 +195,7 @@ export async function tlState(
   revalidatePath(`/api/tl/${list}/states`);
 
   await actionLog(`Updated a state in tierlist ${list}`, data);
-  sse.publish(states, { topic: `tl-${list}`, event: "update_states" });
+  ps.publish(states, { topic: `tl.${list}`, event: "update_states" });
 }
 
 export async function tlPlacements(
@@ -214,7 +217,7 @@ export async function tlPlacements(
   revalidatePath(`/api/tl/${list}`);
 
   await actionLog(`Updated a placement in tierlist ${list}`);
-  sse.publish(placements, { topic: `tl-${list}`, event: "update_placements" });
+  ps.publish(placements, { topic: `tl.${list}`, event: "update_placements" });
 }
 
 export async function cdnDelete(ids: string[], force = false) {
@@ -280,8 +283,6 @@ export async function cdnify(
 }
 
 export async function actionLog(text: string, details?: unknown) {
-  // If not running in Next.js, skip.
-  if (typeof process.versions.bun !== "undefined") return;
   const session = await adminCheck();
 
   const res = await db
@@ -300,5 +301,5 @@ export async function actionLog(text: string, details?: unknown) {
 
   revalidatePath("/admin/log");
 
-  if (res) sse.publish(res, { topic: "log" });
+  if (res) ps.publish(res, { topic: "log" });
 }

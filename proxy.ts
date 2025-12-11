@@ -22,6 +22,7 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/artifact/admin/:path*",
+    "/rubgram/admin/:path*",
     "/tl/:path*/:path*/admin",
     "/admin/:path*",
   ], // Specify the routes the middleware applies to

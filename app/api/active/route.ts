@@ -1,23 +1,27 @@
-import { sse } from "@/lib/utils";
+import { ps } from "@/lib/db/redis";
 
-const VERSION = crypto.randomUUID();
+const version = Bun.file(".version");
 
-export function GET({ signal }: Request) {
-  // +1 because this connection is not yet counted
-  sse.publish(sse.count("active") + 1, {
-    topic: "active",
-    event: "count",
-  });
-
-  return sse.new("active", {
-    onDisconnect() {
-      // no need to -1 because this connection is already removed
-      sse.publish(sse.count("active"), { topic: "active", event: "count" });
-    },
+export async function GET(req: Request) {
+  if (process.env.ENVIRONMENT === "development")
+    return ps.new("active", {
+      motd: {
+        data: "DEV",
+        event: "version",
+      },
+      signal: req.signal,
+    });
+  if (!(await version.exists())) await version.write(crypto.randomUUID());
+  let ver = await version.text();
+  if (!ver) {
+    ver = crypto.randomUUID();
+    await version.write(crypto.randomUUID());
+  }
+  return ps.new("active", {
     motd: {
-      data: VERSION,
+      data: ver,
       event: "version",
     },
-    signal,
+    signal: req.signal,
   });
 }

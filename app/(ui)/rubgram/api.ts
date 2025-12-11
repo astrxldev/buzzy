@@ -1,11 +1,25 @@
 "use server";
 
-import { and, desc, eq, gt, isNull, lt, not, sql } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  gt,
+  isNotNull,
+  isNull,
+  lt,
+  not,
+  or,
+  sql,
+} from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import image from "next/image";
 import { redirect } from "next/navigation";
+import { actionLog } from "@/lib/api";
+import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { ps } from "@/lib/db/redis";
 import {
   endgameArchive,
   endgameDiscord,
@@ -14,13 +28,114 @@ import {
   endgameSubmissions,
   settings,
 } from "@/lib/db/schema";
-import { sse } from "@/lib/utils";
 import type { TypedFormData } from "./type";
 
-const { SLIPOK_API_URL, SLIPOK_API_KEY } = process.env as Record<
-  string,
-  string
->;
+const { SLIPOK_API_URL, SLIPOK_API_KEY, DISCORD_WEBHOOK_URL } =
+  process.env as Record<string, string>;
+
+export async function wipe() {
+  if (!(await adminCheck())) throw "Unauthorized";
+  await db.delete(endgameSubmissions);
+  await db.execute(
+    sql`ALTER SEQUENCE endgame.submissions_queue_seq RESTART WITH 1`,
+  );
+  revalidatePath("/rubgram/admin");
+  revalidatePath("/rubgram");
+
+  await actionLog(`Deleted rubgram submissions`);
+  redirect("/rubgram/admin");
+}
+
+export async function random() {
+  if (!(await adminCheck())) throw "Unauthorized";
+  const [sub] = await db
+    .select()
+    .from(endgameSubmissions)
+    .where(
+      and(
+        not(endgameSubmissions.checked),
+        or(eq(endgameSubmissions.price, 0), isNotNull(endgameSubmissions.slip)),
+      ),
+    )
+    .orderBy(sql`RANDOM()`)
+    .limit(1);
+  if (sub) redirect(`/rubgram/admin/${sub.id}`);
+  else throw "ไม่พบผู้ลงทะเบียนที่ยังไม่ตรวจสอบ";
+}
+
+export async function toggleCheck(submissionId: string) {
+  if (!(await adminCheck())) throw "Unauthorized";
+  await db
+    .update(endgameSubmissions)
+    .set({
+      checked: not(endgameSubmissions.checked),
+    })
+    .where(eq(endgameSubmissions.id, submissionId));
+  revalidatePath("/rubgram/admin");
+  revalidatePath("/rubgram");
+
+  await actionLog(`Toggled an rubgram submission check mark`);
+}
+
+export async function toggleLock() {
+  if (!(await adminCheck())) throw "Unauthorized";
+  const existing = await db
+    .update(endgameSettings)
+    .set({
+      locked: not(endgameSettings.locked),
+    })
+    .returning({ locked: endgameSettings.locked });
+  if (existing.length === 0)
+    await db.insert(endgameSettings).values({ locked: true });
+  revalidatePath("/rubgram/admin");
+  revalidatePath("/rubgram");
+
+  await actionLog(
+    `${(existing.length ? existing[0].locked : true) ? "Locked" : "Unlocked"} rubgram submission`,
+  );
+}
+
+export async function setLimit(limit: number) {
+  if (!(await adminCheck())) throw "Unauthorized";
+
+  if (
+    (
+      await db
+        .update(endgameSettings)
+        .set({
+          limit,
+        })
+        .returning({ id: endgameSettings.id })
+    ).length === 0
+  )
+    await db.insert(endgameSettings).values({ limit });
+  revalidatePath("/rubgram/admin");
+  revalidatePath("/rubgram");
+
+  await actionLog(
+    `Set rubgram submit limit to ${limit < 0 ? "unlimited" : limit}`,
+  );
+}
+
+export async function setFree(free: number) {
+  if (!(await adminCheck())) throw "Unauthorized";
+
+  if (
+    (
+      await db
+        .update(endgameSettings)
+        .set({
+          free,
+        })
+        .returning({ id: endgameSettings.id })
+    ).length === 0
+  )
+    await db.insert(endgameSettings).values({ free });
+  revalidatePath("/rubgram/admin");
+  revalidatePath("/rubgram");
+
+  await actionLog(`Set rubgram submit limit to ${free}`);
+}
 
 export async function getEndgameConfig() {
   const [ngm]: (typeof endgameSettings.$inferSelect | undefined)[] = await db
@@ -92,7 +207,7 @@ export async function submitEndgame(formData: EndgameFormData) {
     })
     .returning({ queue: endgameSubmissions.queue, id: endgameSubmissions.id });
   revalidatePath("/rubgram/admin");
-  sse.publish({}, { topic: "rubgram-ev", event: "submit" });
+  ps.publish({}, { topic: "rubgram", event: "update" });
   return queue;
 }
 
@@ -162,7 +277,7 @@ export async function submitEndgamePayment(formData: EndgamePaymentFormData) {
       .where(eq(endgameSubmissions.id, sid));
   });
   revalidatePath("/rubgram/admin");
-  sse.publish({}, { topic: "rubgram-ev", event: "submit" });
+  ps.publish({}, { topic: "rubgram", event: "update" });
   return Array.isArray(queue) ? queue[0] : queue;
 }
 
@@ -274,6 +389,29 @@ async function removeExpiredSubmissions() {
   return {
     removed: Number(toRemove[0]?.count || 0),
   };
+}
+
+export async function cancel(sid: string) {
+  await db.delete(endgameSubmissions).where(eq(endgameSubmissions.id, sid));
+
+  await removeExpiredSubmissions();
+
+  revalidatePath("/rubgram");
+}
+
+export async function discordCall(id: string) {
+  return await fetch(DISCORD_WEBHOOK_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      content: `<@${id}> ถึงคิวแล้ว ทักหาบุสได้เลย`,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }).then(async (r) => {
+    console.log(await r.text());
+    return r.ok;
+  });
 }
 
 export type SlipokResponse =

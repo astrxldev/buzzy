@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { ps } from "@/lib/db/redis";
 
 export const revalidate = 900;
 
@@ -75,10 +76,14 @@ export async function GET() {
   const data: APISearchResponse = await response.json();
   if (data.items.length <= 0) return NextResponse.json<YoutubeLiveInfo>("none");
   const live = data.items[0];
-  return NextResponse.json<YoutubeLiveInfo>({
+
+  const res: YoutubeLiveInfo = {
     url: `https://www.youtube.com/watch?v=${live.id.videoId}`,
     thumbnails:
       live.snippet.thumbnails[Object.keys(live.snippet.thumbnails)[0]],
     title: live.snippet.title,
-  });
+  };
+
+  await ps.publish(res, { event: "live", topic: "active" });
+  return NextResponse.json<YoutubeLiveInfo>(res);
 }

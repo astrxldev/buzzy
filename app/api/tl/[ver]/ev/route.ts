@@ -1,9 +1,9 @@
-import { sse } from "@/lib/utils";
+import { ps } from "@/lib/db/redis";
 
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ ver: string }> },
 ) {
   const { ver } = await params;
-  return sse.new(`tl-${ver}`);
+  return ps.new(`tl.${ver}`);
 }

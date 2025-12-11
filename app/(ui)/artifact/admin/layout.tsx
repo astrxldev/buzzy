@@ -72,8 +72,7 @@ export default async function AdminLayout({
                       คุณมั่นใจที่จะล้างข้อมูลทั้งหมดใช่ไหม?
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      การกระทำนี้ไม่สามารถย้อนกลับได้ 
-                      เราจะลบบัญชีของท่านออกจากระบบ
+                      การกระทำนี้ไม่สามารถย้อนกลับได้ เราจะลบบัญชีของท่านออกจากระบบ
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>

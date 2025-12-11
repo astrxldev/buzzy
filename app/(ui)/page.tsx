@@ -22,13 +22,15 @@ export default function Home() {
       <div className="relative h-svh w-full overflow-hidden flex items-center justify-center">
         <div className="max-w-340 w-full mx-auto px-4 sm:px-6 py-6">
           <Card className="max-w-lg w-full mx-auto pt-0">
-            <Image
-              src={Banner}
-              alt="Banner"
-              className="w-full rounded-t-xl"
-              width={500}
-              height={100}
-            />
+            <Link href="https://www.youtube.com/@Genshinmaichaigamemurtur">
+              <Image
+                src={Banner}
+                alt="Banner"
+                className="w-full rounded-t-xl"
+                width={500}
+                height={100}
+              />
+            </Link>
 
             <CardContent className="space-y-6">
               <div className="flex flex-col gap-2">
@@ -57,36 +59,29 @@ export default function Home() {
                   </Link>
                 </Item>
 
-                {
-                  <Item variant="outline" asChild>
-                    <Link href="/rubgram">
-                      <ItemMedia className="justify-center">
-                        <Image
-                          src={RubgramLogo}
-                          alt="รับกรรมแทนคนดู"
-                          className="w-22"
-                          width={500}
-                          height={500}
-                        />
-                      </ItemMedia>
-                      <ItemContent>
-                        <ItemTitle>
-                          <span className="hidden md:block">
-                            รับกรรมแทนทางบ้าน
-                          </span>
-                          <span className="block md:hidden">เร็วๆนี้</span>
-                        </ItemTitle>
-                        <ItemDescription className="line-clamp-none hidden md:block">
-                          รับเล่นคอนเท้น Endgame แทนคนดู{" "}
-                          <span className="text-red-500">ไม่ฟรีนะคับ</span>
-                        </ItemDescription>
-                      </ItemContent>
-                      <ItemActions>
-                        <ChevronRightIcon className="size-4" />
-                      </ItemActions>
-                    </Link>
-                  </Item>
-                }
+                <Item variant="outline" asChild>
+                  <Link href="/rubgram">
+                    <ItemMedia className="justify-center">
+                      <Image
+                        src={RubgramLogo}
+                        alt="รับกรรมแทนคนดู"
+                        className="w-22"
+                        width={500}
+                        height={500}
+                      />
+                    </ItemMedia>
+                    <ItemContent>
+                      <ItemTitle>รับกรรมแทนทางบ้าน</ItemTitle>
+                      <ItemDescription className="line-clamp-none hidden md:block">
+                        รับเล่นคอนเท้น Endgame แทนคนดู{" "}
+                        <span className="text-red-500">ไม่ฟรีนะคับ</span>
+                      </ItemDescription>
+                    </ItemContent>
+                    <ItemActions>
+                      <ChevronRightIcon className="size-4" />
+                    </ItemActions>
+                  </Link>
+                </Item>
 
                 <Item variant="outline" asChild>
                   <Link href="/tl">

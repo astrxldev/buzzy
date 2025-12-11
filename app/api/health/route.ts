@@ -1,11 +1,16 @@
 import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { redis } from "@/lib/db/redis";
 
 export const revalidate = 900;
 
 export async function GET() {
   const database = await db
     .execute(sql<boolean>`select true`)
+    .then(() => true)
+    .catch(() => false);
+  const red = await redis
+    .ping()
     .then(() => true)
     .catch(() => false);
   const enka = await fetch("https://enka.network/api/uid/888888888/?info", {
@@ -21,5 +26,5 @@ export async function GET() {
   })
     .then((r) => r.ok)
     .catch(() => false);
-  return Response.json({ database, enka, amber });
+  return Response.json({ database, red, enka, amber });
 }

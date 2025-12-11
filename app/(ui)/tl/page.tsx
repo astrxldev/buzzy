@@ -1,4 +1,4 @@
-import { desc } from "drizzle-orm";
+import { desc, not } from "drizzle-orm";
 import Link from "next/link";
 import Image from "@/components/image";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -15,7 +15,8 @@ export default async function TierlistSelectionPage() {
   const versionsList = await db
     .select()
     .from(tierlistVersions)
-    .orderBy(desc(tierlistVersions.id));
+    .orderBy(desc(tierlistVersions.id))
+    .where(not(tierlistVersions.hidden));
   const vers = types.map((t) => ({
     ...t,
     versions: versionsList.filter((v) => v.type === t.id),

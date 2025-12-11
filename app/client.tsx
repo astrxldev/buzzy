@@ -1,7 +1,7 @@
 "use client";
 
 import { ProgressProvider } from "@bprogress/next/app";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useKey } from "react-use";
 import ReconnectingEventSource from "reconnecting-eventsource";
 import { toast } from "sonner";
@@ -22,8 +22,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 }
 
 export function VersionCheck({ headless = false }: { headless?: boolean }) {
-  const [version, setVersion] = useState<string>();
-  const [count, setCount] = useState<string | number>("...");
+  const ver = useRef<string>("");
   const [debug, setDebug] = comms.var("debug");
   const [, setConnected] = comms.var("connected");
   const [, setUpdated] = comms.var("updated");
@@ -48,6 +47,7 @@ export function VersionCheck({ headless = false }: { headless?: boolean }) {
     es.addEventListener("version", (d) => {
       setConnected(true);
       const newVersion = JSON.parse(d.data);
+      const version = ver.current;
       if (!version) console.log("Client version:", newVersion);
       console.log("Server version:", newVersion);
       if (version && newVersion !== version) {
@@ -65,11 +65,7 @@ export function VersionCheck({ headless = false }: { headless?: boolean }) {
             duration: Infinity,
           });
       }
-      if (newVersion !== version) setVersion(newVersion);
-    });
-    es.addEventListener("count", (d) => {
-      const count = JSON.parse(d.data);
-      setCount(count);
+      if (newVersion !== version) ver.current = newVersion;
     });
     es.onerror = () => {
       setConnected(false);
@@ -85,11 +81,11 @@ export function VersionCheck({ headless = false }: { headless?: boolean }) {
       );
     };
     return () => es.close();
-  }, [version, headless, setConnected, setUpdated, readyForUpdate]);
+  }, [headless, setConnected, setUpdated, readyForUpdate]);
 
   return debug ? (
     <div className="absolute bottom-0 right-0 m-2 px-1 rounded flex flex-col gap-2 bg-card border active:pointer-events-none opacity-20 hover:opacity-100 transition-opacity">
-      {count} ผู้ใช้งานออนไลน์
+      Buzz ({ver.current.split("-")[0] || "..."})
       <pre>{stringify(debugData, null, 2)}</pre>
     </div>
   ) : (

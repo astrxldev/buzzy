@@ -1,3 +1,4 @@
+import { eq, isNotNull, or } from "drizzle-orm";
 import { Dice3, Trash2 } from "lucide-react";
 import { redirect } from "next/navigation";
 import {
@@ -23,10 +24,10 @@ import {
   SidebarMenu,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { getArtifactConfig, random, wipe } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { submissions } from "@/lib/db/schema";
+import { endgameSubmissions } from "@/lib/db/schema";
+import { getEndgameConfig, random, wipe } from "../api";
 import { LimitManager, SubmissionList, Watcher } from "./client";
 
 export default async function AdminLayout({
@@ -37,14 +38,17 @@ export default async function AdminLayout({
   if (!(await adminCheck())) redirect("/");
   const subs = await db
     .select({
-      id: submissions.id,
-      name: submissions.name,
-      checked: submissions.checked,
-      queue: submissions.queue,
+      id: endgameSubmissions.id,
+      name: endgameSubmissions.name,
+      checked: endgameSubmissions.checked,
+      queue: endgameSubmissions.queue,
     })
-    .from(submissions)
-    .orderBy(submissions.id);
-  const config = await getArtifactConfig();
+    .from(endgameSubmissions)
+    .where(
+      or(eq(endgameSubmissions.price, 0), isNotNull(endgameSubmissions.slip)),
+    )
+    .orderBy(endgameSubmissions.id);
+  const config = await getEndgameConfig();
   return (
     <SidebarProvider>
       <Sidebar>
@@ -72,8 +76,7 @@ export default async function AdminLayout({
                       คุณมั่นใจที่จะล้างข้อมูลทั้งหมดใช่ไหม?
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      การกระทำนี้ไม่สามารถย้อนกลับได้ 
-                      เราจะลบบัญชีของท่านออกจากระบบ
+                      การกระทำนี้ไม่สามารถย้อนกลับได้ เราจะลบบัญชีของท่านออกจากระบบ
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -89,7 +92,7 @@ export default async function AdminLayout({
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>เสือกไอดีชาวบ้าน</SidebarGroupLabel>
+            <SidebarGroupLabel>รับกรรมแทนทางบ้าน</SidebarGroupLabel>
             <SidebarMenu>
               <SubmissionList subs={subs} />
             </SidebarMenu>
