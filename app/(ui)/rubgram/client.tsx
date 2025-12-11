@@ -18,7 +18,13 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { comms } from "@/lib/comms";
 import { cn } from "@/lib/utils";
-import { calcPrice, cancel, type getDiscordSession, loginDiscord } from "./api";
+import {
+  calcPrice,
+  cancel,
+  type getDiscordSession,
+  type getEndgameConfig,
+  loginDiscord,
+} from "./api";
 import { RulesDialog } from "./rules";
 
 export function WelcomeScreening({
@@ -66,7 +72,10 @@ export function WelcomeScreening({
   );
 }
 
-export function ServiceSelector() {
+export function ServiceSelector({
+  types,
+  allDiscount,
+}: Awaited<ReturnType<typeof getEndgameConfig>>) {
   const [selected, setSelected] = comms.var("rubgram.services");
 
   return (
@@ -82,20 +91,16 @@ export function ServiceSelector() {
         </MultiSelectTrigger>
         <MultiSelectContent search={false}>
           <MultiSelectGroup>
-            <MultiSelectItem value="abyss">
-              Spiral abyss <Kbd>60 บาท</Kbd>
-            </MultiSelectItem>
-            <MultiSelectItem value="theater">
-              โรงละครในจินตนาการ <Kbd>100 บาท</Kbd>
-            </MultiSelectItem>
-            <MultiSelectItem value="stygian">
-              Stygian onslaught <Kbd>100 บาท</Kbd>
-            </MultiSelectItem>
+            {types.map((t) => (
+              <MultiSelectItem value={t.id} key={t.id}>
+                {t.display} <Kbd>{t.price} บาท</Kbd>
+              </MultiSelectItem>
+            ))}
           </MultiSelectGroup>
         </MultiSelectContent>
       </MultiSelect>
       <span className="text-xs text-muted-foreground -mt-1">
-        เลือกทั้งหมด ลดให้ 10 บาท
+        เลือกทั้งหมด ลดให้ {allDiscount} บาท
       </span>
       <select
         hidden
@@ -105,9 +110,9 @@ export function ServiceSelector() {
         value={selected}
         onChange={() => {}}
       >
-        <option value="abyss" />
-        <option value="theater" />
-        <option value="stygian" />
+        {types.map((t) => (
+          <option value={t.id} key={t.id} />
+        ))}
       </select>
     </div>
   );

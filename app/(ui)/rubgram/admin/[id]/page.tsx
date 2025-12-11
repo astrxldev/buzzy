@@ -24,7 +24,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { db } from "@/lib/db";
-import { endgameDiscord, endgameSubmissions } from "@/lib/db/schema";
+import {
+  endgameDiscord,
+  endgameSubmissions,
+  endgameTypes,
+} from "@/lib/db/schema";
 import { CallButton, CopyButton } from "./client";
 
 export default async function AdminSubmissionView({
@@ -44,6 +48,11 @@ export default async function AdminSubmissionView({
     .from(endgameDiscord)
     .where(eq(endgameDiscord.uid, sub.user))
     .limit(1);
+
+  const types = await db.select().from(endgameTypes);
+  const typesMap = Object.fromEntries(
+    types.map((v) => [v.id, v.display]),
+  );
 
   return (
     <div className="p-2 h-full">
@@ -66,16 +75,7 @@ export default async function AdminSubmissionView({
                 <br />
                 บริการ:{" "}
                 <b className="text-primary-foreground">
-                  {sub.service
-                    .map(
-                      (v) =>
-                        ({
-                          abyss: "Abyss",
-                          stygian: "Stygian",
-                          theater: "โรงละคร",
-                        })[v],
-                    )
-                    .join(", ")}
+                  {sub.service.map((v) => typesMap[v]).join(", ")}
                 </b>
               </CardDescription>
             </CardHeader>

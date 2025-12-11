@@ -14,7 +14,7 @@ type WebsiteComms = Partial<{
   debug: boolean;
   connected: boolean;
   updated: boolean;
-  "rubgram.services": ("abyss" | "theater" | "stygian")[];
+  "rubgram.services": string[];
   _raw: Record<string, unknown>;
 }>;
 

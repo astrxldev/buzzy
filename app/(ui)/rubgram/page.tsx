@@ -245,7 +245,7 @@ export default async function EndgamePage() {
                     </Select>
                   </div>
 
-                  <ServiceSelector />
+                  <ServiceSelector {...{ count, ...config }} />
                 </div>
                 <input hidden name="user" readOnly value={session?.uid || ""} />
               </EndgameFormWrapper>
@@ -283,28 +283,28 @@ export default async function EndgamePage() {
                 <TooltipContent>อ่านกฏการลงคิว</TooltipContent>
               </Tooltip>
               {q && (
-                    <AlertDialog>
-                      <SimpleTooltip text="ยกเลิกคิว">
-                        <AlertDialogTrigger asChild>
-                          <Button variant="destructive" type="button">
-                            <ArrowLeft />
-                          </Button>
-                        </AlertDialogTrigger>
-                      </SimpleTooltip>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>แน่ใจเหรอ</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            ต้องการยกเลิกคิวของคุณหรือไม่
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>ไม่ใช่</AlertDialogCancel>
-                          <CancelButton sid={sid!.value} />
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
+                <AlertDialog>
+                  <SimpleTooltip text="ยกเลิกคิว">
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" type="button">
+                        <ArrowLeft />
+                      </Button>
+                    </AlertDialogTrigger>
+                  </SimpleTooltip>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>แน่ใจเหรอ</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        ต้องการยกเลิกคิวของคุณหรือไม่
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>ไม่ใช่</AlertDialogCancel>
+                      <CancelButton sid={sid!.value} />
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
               <Suspense>
                 <LiveButton />
               </Suspense>

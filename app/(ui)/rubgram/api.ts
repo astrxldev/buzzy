@@ -26,6 +26,7 @@ import {
   endgameSettings,
   endgameSlips,
   endgameSubmissions,
+  endgameTypes,
   settings,
 } from "@/lib/db/schema";
 import type { TypedFormData } from "./type";
@@ -147,6 +148,10 @@ export async function getEndgameConfig() {
     .from(settings)
     .limit(1);
   const count = await db.$count(endgameSubmissions);
+  const types = await db
+    .select()
+    .from(endgameTypes)
+    .orderBy(endgameTypes.order);
   const full = ngm && ngm.limit !== -1 && count >= (ngm.limit || 0);
 
   return {
@@ -160,6 +165,7 @@ export async function getEndgameConfig() {
     free: 0,
     count,
     full,
+    types,
     ...ngm,
     ...glob,
   };
@@ -168,12 +174,12 @@ export async function getEndgameConfig() {
 export type EndgameFormData = TypedFormData<{
   name: string;
   server: "as" | "eu" | "us" | "tw";
-  service: "abyss" | "theater" | "stygian";
+  service: string;
   user: string; // user snowflake
 }>;
 
 export async function submitEndgame(formData: EndgameFormData) {
-  const { full, locked, limit } = await getEndgameConfig();
+  const { full, locked, limit, types } = await getEndgameConfig();
   const name = formData.get("name");
   const server = formData.get("server");
   const service = formData.getAll("service");
@@ -183,7 +189,7 @@ export async function submitEndgame(formData: EndgameFormData) {
 
   // ไม่ควรเกิดขึ้นแน่ๆ แต่กันไว้ก่อน
   if (!["as", "eu", "us", "tw"].includes(server)) return "เซิร์ฟไม่ถูกต้อง";
-  if (service.some((s) => !["abyss", "theater", "stygian"].includes(s)))
+  if (service.some((s) => !types.map((t) => t.id).includes(s)))
     return "บริการไม่ถูกต้อง";
 
   if (name.length > 32) return "ชื่อยาวเกินไป ต้องไม่เกิน 32 ตัวอักษร";
@@ -322,19 +328,14 @@ export async function loginDiscord() {
   redirect(process.env.DISCORD_OAUTH_URL!);
 }
 
-export async function calcPrice(service: ("abyss" | "theater" | "stygian")[]) {
-  const { free, count } = await getEndgameConfig();
+export async function calcPrice(service: string[]) {
+  const { free, count, types, allDiscount } = await getEndgameConfig();
   return count < free
     ? 0
     : service.reduce(
-        (p, s) => p + { abyss: 60, theater: 100, stygian: 100 }[s],
+        (p, s) => p + (types.find((t) => t.id === s)?.price || 0),
         0,
-      ) -
-        ((["abyss", "theater", "stygian"] as const).every((s) =>
-          service.includes(s),
-        )
-          ? 10
-          : 0);
+      ) - (types.every((s) => service.includes(s.id)) ? allDiscount : 0);
 }
 
 async function removeExpiredSubmissions() {

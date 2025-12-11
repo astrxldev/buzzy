@@ -108,11 +108,6 @@ export const artifactSettings = artifact.table("settings", {
 export const endgame = pgSchema("endgame");
 
 export const endgameServer = endgame.enum("server", ["as", "eu", "us", "tw"]);
-export const endgameService = endgame.enum("service", [
-  "abyss",
-  "theater",
-  "stygian",
-]);
 
 export const endgameSubmissions = endgame.table("submissions", {
   id: text().primaryKey().$defaultFn(uuidv7),
@@ -126,7 +121,10 @@ export const endgameSubmissions = endgame.table("submissions", {
   expires: timestamp().$defaultFn(() => new Date(Date.now() + 20 * 60 * 1000)), // 20 minutes to pay
   queue: serial(),
   server: endgameServer().notNull(),
-  service: endgameService().array().notNull(),
+  service: text()
+    .references(() => endgameTypes.id)
+    .array()
+    .notNull(),
   price: integer().notNull(), // calculated on submission
   slip: text().references(() => endgameSlips.id), // not paid = null
   checked: boolean().notNull().default(false),
@@ -143,7 +141,10 @@ export const endgameArchive = endgame.table("archive", {
       onUpdate: "cascade",
     }),
   server: endgameServer().notNull(),
-  service: endgameService().array().notNull(),
+  service: text()
+    .references(() => endgameTypes.id)
+    .array()
+    .notNull(),
 });
 
 export const endgameSlips = endgame.table("slips", {
@@ -159,6 +160,7 @@ export const endgameSettings = endgame.table("settings", {
   locked: boolean().notNull().default(false),
   limit: integer().notNull().default(-1),
   free: integer().notNull().default(0),
+  allDiscount: integer().notNull().default(10),
 });
 
 export const endgameDiscord = endgame.table("discord", {
@@ -166,6 +168,13 @@ export const endgameDiscord = endgame.table("discord", {
   display: text().notNull(),
   username: text().notNull(),
   token: text().notNull().$defaultFn(uuidv7), // for accessing existing user with cookie.
+});
+
+export const endgameTypes = endgame.table("types", {
+  id: text().primaryKey(), // theater
+  display: text().notNull(), // โรงละครในจินตนาการ
+  price: integer().notNull(), // 100
+  order: serial().notNull(),
 });
 
 //#endregion
