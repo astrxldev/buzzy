@@ -1,19 +1,19 @@
 # syntax=docker/dockerfile:1.4
 
 ### Stage 1: deps ###
-FROM oven/bun:latest AS deps
+FROM oven/bun:canary-alpine AS deps
 WORKDIR /home/container
 
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update \
-    && apt-get install -y \
-        python3 \
-        make \
-        g++ \
-        sqlite3 \
-        libsqlite3-dev \
-    && rm -rf /var/lib/apt/lists/*
+# RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+#     --mount=type=cache,target=/var/lib/apt,sharing=locked \
+#     apt-get update \
+#     && apt-get install -y \
+#         python3 \
+#         make \
+#         g++ \
+#         sqlite3 \
+#         libsqlite3-dev \
+#     && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json bun.lock ./
 
@@ -21,10 +21,10 @@ COPY package*.json bun.lock ./
 RUN --mount=type=cache,target=/root/.bun bun install --frozen-lockfile
 
 ### Stage N: drizzle ###
-FROM oven/bun:latest as drizzle
+FROM oven/bun:canary-alpine as drizzle
 
 # Isolation
-RUN useradd -mu 1001 container
+RUN adduser -Du 1001 container
 USER container
 WORKDIR /home/container
 COPY --from=deps /home/container/node_modules ./node_modules
@@ -36,10 +36,10 @@ COPY --chown=1001 ./lib/db ./lib/db
 RUN bun dr push
 
 ### Stage 2: builder ###
-FROM oven/bun:latest AS builder
+FROM oven/bun:canary-alpine AS builder
 
 # Isolation
-RUN useradd -mu 1001 container
+RUN adduser -Du 1001 container
 USER container
 WORKDIR /home/container
 
@@ -55,10 +55,10 @@ COPY --chown=1001 . .
 RUN bun run build
 
 ### Stage 3: runner ###
-FROM oven/bun:latest AS runner
+FROM oven/bun:canary-alpine AS runner
 
 # Isolation
-RUN useradd -mu 1001 container
+RUN adduser -Du 1001 container
 USER container
 WORKDIR /home/container
 
