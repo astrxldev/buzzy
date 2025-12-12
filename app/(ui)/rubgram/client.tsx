@@ -220,8 +220,12 @@ export function CancelButton({ sid }: { sid: string }) {
 }
 
 export function ClearCookie() {
-  // biome-ignore lint/suspicious/noTsIgnore: typescript issue
-  // @ts-ignore
-  cookieStore.delete("rsid");
+  try {
+    // biome-ignore lint/suspicious/noTsIgnore: typescript issue
+    // @ts-ignore
+    cookieStore.delete("rsid");
+  } catch {
+    console.warn("Cannot clear rubgram cookie");
+  }
   return "";
 }

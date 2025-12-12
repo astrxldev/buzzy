@@ -31,8 +31,13 @@ import {
 } from "@/lib/db/schema";
 import type { TypedFormData } from "./type";
 
-const { SLIPOK_API_URL, SLIPOK_API_KEY, DISCORD_WEBHOOK_URL } =
-  process.env as Record<string, string>;
+const {
+  SLIPOK_API_URL,
+  SLIPOK_API_KEY,
+  DISCORD_WEBHOOK_URL,
+  DISCORD_CLIENT_ID,
+  BASE_URL,
+} = process.env as Record<string, string>;
 
 export async function wipe() {
   if (!(await adminCheck())) throw "Unauthorized";
@@ -325,7 +330,9 @@ export async function getDiscordSession() {
 }
 
 export async function loginDiscord() {
-  redirect(process.env.DISCORD_OAUTH_URL!);
+  redirect(
+    `https://discord.com/oauth2/authorize?client_id=${encodeURIComponent(DISCORD_CLIENT_ID)}&response_type=code&redirect_uri=${encodeURIComponent(new URL("/rubgram/callback", BASE_URL).href)}&scope=identify+guilds.join+guilds`,
+  );
 }
 
 export async function calcPrice(service: string[]) {
@@ -397,6 +404,8 @@ export async function cancel(sid: string) {
 
   await removeExpiredSubmissions();
 
+  ps.publish({}, { topic: "rubgram", event: "update" });
+
   revalidatePath("/rubgram");
 }
 
@@ -404,7 +413,8 @@ export async function discordCall(id: string) {
   return await fetch(DISCORD_WEBHOOK_URL, {
     method: "POST",
     body: JSON.stringify({
-      content: `<@${id}> ถึงคิวแล้ว ทักหาบุสได้เลย`,
+      content: `<@${id}> ถึงคิวแล้ว ทักหาบุส <@681741453382123521> ได้เลย`,
+      allowed_mentions: { users: [id] },
     }),
     headers: {
       "Content-Type": "application/json",
@@ -413,6 +423,37 @@ export async function discordCall(id: string) {
     console.log(await r.text());
     return r.ok;
   });
+}
+
+export async function debugUploadSlip(sid: string, image: File) {
+  if (!(await adminCheck())) throw "Unauthorized";
+
+  const arrayBuffer = await image.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  await db.transaction(async (tx) => {
+    const [{ price }] = await tx
+      .select({ price: endgameSubmissions.price })
+      .from(endgameSubmissions)
+      .where(eq(endgameSubmissions.id, sid));
+    const [{ id }] = await tx
+      .insert(endgameSlips)
+      .values({
+        slip: buffer,
+        ref: `MANUAL-${Bun.randomUUIDv7()}`,
+        amount: price.toString(),
+        data: {} as SlipokResponse,
+      })
+      .returning({ id: endgameSlips.id });
+    await tx
+      .update(endgameSubmissions)
+      .set({ slip: id })
+      .where(eq(endgameSubmissions.id, sid));
+  });
+
+  ps.publish({}, { topic: "rubgram", event: "update" });
+
+  revalidatePath("/rubgram/admin");
 }
 
 export type SlipokResponse =

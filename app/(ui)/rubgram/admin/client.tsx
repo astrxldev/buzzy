@@ -34,6 +34,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { comms } from "@/lib/comms";
 import { cn } from "@/lib/utils";
 import { setFree, setLimit, toggleCheck, toggleLock } from "../api";
 
@@ -234,9 +235,17 @@ export function LimitManager({
 export function SubmissionList({
   subs,
 }: {
-  subs: { id: string; name: string; checked: boolean; queue: number }[];
+  subs: {
+    id: string;
+    name: string;
+    checked: boolean;
+    queue: number;
+    paid: boolean;
+  }[];
 }) {
   const [query, setQuery] = useState("");
+  const [debug] = comms.var("debug");
+
   return (
     <>
       <Input
@@ -245,9 +254,17 @@ export function SubmissionList({
         onChange={(ev) => setQuery(ev.target.value.toLowerCase())}
       />
       {subs
-        .filter((s) => (s.queue + s.name).toLowerCase().includes(query))
+        .filter(
+          (s) =>
+            (debug || s.paid) &&
+            (s.queue + s.name).toLowerCase().includes(query),
+        )
         .map((s) => (
-          <SidebarMenuButton key={s.id} asChild>
+          <SidebarMenuButton
+            key={s.id}
+            asChild
+            className={cn(debug && !s.paid && "opacity-50")}
+          >
             <SidebarLink submission={s} />
           </SidebarMenuButton>
         ))}

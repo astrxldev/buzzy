@@ -2,8 +2,7 @@ import { eq } from "drizzle-orm";
 import {
   BadgeDollarSign,
   Download,
-  ExternalLink,
-  ImageOff,
+  ExternalLink
 } from "lucide-react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -29,7 +28,7 @@ import {
   endgameSubmissions,
   endgameTypes,
 } from "@/lib/db/schema";
-import { CallButton, CopyButton } from "./client";
+import { CallButton, CopyButton, DebugSlipUpload } from "./client";
 
 export default async function AdminSubmissionView({
   params,
@@ -50,9 +49,7 @@ export default async function AdminSubmissionView({
     .limit(1);
 
   const types = await db.select().from(endgameTypes);
-  const typesMap = Object.fromEntries(
-    types.map((v) => [v.id, v.display]),
-  );
+  const typesMap = Object.fromEntries(types.map((v) => [v.id, v.display]));
 
   return (
     <div className="p-2 h-full">
@@ -126,20 +123,13 @@ export default async function AdminSubmissionView({
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-          ) : (
+          ) : sub.price <= 0 ? (
             <div className="flex flex-col justify-center items-center border rounded-md w-40 bg-card">
-              {sub.price <= 0 ? (
-                <>
-                  <BadgeDollarSign />
-                  ฟรี
-                </>
-              ) : (
-                <>
-                  <ImageOff />
-                  ยังไม่จ่าย
-                </>
-              )}
+              <BadgeDollarSign />
+              ฟรี
             </div>
+          ) : (
+            <DebugSlipUpload sid={sub.id} />
           )}
         </div>
         <div className="border rounded-md h-full overflow-hidden"></div>

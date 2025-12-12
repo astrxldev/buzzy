@@ -123,7 +123,7 @@ export default async function EndgamePage() {
 
   return (
     <PageTransition>
-      <div className="flex flex-col justify-around items-center h-svh">
+      <div className="flex flex-col justify-center gap-2 items-center h-svh">
         <Card className="w-full max-w-md">
           {q ? (
             !q.paid ? (
@@ -330,6 +330,10 @@ export default async function EndgamePage() {
             </div>
           </CardFooter>
         </Card>
+        <span className="backdrop-blur-md p-1 text-xs m-1 border border-dashed rounded-sm">
+          หากติดปัญหา โปรดแจ้งผ่านทาง
+          <a href="https://discord.gg/HQwDXNhxuK" className="underline">ช่องดิสคอร์ด</a>
+        </span>
         {sid && !q && <ClearCookie />}
       </div>
     </PageTransition>

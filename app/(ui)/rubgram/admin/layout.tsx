@@ -1,4 +1,4 @@
-import { eq, isNotNull, or } from "drizzle-orm";
+import { eq, isNotNull, or, type SQL } from "drizzle-orm";
 import { Dice3, Trash2 } from "lucide-react";
 import { redirect } from "next/navigation";
 import {
@@ -42,11 +42,12 @@ export default async function AdminLayout({
       name: endgameSubmissions.name,
       checked: endgameSubmissions.checked,
       queue: endgameSubmissions.queue,
+      paid: or(
+        eq(endgameSubmissions.price, 0),
+        isNotNull(endgameSubmissions.slip),
+      ) as SQL<boolean>,
     })
     .from(endgameSubmissions)
-    .where(
-      or(eq(endgameSubmissions.price, 0), isNotNull(endgameSubmissions.slip)),
-    )
     .orderBy(endgameSubmissions.id);
   const config = await getEndgameConfig();
   return (
@@ -101,7 +102,10 @@ export default async function AdminLayout({
         <SidebarFooter>
           <SidebarGroup>
             <SidebarGroupLabel>การตั้งค่า</SidebarGroupLabel>
-            <LimitManager config={config} length={subs.length} />
+            <LimitManager
+              config={config}
+              length={subs.reduce((c, s) => c + (s.paid ? 1 : 0), 0)}
+            />
           </SidebarGroup>
         </SidebarFooter>
       </Sidebar>

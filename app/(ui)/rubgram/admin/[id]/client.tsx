@@ -4,14 +4,15 @@ import {
   Check,
   Copy,
   CopyCheck,
+  ImageOff,
   Loader2,
   MessageSquareWarning,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
-import { discordCall } from "../../api";
+import { debugUploadSlip, discordCall } from "../../api";
 
 export function EnkaBrowser({ uid }: { uid: string }) {
   const [id, setId] = useState(uid);
@@ -47,7 +48,12 @@ export function CopyButton({ text }: { text: string }) {
     setTimeout(() => setCopied(false), 2000);
   }
   return (
-    <Button variant="link" onClick={copy} disabled={copied} className="text-white">
+    <Button
+      variant="link"
+      onClick={copy}
+      disabled={copied}
+      className="text-white"
+    >
       {copied ? <CopyCheck /> : <Copy />} คัดลอก username
     </Button>
   );
@@ -81,5 +87,33 @@ export function CallButton({ user }: { user: string }) {
       )}
       กดเรียกผ่านดิสคอร์ด
     </Button>
+  );
+}
+
+export function DebugSlipUpload({ sid }: { sid: string }) {
+  const ref = useRef<HTMLInputElement | null>(null);
+
+  return (
+    <>
+      <button
+        className="flex flex-col justify-center items-center border rounded-md w-40 bg-card cursor-pointer"
+        onClick={() => ref.current?.click()}
+        type="button"
+      >
+        <ImageOff />
+        ยังไม่จ่าย
+        <span className="text-xs">กดเพื่ออัพสลิป</span>
+      </button>
+      <input
+        ref={ref}
+        hidden
+        type="file"
+        accept="image/*"
+        onChange={(ev) => {
+          if (ev.target.files?.length)
+            debugUploadSlip(sid, ev.target.files.item(0)!);
+        }}
+      />
+    </>
   );
 }
