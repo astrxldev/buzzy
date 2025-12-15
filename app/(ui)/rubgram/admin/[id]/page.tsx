@@ -1,9 +1,5 @@
 import { eq } from "drizzle-orm";
-import {
-  BadgeDollarSign,
-  Download,
-  ExternalLink
-} from "lucide-react";
+import { BadgeDollarSign, Download, ExternalLink } from "lucide-react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
