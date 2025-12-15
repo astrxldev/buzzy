@@ -1,4 +1,5 @@
 import {
+  ArrowLeftRight,
   Badge,
   BookUser,
   Columns3Cog,
@@ -59,8 +60,12 @@ export default async function AdminLayout({
     .select()
     .from(versions)
     .catch(() => [{ id: "..", name: "Error Fetching List." }]);
-  const health: { database: boolean; enka: boolean; amber: boolean } =
-    await fetch("http://localhost:3000/api/health").then((r) => r.json());
+  const health: {
+    database: boolean;
+    enka: boolean;
+    amber: boolean;
+    red: boolean;
+  } = await fetch("http://localhost:3000/api/health").then((r) => r.json());
 
   return (
     <SidebarProvider>
@@ -116,10 +121,18 @@ export default async function AdminLayout({
                             }
                           />
                         </SimpleTooltip>
+                        {/* Cache */}
+                        <SimpleTooltip text="Redis Cache/SSE">
+                          <ArrowLeftRight
+                            className={
+                              health.red ? "text-emerald-400" : "text-red-400"
+                            }
+                          />
+                        </SimpleTooltip>
                       </div>
                       <span>
                         {Object.values(health).some((x) => !x)
-                          ? `${{ database: "ฐานข้อมูล", enka: "Enka ", amber: "Amber " }[Object.entries(health).find(([, v]) => !v)![0]]}มีปัญหา`
+                          ? `${{ database: "ฐานข้อมูล", enka: "Enka ", amber: "Amber ", red: "SSE " }[Object.entries(health).find(([, v]) => !v)![0]]}มีปัญหา`
                           : "ปกติทุกอย่าง"}
                       </span>
                     </div>

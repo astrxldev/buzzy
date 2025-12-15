@@ -11,7 +11,9 @@
     "format": "biome format --write",
     "dr": "drizzle-kit",
     "ba": "bunx @better-auth/cli",
-    "up": "docker compose build && docker rollout app && docker compose up -d && docker compose restart -t 0 nginx",
+    "up": "docker compose build && docker rollout app && docker compose up -d backup && bun ngreload",
+    "logs": "docker compose logs -fn50",
+    "ngreload": "docker compose restart -t 0 nginx",
     "test": "playwright test"
   },
   "dependencies": {
@@ -62,7 +64,7 @@
     "framer-motion": "^12.23.26",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.544.0",
-    "next": "16.0.7",
+    "next": "16.0.10",
     "next-themes": "^0.4.6",
     "pg": "^8.16.3",
     "radix-ui": "^1.4.3",

@@ -18,8 +18,6 @@ export async function GET(
   if (!sub) notFound();
   if (!sub.slip) notFound();
 
-  console.log(sub.slip.length);
-
   return new Response(new Uint8Array(sub.slip), {
     headers: {
       "Content-Type": "image/jpeg",

@@ -285,7 +285,9 @@ export async function cdnify(
 export async function actionLog(text: string, details?: unknown) {
   const session = await adminCheck();
 
-  const res = await db
+  console.log(` LOG ${session?.name || ""} ${text}`);
+
+  const [res] = await db
     .insert(auditLog)
     .values({
       author: session?.name,
@@ -293,11 +295,12 @@ export async function actionLog(text: string, details?: unknown) {
       details,
     })
     .returning()
-    .catch(() =>
+    .catch(() => {
       console.error(
         `Error logging audit log, printing it here:\n${session?.name || "[Unknown User]"} - ${text}`,
-      ),
-    );
+      );
+      return [];
+    });
 
   revalidatePath("/admin/log");
 

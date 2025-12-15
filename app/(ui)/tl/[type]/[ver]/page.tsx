@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, or, inArray, isNull } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import {
@@ -94,7 +94,10 @@ export default async function TierlistPage({
     const badgesList = await tx
       .select()
       .from(tierlistBadges)
-      .orderBy(tierlistBadges.order);
+      .orderBy(tierlistBadges.order)
+      .where(
+        or(isNull(tierlistBadges.type), eq(tierlistBadges.type, version.type)),
+      );
     const badges = badgesList.map((b) => ({
       ...b,
       tier: tiers.filter((t) => t.badges?.includes(b.id)).map((t) => t.id),

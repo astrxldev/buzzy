@@ -214,7 +214,7 @@ export function CancelButton({ sid }: { sid: string }) {
       }}
       disabled={loading}
     >
-      {loading && <Spinner />}ยกเลิก
+      {loading && <Spinner />}ใช่
     </Button>
   );
 }

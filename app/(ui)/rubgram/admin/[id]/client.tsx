@@ -85,7 +85,7 @@ export function CallButton({ user }: { user: string }) {
       ) : (
         <MessageSquareWarning />
       )}
-      กดเรียกผ่านดิสคอร์ด
+      เรียกในดิสคอร์ด
     </Button>
   );
 }

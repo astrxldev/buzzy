@@ -1,3 +1,4 @@
+import { isNotNull, lte, or, type SQL } from "drizzle-orm";
 import {
   type AnyPgColumn,
   boolean,
@@ -128,6 +129,15 @@ export const endgameSubmissions = endgame.table("submissions", {
   price: integer().notNull(), // calculated on submission
   slip: text().references(() => endgameSlips.id), // not paid = null
   checked: boolean().notNull().default(false),
+  paid: boolean()
+    .notNull()
+    .generatedAlwaysAs(
+      (): SQL =>
+        or(
+          lte(endgameSubmissions.price, 0),
+          isNotNull(endgameSubmissions.slip),
+        )!,
+    ),
 });
 
 // deleted submissions
@@ -226,6 +236,10 @@ export const tierlistBadges = tierlist.table("badges", {
     onUpdate: "cascade",
   }),
   order: integer().notNull(),
+  type: text().references(() => tierlistTypes.id, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
 });
 
 export const tierlistVersions = tierlist.table("versions", {

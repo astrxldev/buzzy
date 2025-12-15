@@ -1,13 +1,9 @@
 import {
   and,
   eq,
-  gt,
-  isNotNull,
-  isNull,
-  lt,
+  gt, lt,
   not,
-  or,
-  type SQL,
+  or
 } from "drizzle-orm";
 import {
   AlertCircle,
@@ -89,10 +85,7 @@ export default async function EndgamePage() {
     ? await db
         .select({
           queue: endgameSubmissions.queue,
-          paid: or(
-            eq(endgameSubmissions.price, 0),
-            isNotNull(endgameSubmissions.slip),
-          ) as SQL<boolean>,
+          paid: endgameSubmissions.paid,
           price: endgameSubmissions.price,
           expires: endgameSubmissions.expires,
         })
@@ -114,8 +107,7 @@ export default async function EndgamePage() {
         .from(endgameSubmissions)
         .where(
           and(
-            not(eq(endgameSubmissions.price, 0)),
-            isNull(endgameSubmissions.slip),
+            not(endgameSubmissions.paid),
             lt(endgameSubmissions.queue, q.queue),
           ),
         )
@@ -293,13 +285,13 @@ export default async function EndgamePage() {
                   </SimpleTooltip>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>แน่ใจเหรอ</AlertDialogTitle>
+                      <AlertDialogTitle>แน่ใจหรอ</AlertDialogTitle>
                       <AlertDialogDescription>
-                        ต้องการยกเลิกคิวของคุณหรือไม่
+                        ต้องการยกเลิกการลงคิวของคุณหรือไม่
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>ไม่ใช่</AlertDialogCancel>
+                      <AlertDialogCancel>ไม่ยกเลิก</AlertDialogCancel>
                       <CancelButton sid={sid!.value} />
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -330,9 +322,14 @@ export default async function EndgamePage() {
             </div>
           </CardFooter>
         </Card>
-        <span className="backdrop-blur-md p-1 text-xs m-1 border border-dashed rounded-sm">
+        <span className="backdrop-blur-md p-1 text-xs m-1 border rounded-sm">
           หากติดปัญหา โปรดแจ้งผ่านทาง
-          <a href="https://discord.gg/HQwDXNhxuK" className="underline">ช่องดิสคอร์ด</a>
+          <a
+            href="https://discord.gg/HQwDXNhxuK"
+            className="underline text-green-200"
+          >
+            ช่องดิสคอร์ด
+          </a>
         </span>
         {sid && !q && <ClearCookie />}
       </div>

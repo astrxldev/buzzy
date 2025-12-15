@@ -1,4 +1,3 @@
-import { eq, isNotNull, or, type SQL } from "drizzle-orm";
 import { Dice3, Trash2 } from "lucide-react";
 import { redirect } from "next/navigation";
 import {
@@ -42,10 +41,7 @@ export default async function AdminLayout({
       name: endgameSubmissions.name,
       checked: endgameSubmissions.checked,
       queue: endgameSubmissions.queue,
-      paid: or(
-        eq(endgameSubmissions.price, 0),
-        isNotNull(endgameSubmissions.slip),
-      ) as SQL<boolean>,
+      paid: endgameSubmissions.paid,
     })
     .from(endgameSubmissions)
     .orderBy(endgameSubmissions.id);

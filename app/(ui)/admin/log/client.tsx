@@ -18,6 +18,7 @@ export default function AuditLogViewer({
 }) {
   const [logs, updateLogs] = useState(initialLogs);
   const containerRef = useRef<HTMLDivElement>(null);
+  const entryRefs = useRef(new Map<string, HTMLDivElement>());
 
   useEffect(() => {
     const es = new EventSource("/api/ev/log");
@@ -26,18 +27,9 @@ export default function AuditLogViewer({
     return () => es.close();
   }, []);
 
-  useEffect(() => {
-    if (containerRef.current)
-      containerRef.current.scrollTo({
-        top: 999999,
-        left: 0,
-        behavior: "smooth",
-      });
-  });
-
   const filters: Filters = {
     user: () => users.map((u) => u.email),
-    has: () => ["artifact", "tierlist", "file"],
+    has: () => ["artifact", "tierlist", "rubgram", "file"],
   };
 
   const [query, setQuery] = useState<ParsedQuery>();
@@ -58,6 +50,36 @@ export default function AuditLogViewer({
   }, [query, logs, users]);
 
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const focusedIds = useMemo(() => Array.from(expandedIds), [expandedIds]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: need to update
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    // exactly one focused → scroll to that entry
+    if (focusedIds.length === 1) {
+      const el = entryRefs.current.get(focusedIds[0]);
+      if (el) {
+        el.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+      return;
+    }
+
+    // more than one focused → do nothing
+    if (focusedIds.length > 1) {
+      return;
+    }
+
+    // none focused → always follow bottom
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [logs, focusedIds, query]);
 
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => {
@@ -117,12 +139,16 @@ export default function AuditLogViewer({
           return (
             <div
               key={log.id}
+              ref={(el) => {
+                if (el) entryRefs.current.set(log.id, el);
+                else entryRefs.current.delete(log.id);
+              }}
               className="group hover:bg-[#2225] transition-colors"
             >
               <div
                 className={`flex gap-4 px-4 ${isGrouped ? "py-0.5" : "py-3.5"} pb-0.5`}
               >
-                <div className="w-min flex-shrink-0 text-right pt-0.5">
+                <div className="w-min shrink-0 text-right pt-0.5">
                   <span
                     className={`text-xs whitespace-nowrap invisible ${isGrouped ? "group-hover:visible" : ""}`}
                   >
@@ -154,7 +180,7 @@ export default function AuditLogViewer({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="flex-shrink-0 h-6 w-6 text-gray-400 hover:text-gray-200 hover:bg-[#404249]"
+                        className="shrink-0 h-6 w-6 text-gray-400 hover:text-gray-200 hover:bg-[#404249]"
                       >
                         {isExpanded ? (
                           <ChevronDown className="h-4 w-4" />

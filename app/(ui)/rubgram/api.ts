@@ -1,17 +1,6 @@
 "use server";
 
-import {
-  and,
-  desc,
-  eq,
-  gt,
-  isNotNull,
-  isNull,
-  lt,
-  not,
-  or,
-  sql,
-} from "drizzle-orm";
+import { and, desc, eq, gt, lt, not, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import image from "next/image";
@@ -57,13 +46,8 @@ export async function random() {
   const [sub] = await db
     .select()
     .from(endgameSubmissions)
-    .where(
-      and(
-        not(endgameSubmissions.checked),
-        or(eq(endgameSubmissions.price, 0), isNotNull(endgameSubmissions.slip)),
-      ),
-    )
-    .orderBy(sql`RANDOM()`)
+    .where(endgameSubmissions.paid.getSQL())
+    .orderBy(sql`${endgameSubmissions.checked} ASC, RANDOM()`)
     .limit(1);
   if (sub) redirect(`/rubgram/admin/${sub.id}`);
   else throw "ไม่พบผู้ลงทะเบียนที่ยังไม่ตรวจสอบ";
@@ -348,8 +332,7 @@ export async function calcPrice(service: string[]) {
 async function removeExpiredSubmissions() {
   // First, get count of items to be removed
   const expiredCond = and(
-    not(eq(endgameSubmissions.price, 0)),
-    isNull(endgameSubmissions.slip),
+    not(endgameSubmissions.paid),
     lt(endgameSubmissions.expires, new Date()),
   );
   const toRemove = await db
@@ -420,7 +403,7 @@ export async function discordCall(id: string) {
       "Content-Type": "application/json",
     },
   }).then(async (r) => {
-    console.log(await r.text());
+    console.log(`called`, await r.text());
     return r.ok;
   });
 }
