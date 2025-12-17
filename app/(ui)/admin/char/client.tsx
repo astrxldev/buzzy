@@ -4,17 +4,6 @@ import { useMemo, useState } from "react";
 import Avatar from "@/components/avatar";
 import SearchBox, { type Filters, type ParsedQuery } from "@/components/search";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { type characters, element } from "@/lib/db/schema";
 
 /** Filters and their value providers */
@@ -56,40 +45,9 @@ export function CharManager({
           className="bg-input sticky top-2"
           onQueryChange={setQuery}
         />
-        <Dialog>
-          <form>
-            <DialogTrigger asChild>
-              <Button className="h-10 w-10">
-                <UserPlus />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create Character</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4">
-                <div className="grid gap-3">
-                  <Label htmlFor="name-1">Name</Label>
-                  <Input id="name-1" name="name" />
-                </div>
-                <div className="grid gap-3">
-                  <Label htmlFor="username-1">Username</Label>
-                  <Input
-                    id="username-1"
-                    name="username"
-                    defaultValue="@peduarte"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="outline">Cancel</Button>
-                </DialogClose>
-                <Button type="submit">Save changes</Button>
-              </DialogFooter>
-            </DialogContent>
-          </form>
-        </Dialog>
+        <Button className="h-10 w-10">
+          <UserPlus />
+        </Button>
       </div>
       <div className="flex flex-wrap gap-4 justify-center">
         {filteredChars.map((char) => (

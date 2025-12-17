@@ -1,0 +1,27 @@
+{
+  "show_edit_predictions": false,
+  "edit_predictions": {
+    "mode": "subtle"
+  },
+  "features": {
+    "edit_prediction_provider": "zed"
+  },
+  "minimap": {
+    "thumb": "hover",
+    "show": "auto"
+  },
+  "auto_signature_help": true,
+  "autosave": {
+    "after_delay": {
+      "milliseconds": 100
+    }
+  },
+  "ui_font_size": 16,
+  "buffer_font_size": 15,
+  "code_actions_on_format": {
+    "source.addMissingImports.ts": true,
+    "source.organizeImports.biome": true,
+    "source.fixAll.biome": true,
+    "source.removeUnusedImports": true
+  }
+}

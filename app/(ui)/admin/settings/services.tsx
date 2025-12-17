@@ -2,9 +2,11 @@
 
 import { FolderSync } from "lucide-react";
 import { useEffect, useState } from "react";
+import { CdnChooser } from "@/components/chooser";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
+import { comms } from "@/lib/comms";
 import { syncAmber, toggleEnka } from "./api";
 import { Section } from "./page";
 
@@ -16,6 +18,7 @@ export function SettingsServicesSection({
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState("");
   const [enka, setEnka] = useState<boolean>();
+  const [debug] = comms.var("debug");
 
   useEffect(() => {
     if (typeof enka !== "boolean") return setEnka(enkaInitial);
@@ -40,6 +43,14 @@ export function SettingsServicesSection({
           {syncing ? <Spinner /> : <FolderSync />}
           Sync Amber
         </Button>
+        {debug && (
+          <div className="grid gap-1 rounded-sm border border-dashed p-1 w-min">
+            <span className="text-sm text-muted-foreground">
+              Test file input
+            </span>
+            <CdnChooser onChange={alert} className="w-50" />
+          </div>
+        )}
         {syncResult && (
           <pre className="border bg-muted rounded h-full p-2">{syncResult}</pre>
         )}

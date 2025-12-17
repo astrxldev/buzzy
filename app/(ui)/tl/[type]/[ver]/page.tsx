@@ -1,4 +1,5 @@
 import { and, eq, inArray, isNull, or } from "drizzle-orm";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import {
@@ -16,7 +17,7 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ type: string; ver: string }>;
-}) {
+}): Promise<Metadata> {
   const { type: typeId, ver: verId } = await params;
 
   try {

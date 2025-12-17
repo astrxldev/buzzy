@@ -1,11 +1,17 @@
 "use server";
 
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { cdnify } from "@/lib/api";
+import { actionLog, cdnify } from "@/lib/api";
+import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { cdn } from "@/lib/db/schema";
 
 export async function fetchToCdn(urls: string[]) {
+  if (!(await adminCheck())) throw "Unauthorized";
+
   async function toFile(res: Response) {
+    if (!res.ok) throw "File failed to download";
     return new File(
       [await res.blob()],
       res.headers
@@ -26,4 +32,14 @@ export async function fetchToCdn(urls: string[]) {
       ),
     )
     .finally(() => revalidatePath("/admin/cdn"));
+}
+
+export async function rename(id: string, name: string) {
+  if (!(await adminCheck())) throw "Unauthorized";
+
+  await db.update(cdn).set({ name }).where(eq(cdn.id, id));
+
+  await actionLog(`Renamed file to "${name}"`, { id });
+
+  revalidatePath("/admin/cdn");
 }

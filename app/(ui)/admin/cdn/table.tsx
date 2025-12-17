@@ -3,8 +3,12 @@
 import type { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 import {
   CloudUpload,
+  Copy,
+  ExternalLink,
   HardDriveDownload,
+  Pencil,
   ReplaceAll,
+  Trash,
   Trash2,
 } from "lucide-react";
 import { type ChangeEvent, useMemo, useRef, useState } from "react";
@@ -25,7 +29,8 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { cdnDelete, cdnify } from "@/lib/api";
-import { fetchToCdn } from "./api";
+import { cn } from "@/lib/utils";
+import { fetchToCdn, rename } from "./api";
 
 const columns: ColumnDef<{
   id: string;
@@ -70,12 +75,14 @@ const columns: ColumnDef<{
 
 export function CdnTable({
   files,
+  onChoose,
 }: {
   files: {
     id: string;
     name: string | null;
     size: string;
   }[];
+  onChoose?: (value: string | null) => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -139,14 +146,84 @@ export function CdnTable({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="h-[calc(100svh-60px)] overflow-auto rounded-md bg-[#2225] backdrop-blur-sm border">
+    <div className="flex flex-col gap-2 w-full">
+      <div
+        className={cn(
+          onChoose ? "h-[calc(70svh-60px)] w-full" : "h-[calc(100svh-60px)]",
+          "overflow-auto rounded-md bg-[#2225] backdrop-blur-sm border",
+        )}
+      >
         <DataTable
           columns={columns}
           data={files}
           className={"border-none"}
           rowSelection={rowSelection}
           setRowSelection={setRowSelection}
+          context={(row) => [
+            {
+              label: "เปิดในแท็บใหม่",
+              icon: <ExternalLink />,
+              onClick() {
+                open(`/cdn/${row.id}`);
+              },
+            },
+            {
+              label: "ก็อปลิ้งค์",
+              icon: <Copy />,
+              onClick() {
+                toast.promise(
+                  navigator.clipboard.writeText(
+                    new URL(`/cdn/${row.id}`, location.href).href,
+                  ),
+                  {
+                    success() {
+                      return "ก็อปลิ้งค์สำเร็จ";
+                    },
+                    error() {
+                      return "เกิดข้อผิดพลาดขณะก็อปลิ้งค์";
+                    },
+                  },
+                );
+              },
+            },
+            {
+              label: "เปลี่ยนชื่อ",
+              icon: <Pencil />,
+              onClick() {
+                const newName = prompt("ชื่อไฟล์ใหม่", row.name ?? undefined);
+                if (!newName) return;
+
+                toast.promise(rename(row.id, newName), {
+                  success() {
+                    return "เปลี่ยนชื่อสำเร็จ";
+                  },
+                  error() {
+                    return "เกิดข้อผิดพลาดขณะเปลี่ยนชื่อ";
+                  },
+                });
+              },
+            },
+            {
+              label: "ลบไฟล์",
+              icon: <Trash />,
+              onClick() {
+                toast.promise(cdnDelete([row.id]), {
+                  success(res) {
+                    if (res) {
+                      const file = files.find((f) => f.id === res.id);
+                      throw `${file ? file.name || `[${res.id}]` : `[${res.id}]`} ยังถูกใช้โดย ${res.refs.join(", ")}`;
+                    }
+                    return "ลบสำเร็จ";
+                  },
+                  error(err: { message: string; description: string }) {
+                    if (typeof err === "string") return err;
+                    return "เกิดข้อผิดพลาดขณะลบ";
+                  },
+                });
+              },
+            },
+          ]}
+          onClick={(row) => onChoose?.(row.id)}
         />
       </div>
 
@@ -158,13 +235,13 @@ export function CdnTable({
             </Button>
           </SimpleTooltip>
           <Dialog>
-            <DialogTrigger asChild>
-              <SimpleTooltip text="Fetch from URL...">
+            <SimpleTooltip text="Fetch from URL...">
+              <DialogTrigger asChild>
                 <Button size="icon" variant="outline">
                   <HardDriveDownload />
                 </Button>
-              </SimpleTooltip>
-            </DialogTrigger>
+              </DialogTrigger>
+            </SimpleTooltip>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Fetch From URLs</DialogTitle>
@@ -175,7 +252,6 @@ export function CdnTable({
               </DialogHeader>
               <Textarea
                 placeholder="https://cdn.dgnr.us/paimon.png..."
-                value={urls}
                 onChange={(ev) => setUrls(ev.target.value)}
               />
               <DialogFooter>

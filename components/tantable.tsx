@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-table";
 import { FolderCode, Plus } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { type MouseEventHandler, type ReactNode, useState } from "react";
 import {
   Table,
   TableBody,
@@ -20,6 +20,12 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "./ui/context-menu";
 import {
   Empty,
   EmptyContent,
@@ -42,6 +48,8 @@ export function DataTable<TData, TValue>({
   emptyDescription,
   rowSelection,
   setRowSelection,
+  context,
+  onClick,
 }: DataTableProps<TData, TValue> & {
   className?: string;
   openCreateDialog?: () => void;
@@ -50,6 +58,12 @@ export function DataTable<TData, TValue>({
   setRowSelection?: (
     state: RowSelectionState | ((old: RowSelectionState) => RowSelectionState),
   ) => void;
+  context?: (row: TData) => {
+    label: string;
+    onClick?: MouseEventHandler<HTMLDivElement>;
+    icon?: ReactNode;
+  }[];
+  onClick?: (row: TData) => void;
 }) {
   const [internalRowSelection, setInternalRowSelection] = useState({});
 
@@ -87,16 +101,34 @@ export function DataTable<TData, TValue>({
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
+              <ContextMenu key={row.id}>
+                <ContextMenuTrigger asChild>
+                  <TableRow
+                    data-state={row.getIsSelected() && "selected"}
+                    onClick={() => onClick?.(row.original)}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </ContextMenuTrigger>
+                <ContextMenuContent>
+                  {context?.(row.original).map((option) => (
+                    <ContextMenuItem
+                      key={option.label}
+                      onClick={option.onClick}
+                    >
+                      {option.icon}
+                      {option.label}
+                    </ContextMenuItem>
+                  ))}
+                </ContextMenuContent>
+              </ContextMenu>
             ))
           ) : (
             <TableRow className="hover:bg-transparent">

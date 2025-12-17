@@ -225,22 +225,25 @@ export async function cdnDelete(ids: string[], force = false) {
 
   if (force) await db.delete(cdn).where(inArray(cdn.id, ids));
   else
-    for (const id of ids) {
-      const refs = await checkCdnRefs(id);
-      if (refs.length) {
-        revalidatePath("/cdn/admin");
-        await actionLog(
-          `Deleted ${deleted}/${ids.length}(Incomplete) files`,
-          ids.slice(0, deleted),
-        );
-        return { id, refs };
+    return await db.transaction(async (tx) => {
+      for (const id of ids) {
+        const refs = await checkCdnRefs(id, tx);
+        if (refs.length) {
+          revalidatePath("/cdn/admin");
+          if (deleted)
+            await actionLog(
+              `Deleted ${deleted}/${ids.length}(Incomplete) files`,
+              ids.slice(0, deleted),
+            );
+          return { id, refs };
+        }
+        await tx.delete(cdn).where(eq(cdn.id, id));
+        deleted++;
       }
-      await db.delete(cdn).where(eq(cdn.id, id));
-      deleted++;
-    }
-  revalidatePath("/cdn/admin");
+      revalidatePath("/cdn/admin");
 
-  await actionLog(`Deleted ${deleted} files`, ids);
+      await actionLog(`Deleted ${deleted} files`, ids);
+    });
 }
 
 export async function checkCdnRefs(

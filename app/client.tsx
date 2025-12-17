@@ -6,6 +6,7 @@ import { useKey } from "react-use";
 import ReconnectingEventSource from "reconnecting-eventsource";
 import { toast } from "sonner";
 import { stringify } from "yaml";
+import { CdnChooserProvider } from "@/components/chooser";
 import CommsProvider, { comms } from "@/lib/comms";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -16,7 +17,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       options={{ showSpinner: false }}
       shallowRouting
     >
-      <CommsProvider>{children}</CommsProvider>
+      <CdnChooserProvider>
+        <CommsProvider>{children}</CommsProvider>
+      </CdnChooserProvider>
     </ProgressProvider>
   );
 }

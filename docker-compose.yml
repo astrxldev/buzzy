@@ -30,6 +30,7 @@ services:
       - 8095:3000
       # - 80:3000
     environment:
+      - DISCORD_REDIRECT_URI=https://buzzy.sudloh.com/rubgram/callback
       - BASE_URL=https://buzzy.sudloh.com
     deploy:
       resources:
@@ -47,6 +48,7 @@ services:
       start_period: 5s
 
   nginx:
+    restart: always
     image: nginx:stable-alpine
     ports:
       - "8093:80" # Map host primary buzzy port to container port 80

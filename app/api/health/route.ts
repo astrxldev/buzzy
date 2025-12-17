@@ -2,6 +2,8 @@ import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { redis } from "@/lib/db/redis";
 
+export const revalidate = 60;
+
 export async function GET() {
   const red = await redis
     .ping()

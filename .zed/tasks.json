@@ -1,0 +1,38 @@
+[
+  {
+    "label": "Development",
+    "command": "bun dev",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "never",
+    "hide": "on_success",
+    "shell": "system",
+    "show_summary": true,
+    "show_command": false,
+    "tags": ["dev"]
+  },
+  {
+    "label": "Deploy",
+    "command": "bun up",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "never",
+    "hide": "on_success",
+    "shell": "system",
+    "show_summary": true,
+    "show_command": false
+  },
+  {
+    "label": "Logs",
+    "command": "bun logs",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "no_focus",
+    "reveal_target": "center",
+    "hide": "always",
+    "shell": "system",
+    "show_summary": false,
+    "show_command": false,
+    "tags": ["dev"]
+  }
+]
