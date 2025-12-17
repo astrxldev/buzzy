@@ -2,9 +2,16 @@ import { AnimatePresence } from "framer-motion";
 import { Toaster } from "sonner";
 import Background from "#/bg.jpg";
 import Image from "@/components/image";
+import { SentryDevToolbar } from "@/components/sentry";
+import { adminCheck } from "@/lib/auth";
 import Providers, { VersionCheck } from "../client";
 
-export default function UiLayout({ children }: { children: React.ReactNode }) {
+export default async function UiLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const isAdmin = await adminCheck();
   return (
     <>
       <Image
@@ -15,6 +22,7 @@ export default function UiLayout({ children }: { children: React.ReactNode }) {
       <Providers>
         <AnimatePresence mode="wait">{children}</AnimatePresence>
         <VersionCheck />
+        {isAdmin && <SentryDevToolbar />}
       </Providers>
       <Toaster theme="dark" richColors closeButton />
     </>
