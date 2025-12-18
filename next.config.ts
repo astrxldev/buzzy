@@ -22,7 +22,12 @@ const nextConfig: NextConfig = withBundleAnalyzer({
       },
     ],
   },
-  // reactCompiler: true,
+  experimental: {
+    useSkewCookie: true,
+    authInterrupts: true,
+  },
+  deploymentId: process.env.NEXT_DEPLOYMENT_ID,
+  reactCompiler: true,
   allowedDevOrigins: ["astral:3000", "dev3000.dgnr.us"],
   // basePath: "/beta"
 });

@@ -51,6 +51,9 @@ COPY --from=deps /home/container/bun.lock ./
 # App source
 COPY --chown=1001 . .
 
+# Deployment versioning
+RUN bun -e "const id = Bun.randomUUIDv7(); Bun.write('.version', id); Bun.write('.env.deployment', 'NEXT_DEPLOYMENT_ID='+id)"
+
 # Run patcher (background) + Next.js build (foreground), then kill patcher
 RUN bun run build
 
@@ -73,8 +76,5 @@ COPY --from=builder /home/container/.next ./.next
 COPY --from=builder /home/container/util ./util
 COPY --from=builder /home/container/lib ./lib
 COPY --from=builder /home/container/tsconfig.json ./tsconfig.json
-
-# Deployment versioning
-RUN bun -e "Bun.write('.version', Bun.randomUUIDv7())"
 
 CMD ["bun", "start"]
