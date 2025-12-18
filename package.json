@@ -15,7 +15,7 @@
     "logs": "docker compose logs -fn50",
     "ngreload": "docker compose restart -t 0 nginx",
     "test": "playwright test",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org astral --project buzz ./.next/server && sentry-cli sourcemaps upload --org astral --project buzz ./.next/server"
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org astrxldev --project buzz ./.next/server && sentry-cli sourcemaps upload --org astrxldev --project buzz ./.next/server"
   },
   "dependencies": {
     "@bprogress/next": "^3.2.12",

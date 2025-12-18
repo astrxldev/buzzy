@@ -12,7 +12,7 @@ export function SentryDevToolbar() {
     // who do not have credentials to login to Sentry.
     enabled: debug === true,
     initProps: {
-      organizationSlug: "astral",
+      organizationSlug: "astrxldev",
       projectIdOrSlug: "buzz",
       theme: "dark",
     },
