@@ -27,7 +27,7 @@ const nextConfig: NextConfig = withBundleAnalyzer({
     authInterrupts: true,
   },
   deploymentId: process.env.NEXT_DEPLOYMENT_ID,
-  reactCompiler: true,
+  // reactCompiler: true,
   allowedDevOrigins: ["astral:3000", "dev3000.dgnr.us"],
   // basePath: "/beta"
 });
