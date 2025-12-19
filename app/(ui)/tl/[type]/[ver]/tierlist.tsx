@@ -547,9 +547,9 @@ export function TierList({
                   </div>
                   {columns.map((c) => {
                     const cellId = `${t.id}-${c.id}`;
-                    const cellChars = placements[cellId].map(
-                      (id) => chars.find((ch) => ch.id === id)!,
-                    );
+                    const cellChars = placements[cellId]
+                      .map((id) => chars.find((ch) => ch.id === id))
+                      .filter((x): x is typeof characters.$inferSelect => !!x);
                     return (
                       <TierListCell
                         key={cellId}
@@ -591,16 +591,19 @@ export function TierList({
             >
               <Untiered ref={untieredRef} open={untieredOpen}>
                 {untieredOpen &&
-                  placements.untiered.map((id) => {
-                    const ch = chars.find((c) => c.id === id)!;
-                    return (
-                      <Draggable
-                        key={ch.id}
-                        char={ch}
-                        state={states.find((s) => s.char === ch.id)}
-                      />
-                    );
-                  })}
+                  placements.untiered
+                    .map((id) => {
+                      const ch = chars.find((c) => c.id === id);
+                      if (!ch) return null;
+                      return (
+                        <Draggable
+                          key={ch.id}
+                          char={ch}
+                          state={states.find((s) => s.char === ch.id)}
+                        />
+                      );
+                    })
+                    .filter(Boolean)}
               </Untiered>
             </SortableContext>
           </div>
