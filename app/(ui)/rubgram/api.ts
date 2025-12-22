@@ -393,6 +393,8 @@ export async function cancel(sid: string) {
 }
 
 export async function discordCall(id: string) {
+  if (!(await adminCheck())) throw "Unauthorized";
+
   return await fetch(DISCORD_WEBHOOK_URL, {
     method: "POST",
     body: JSON.stringify({
