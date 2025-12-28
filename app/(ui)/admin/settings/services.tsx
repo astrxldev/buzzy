@@ -6,7 +6,7 @@ import { CdnChooser } from "@/components/chooser";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
-import { comms } from "@/lib/comms";
+import { shared } from "@/lib/comms";
 import { syncAmber, toggleEnka } from "./api";
 import { Section } from "./page";
 
@@ -18,7 +18,7 @@ export function SettingsServicesSection({
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState("");
   const [enka, setEnka] = useState<boolean>();
-  const [debug] = comms.var("debug");
+  const [debug] = shared.state("debug");
 
   useEffect(() => {
     if (typeof enka !== "boolean") return setEnka(enkaInitial);

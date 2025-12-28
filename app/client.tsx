@@ -1,13 +1,13 @@
 "use client";
 
 import { ProgressProvider } from "@bprogress/next/app";
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { useKey } from "react-use";
 import ReconnectingEventSource from "reconnecting-eventsource";
 import { toast } from "sonner";
 import { stringify } from "yaml";
 import { CdnChooserProvider } from "@/components/chooser";
-import CommsProvider, { comms } from "@/lib/comms";
+import IccProvider, { IccContext, shared } from "@/lib/comms";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -18,7 +18,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       shallowRouting
     >
       <CdnChooserProvider>
-        <CommsProvider>{children}</CommsProvider>
+        <IccProvider>{children}</IccProvider>
       </CdnChooserProvider>
     </ProgressProvider>
   );
@@ -26,10 +26,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
 export function VersionCheck({ headless = false }: { headless?: boolean }) {
   const ver = useRef<string>("");
-  const [debug, setDebug] = comms.var("debug");
-  const [, setConnected] = comms.var("connected");
-  const [, setUpdated] = comms.var("updated");
-  const [debugData] = comms.raw();
+  const { emit } = use(IccContext);
+  const [debug, setDebug] = shared.state("debug");
+  const [, setConnected] = shared.state("connected");
+  const [, setUpdated] = shared.state("updated");
+  const [debugData] = shared.raw();
   const [readyForUpdate, setReadyForUpdate] = useState(false);
 
   useKey("F2", () => {
@@ -40,7 +41,7 @@ export function VersionCheck({ headless = false }: { headless?: boolean }) {
   useEffect(() => {
     if (!readyForUpdate && window.location.hash === "#update") {
       setUpdated(true);
-      toast.success("คุณอยู่ในเวอร์ชั่นล่าสุดแล้ว");
+      setTimeout(() => toast.success("คุณอยู่ในเวอร์ชั่นล่าสุดแล้ว"), 1000);
       const url = new URL(window.location.href);
       url.hash = "";
       window.history.replaceState("", "", url);
@@ -49,6 +50,7 @@ export function VersionCheck({ headless = false }: { headless?: boolean }) {
     const es = new ReconnectingEventSource(`/api/active`, {});
     es.addEventListener("version", (d) => {
       setConnected(true);
+      emit("sync");
       const newVersion = JSON.parse(d.data);
       const version = ver.current;
       if (!version) console.log("Client version:", newVersion);
@@ -84,7 +86,7 @@ export function VersionCheck({ headless = false }: { headless?: boolean }) {
       );
     };
     return () => es.close();
-  }, [headless, setConnected, setUpdated, readyForUpdate]);
+  }, [headless, setConnected, setUpdated, readyForUpdate, emit]);
 
   return debug ? (
     <div className="absolute bottom-0 right-0 m-2 px-1 rounded flex flex-col gap-2 bg-card border active:pointer-events-none opacity-20 hover:opacity-100 transition-opacity">

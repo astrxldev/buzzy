@@ -54,8 +54,15 @@ COPY --chown=1001 . .
 # Deployment versioning
 RUN bun -e "const id = Bun.randomUUIDv7(); Bun.write('.version', id); Bun.write('.env.deployment', 'NEXT_DEPLOYMENT_ID='+id)"
 
-# Run patcher (background) + Next.js build (foreground), then kill patcher
-RUN bun run build
+# Bind mount recursively makes non-existent directories as root, instead of configured user
+RUN mkdir -p .next
+
+# Build nextjs
+RUN --mount=type=cache,target=/home/container/.next/cache,uid=1001,gid=1001 \
+    bun run build
+
+# Fix nextjs caching(bind mount removes it after build process)
+RUN mkdir -p .next/cache
 
 ### Stage 3: runner ###
 FROM oven/bun:canary-alpine AS runner

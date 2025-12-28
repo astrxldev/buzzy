@@ -35,6 +35,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { setLimit, toggleCheck, toggleLock } from "@/lib/api";
+import { shared } from "@/lib/comms";
 import { cn } from "@/lib/utils";
 
 export function SidebarLink({
@@ -207,6 +208,9 @@ export function SubmissionList({
 export function Watcher() {
   const router = useRouter();
   const count = useRef<number | undefined>(undefined);
+  // Reload after connection restored
+  shared.signal("sync", () => router.refresh());
+
   useEffect(() => {
     const es = new EventSource(`/api/artifact/ev`);
     es.addEventListener("update", () => router.refresh());

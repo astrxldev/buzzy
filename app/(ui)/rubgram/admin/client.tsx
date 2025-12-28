@@ -34,7 +34,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { comms } from "@/lib/comms";
+import { shared } from "@/lib/comms";
 import { cn } from "@/lib/utils";
 import { setFree, setLimit, toggleCheck, toggleLock } from "../api";
 
@@ -244,7 +244,7 @@ export function SubmissionList({
   }[];
 }) {
   const [query, setQuery] = useState("");
-  const [debug] = comms.var("debug");
+  const [debug] = shared.state("debug");
 
   return (
     <>
@@ -275,6 +275,9 @@ export function SubmissionList({
 export function Watcher() {
   const router = useRouter();
   const count = useRef<number | undefined>(undefined);
+  // Reload after connection restored
+  shared.signal("sync", () => router.refresh());
+  
   useEffect(() => {
     const es = new EventSource(`/api/rubgram/ev`);
     es.addEventListener("update", () => router.refresh());

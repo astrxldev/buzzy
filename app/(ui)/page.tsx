@@ -41,8 +41,8 @@ export default function Home() {
                         src={ArtifactLogo}
                         alt="เสือกไอดีชาวบ้าน"
                         className="w-22"
-                        width={500}
-                        height={500}
+                        width={100}
+                        height={100}
                       />
                     </ItemMedia>
                     <ItemContent>
@@ -66,8 +66,8 @@ export default function Home() {
                         src={RubgramLogo}
                         alt="รับกรรมแทนคนดู"
                         className="w-22"
-                        width={500}
-                        height={500}
+                        width={100}
+                        height={100}
                       />
                     </ItemMedia>
                     <ItemContent>
@@ -90,8 +90,8 @@ export default function Home() {
                         src={TierlistLogo}
                         alt="จัดเทียร์ลิสต์อบิส"
                         className="w-22"
-                        width={500}
-                        height={500}
+                        width={100}
+                        height={100}
                       />
                     </ItemMedia>
                     <ItemContent>

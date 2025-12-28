@@ -3,7 +3,6 @@ import { Toaster } from "sonner";
 import Background from "#/bg.jpg";
 import Image from "@/components/image";
 import { SentryDevToolbar } from "@/components/sentry";
-import { adminCheck } from "@/lib/auth";
 import Providers, { VersionCheck } from "../client";
 
 export default async function UiLayout({
@@ -11,7 +10,6 @@ export default async function UiLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const isAdmin = await adminCheck();
   return (
     <>
       <Image
@@ -22,7 +20,7 @@ export default async function UiLayout({
       <Providers>
         <AnimatePresence mode="wait">{children}</AnimatePresence>
         <VersionCheck />
-        {isAdmin && <SentryDevToolbar />}
+        <SentryDevToolbar />
       </Providers>
       <Toaster theme="dark" richColors closeButton />
     </>

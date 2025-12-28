@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 
-type WebsiteComms = Partial<{
+type SharedStates = Partial<{
   manual: boolean;
   debug: boolean;
   connected: boolean;
@@ -18,24 +18,30 @@ type WebsiteComms = Partial<{
   _raw: Record<string, unknown>;
 }>;
 
-type WebsiteSignals = { beforeSubmit?: undefined } & WebsiteComms;
+type SharedSignals = {
+  beforeSubmit?: undefined;
+  sync?: undefined;
+} & SharedStates;
 
-type WebsiteCommsMutator = {
-  get<K extends keyof WebsiteComms>(key: K): WebsiteComms[K];
-  set<K extends keyof WebsiteComms>(key: K, value: WebsiteComms[K]): void;
-  on<K extends keyof WebsiteSignals>(
+type IccMutator = {
+  get<K extends keyof SharedStates>(key: K): SharedStates[K];
+  set<K extends keyof SharedStates>(key: K, value: SharedStates[K]): void;
+  on<K extends keyof SharedSignals>(
     key: K,
-    listener: (value: WebsiteSignals[K]) => void,
+    listener: (value: SharedSignals[K]) => void,
   ): () => void;
-  off<K extends keyof WebsiteSignals>(
+  off<K extends keyof SharedSignals>(
     key: K,
-    listener: (value: WebsiteSignals[K]) => void,
+    listener: (value: SharedSignals[K]) => void,
   ): void;
-  emit<K extends keyof WebsiteSignals>(key: K, value: WebsiteSignals[K]): void;
+  emit<K extends keyof SharedSignals>(
+    key: K,
+    ...args: SharedSignals[K] extends undefined ? [] : [value: SharedSignals[K]]
+  ): void;
   active: boolean;
 };
 
-export const CommsContext = createContext<WebsiteCommsMutator>({
+export const IccContext = createContext<IccMutator>({
   get: () => {
     console.error("ICC used outside of provider.");
     return undefined;
@@ -47,18 +53,24 @@ export const CommsContext = createContext<WebsiteCommsMutator>({
   active: false,
 });
 
-export default function CommsProvider({
+export default function IccProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const storeRef = useRef<WebsiteComms>({});
+  const storeRef = useRef<SharedStates>({});
 
   const listeners = useRef<{
-    [K in keyof WebsiteSignals]?: Array<(value: WebsiteSignals[K]) => void>;
+    [K in keyof SharedSignals]?: Array<
+      (
+        ...args: SharedSignals[K] extends undefined
+          ? []
+          : [value: SharedSignals[K]]
+      ) => void
+    >;
   }>({});
 
-  const contextValue = useRef<WebsiteCommsMutator>({
+  const contextValue = useRef<IccMutator>({
     get: (k) => storeRef.current[k],
     set(k, v) {
       storeRef.current = { ...storeRef.current, [k]: v };
@@ -68,7 +80,9 @@ export default function CommsProvider({
         const { _raw, ...withoutRaw } = storeRef.current;
         contextValue.current.set("_raw", withoutRaw);
       }
-      contextValue.current.emit(k, v);
+      contextValue.current.emit(
+        ...([k, v] as unknown as Parameters<typeof contextValue.current.emit>),
+      );
     },
     on(k, listener) {
       // @ts-expect-error typescript screams for some impossible static type conflict
@@ -81,26 +95,27 @@ export default function CommsProvider({
         (l) => l !== listener,
       );
     },
-    emit: (k, value) => {
-      // biome-ignore lint/suspicious/useIterableCallbackReturn: l returns void
-      (listeners.current[k] || []).forEach((l) => l(value));
+    emit(k, value = undefined) {
+      (listeners.current[k] || []).map((l) =>
+        l(...([value] as Parameters<typeof l>)),
+      );
     },
     active: true,
   });
 
-  return <CommsContext value={contextValue.current}>{children}</CommsContext>;
+  return <IccContext value={contextValue.current}>{children}</IccContext>;
 }
 
-export const comms = {
-  var<K extends keyof WebsiteComms>(
+export const shared = {
+  state<K extends keyof SharedStates>(
     name: K,
   ): [
-    WebsiteComms[K],
+    SharedStates[K],
     (
-      value: WebsiteComms[K] | ((prev: WebsiteComms[K]) => WebsiteComms[K]),
+      value: SharedStates[K] | ((prev: SharedStates[K]) => SharedStates[K]),
     ) => void,
   ] {
-    const comms = use(CommsContext);
+    const comms = use(IccContext);
     if (!comms.active) {
       console.warn("ICC used outside of provider. Using local state instead.");
     }
@@ -108,45 +123,45 @@ export const comms = {
       comms.active ? comms.get(name) : undefined,
     );
     useEffect(() => {
-      function listener(value: WebsiteComms[typeof name]) {
+      function listener(value: SharedStates[typeof name]) {
         setState(value);
       }
       return comms.on(name, listener);
-    }, [name]);
+    }, [comms, name]);
 
     const mutator = useCallback(
       (
         value:
-          | WebsiteComms[typeof name]
-          | ((prev: WebsiteComms[typeof name]) => WebsiteComms[typeof name]),
+          | SharedStates[typeof name]
+          | ((prev: SharedStates[typeof name]) => SharedStates[typeof name]),
       ) => {
         const v = typeof value === "function" ? value(comms.get(name)) : value;
         if (comms.active) comms.set(name, v);
         else setState(v);
       },
-      [name],
+      [comms, name],
     );
 
     return [state, mutator] as const;
   },
-  event<K extends keyof WebsiteSignals>(
+  signal<K extends keyof SharedSignals>(
     key: K,
-    listener: (ev: WebsiteSignals[K]) => void,
+    listener: (ev: SharedSignals[K]) => void,
   ) {
-    const comms = use(CommsContext);
+    const comms = use(IccContext);
     const listenerRef = useRef(listener);
 
     useEffect(() => {
       listenerRef.current = listener;
     }, [listener]);
     useEffect(() => {
-      const stableListener = (value: WebsiteSignals[K]) => {
+      const stableListener = (value: SharedSignals[K]) => {
         listenerRef.current(value);
       };
       return comms.on(key, stableListener);
     }, [comms, key]);
   },
   raw() {
-    return [comms.var("_raw")[0]];
+    return [shared.state("_raw")[0]];
   },
 };

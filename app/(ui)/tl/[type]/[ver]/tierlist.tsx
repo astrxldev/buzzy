@@ -13,6 +13,7 @@ import {
   Fragment,
   type ReactNode,
   type RefObject,
+  useCallback,
   useContext,
   useEffect,
   useLayoutEffect,
@@ -47,7 +48,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { tlPlacements, tlState } from "@/lib/api";
-import { comms } from "@/lib/comms";
+import { shared } from "@/lib/comms";
 import type {
   characters,
   tierlistBadges,
@@ -122,7 +123,7 @@ export function TierList({
     download: boolean;
     ev: "unknown" | "connecting" | "ready";
   }>({ upload: false, download: false, ev: "unknown" });
-  const [updated] = comms.var("updated");
+  const [updated] = shared.state("updated");
 
   //#region error handling
   useEffect(() => {
@@ -136,17 +137,19 @@ export function TierList({
   //#endregion
 
   //#region states fetching
-  useEffect(() => {
-    async function fetchStates() {
-      setEvStatus((x) => ({ ...x, download: true }));
-      setStates(
-        await fetch(`/api/tl/${version.id}/states`)
-          .then((r) => r.json())
-          .finally(() => setEvStatus((x) => ({ ...x, download: false }))),
-      );
-    }
-    fetchStates();
+  const fetchStates = useCallback(async () => {
+    setEvStatus((x) => ({ ...x, download: true }));
+    setStates(
+      await fetch(`/api/tl/${version.id}/states`)
+        .then((r) => r.json())
+        .finally(() => setEvStatus((x) => ({ ...x, download: false }))),
+    );
   }, [version.id]);
+  // Reload after connection restored
+  shared.signal("sync", fetchStates);
+  useEffect(() => {
+    fetchStates();
+  }, [fetchStates]);
 
   useEffect(() => {
     setEvStatus((x) => ({ ...x, ev: "connecting" }));

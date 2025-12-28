@@ -29,6 +29,10 @@ import { db } from "@/lib/db";
 import { submissions } from "@/lib/db/schema";
 import { LimitManager, SubmissionList, Watcher } from "./client";
 
+export const metadata = {
+  title: "เสือกไอดีชาวบ้าน (แอดมิน)",
+};
+
 export default async function AdminLayout({
   children,
 }: {

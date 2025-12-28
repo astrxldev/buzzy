@@ -1,5 +1,5 @@
 import { Kanit } from "next/font/google";
-import { Watcher } from "@/app/(ui)/artifact/admin/client";
+import { Watcher } from "@/app/(ui)/rubgram/admin/client";
 import { VersionCheck } from "@/app/client";
 import AutoFitText from "@/components/fit";
 import { getArtifactConfig } from "@/lib/api";

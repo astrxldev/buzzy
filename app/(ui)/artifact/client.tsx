@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { getCharacters } from "@/lib/api";
-import { comms } from "@/lib/comms";
+import { shared } from "@/lib/comms";
 import { uidRegex } from "@/lib/const";
 import type { characters } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
@@ -159,7 +159,7 @@ function Placeholder({ className, ...props }: React.ComponentProps<"div">) {
 
 export function Disclaimer() {
   const [agreed, setAgreed] = useState(false);
-  const [updated] = comms.var("updated");
+  const [updated] = shared.state("updated");
 
   if (agreed || updated) return;
   return (
@@ -181,9 +181,9 @@ export function ClearCookie() {
 }
 
 export function WarningDialog() {
-  const [_manual, _setManual] = comms.var("manual");
+  const [_manual, _setManual] = shared.state("manual");
 
-  comms.event("beforeSubmit", () => {
+  shared.signal("beforeSubmit", () => {
     _manual;
   });
 }

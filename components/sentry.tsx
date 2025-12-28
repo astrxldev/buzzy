@@ -1,10 +1,10 @@
 "use client";
 
 import { useSentryToolbar } from "@sentry/toolbar";
-import { comms } from "@/lib/comms";
+import { shared } from "@/lib/comms";
 
 export function SentryDevToolbar() {
-  const [debug] = comms.var("debug");
+  const [debug] = shared.state("debug");
 
   useSentryToolbar({
     // Remember to conditionally enable the Toolbar.

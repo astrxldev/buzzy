@@ -16,7 +16,7 @@ import {
   MultiSelectValue,
 } from "@/components/ui/multi-select";
 import { Spinner } from "@/components/ui/spinner";
-import { comms } from "@/lib/comms";
+import { shared } from "@/lib/comms";
 import { cn } from "@/lib/utils";
 import {
   calcPrice,
@@ -33,7 +33,7 @@ export function WelcomeScreening({
   session: Awaited<ReturnType<typeof getDiscordSession>>;
 }) {
   const [agreed, setAgreed] = useState(false);
-  const [updated] = comms.var("updated");
+  const [updated] = shared.state("updated");
 
   if (agreed || (updated && session)) return;
   return (
@@ -76,7 +76,7 @@ export function ServiceSelector({
   types,
   allDiscount,
 }: Awaited<ReturnType<typeof getEndgameConfig>>) {
-  const [selected, setSelected] = comms.var("rubgram.services");
+  const [selected, setSelected] = shared.state("rubgram.services");
 
   return (
     <div className="grid gap-2">
@@ -119,7 +119,7 @@ export function ServiceSelector({
 }
 
 export function PriceEstimation() {
-  const [selected] = comms.var("rubgram.services");
+  const [selected] = shared.state("rubgram.services");
   const [label, setLabel] = useState("ทั้งหมด 0 บาท");
 
   useEffect(() => {
@@ -202,7 +202,7 @@ export function Countdown({ time }: { time: Date }) {
 
 export function CancelButton({ sid }: { sid: string }) {
   const [loading, setLoading] = useState(false);
-  const [, setServices] = comms.var("rubgram.services");
+  const [, setServices] = shared.state("rubgram.services");
 
   return (
     <Button
