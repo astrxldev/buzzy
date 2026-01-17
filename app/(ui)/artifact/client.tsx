@@ -159,7 +159,7 @@ export function CharacterChooser({
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogTitle>
-                      วิธีแก้ไข Character Showcase
+                      วิธีแก้ไขตัวละครไม่ขึ้น
                     </AlertDialogTitle>
                     <div className="gap-1 flex flex-col">
                       <center>
