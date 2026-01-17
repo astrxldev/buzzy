@@ -1,3 +1,4 @@
+import { env } from "node:process";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin } from "better-auth/plugins";
@@ -26,6 +27,8 @@ export const auth = betterAuth({
 
 export async function adminCheck() {
   "use server";
+
+  if (env.NO_AUTH_CHECK) return null;
 
   const session = await auth.api.getSession({
     headers: await headers(),

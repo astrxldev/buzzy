@@ -305,7 +305,9 @@ export async function actionLog(text: string, details?: unknown) {
       return [];
     });
 
-  revalidatePath("/admin/log");
+  try {
+    revalidatePath("/admin/log");
+  } catch { }
 
   if (res) ps.publish(res, { topic: "log" });
 }

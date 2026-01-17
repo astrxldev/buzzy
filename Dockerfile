@@ -73,6 +73,7 @@ USER container
 WORKDIR /home/container
 
 COPY --from=builder /home/container/node_modules ./node_modules
+COPY --from=builder /home/container/next.config.ts ./
 COPY --from=builder /home/container/bun.lock ./ 
 COPY --from=builder /home/container/package*.json ./ 
 

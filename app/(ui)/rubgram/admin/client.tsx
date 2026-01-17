@@ -140,7 +140,7 @@ export function LimitManager({
                     setDialog(1);
                   }}
                 >
-                  <span>ตั้ง Limit</span>
+                  <span>ตั้งจำกัดคิว</span>
                 </DropdownMenuItem>
               </DialogTrigger>
               <DropdownMenuItem onClick={toggleLock}>
@@ -161,7 +161,7 @@ export function LimitManager({
           {dialog === 1 ? (
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>ตั้ง Limit</DialogTitle>
+                <DialogTitle>ตั้งจำกัดคิว</DialogTitle>
               </DialogHeader>
               <form
                 id="limit-form"
@@ -277,7 +277,7 @@ export function Watcher() {
   const count = useRef<number | undefined>(undefined);
   // Reload after connection restored
   shared.signal("sync", () => router.refresh());
-  
+
   useEffect(() => {
     const es = new EventSource(`/api/rubgram/ev`);
     es.addEventListener("update", () => router.refresh());
