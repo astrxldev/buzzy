@@ -34,7 +34,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  if (!(await adminCheck())) redirect("/");
+  if (!(await adminCheck())) redirect("/login");
   const subs = await db
     .select({
       id: endgameSubmissions.id,

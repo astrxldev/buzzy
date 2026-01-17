@@ -1,5 +1,6 @@
 import { and, eq, inArray, isNull, or } from "drizzle-orm";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
   characters,
@@ -17,6 +18,7 @@ export default async function TierlistPage({
 }: {
   params: Promise<{ type: string; ver: string }>;
 }) {
+  if (!(await adminCheck())) redirect("/login");
   const { type, ver } = await params;
   const config = await db.transaction(async (tx) => {
     // resolve version info
@@ -76,8 +78,9 @@ export default async function TierlistPage({
 
     return { type: typeInfo, version, tiers, columns, badges, chars };
   });
-  // console.log(config);
-  if (!config) notFound();
+  if (!config)
+    // console.log(config);
+    notFound();
   return <TierList editable {...config} />;
   // return <pre>{JSON.stringify(config, null, 2)}</pre>;
 }

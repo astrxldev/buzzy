@@ -50,12 +50,16 @@ import { NavUser } from "@/components/user";
 import { db } from "@/lib/db";
 import { versions } from "@/lib/db/schema";
 import { SidebarLink, VersionCreateDialogForm } from "./client";
+import { adminCheck } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export default async function AdminLayout({
   children,
 }: {
   children: ReactNode;
 }) {
+  if(!await adminCheck()) redirect("/login");
+  
   const vers = await db
     .select()
     .from(versions)
