@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowRight, Check, Download, LogIn, ScrollText } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Blocker } from "@/components/blocker";
 import { Button } from "@/components/ui/button";
@@ -182,7 +182,13 @@ export function DownloadButton() {
   );
 }
 
-export function Countdown({ time }: { time: Date }) {
+export function Countdown({
+  time,
+  render = String,
+}: {
+  time: Date;
+  render?: (time: string | null) => ReactNode;
+}) {
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -192,11 +198,10 @@ export function Countdown({ time }: { time: Date }) {
   const diff = Math.max(0, time.getTime() - now.getTime());
   const minutes = Math.floor(diff / 60000);
   const seconds = Math.floor((diff % 60000) / 1000);
-  return (
-    <span>
-      {minutes.toString().padStart(2, "0")}:
-      {seconds.toString().padStart(2, "0")}
-    </span>
+  return render(
+    diff <= 0
+      ? null
+      : `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`,
   );
 }
 
