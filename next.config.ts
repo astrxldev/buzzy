@@ -24,10 +24,12 @@ const nextConfig: NextConfig = withBundleAnalyzer({
         hostname: "cards.enka.network",
       },
     ],
+    minimumCacheTTL: 86400,
   },
   experimental: {
     useSkewCookie: true,
     authInterrupts: true,
+    imgOptTimeoutInSeconds: 30,
   },
   deploymentId: process.env.NEXT_DEPLOYMENT_ID,
   // reactCompiler: true,
