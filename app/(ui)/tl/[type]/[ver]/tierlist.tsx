@@ -129,7 +129,7 @@ export function TierList({
   useEffect(() => {
     const handler = (ev: ErrorEvent) =>
       toast.error("Unexpected Error Occured", {
-        description: `${ev.error.message || ev.error || "*unknown error*"}`,
+        description: `${ev?.error?.message || ev?.error || "*unknown error*"}`,
       });
     window.addEventListener("error", handler);
     return () => window.removeEventListener("error", handler);

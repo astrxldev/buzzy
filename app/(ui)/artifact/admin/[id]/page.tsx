@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import { notFound } from "next/navigation";
 import Avatar from "@/components/avatar";
 import {
   Card,
@@ -23,6 +24,7 @@ export default async function AdminSubmissionView({
     .from(submissions)
     .where(eq(submissions.id, id))
     .limit(1);
+  if (!sub) notFound();
   const [char] = await db
     .select()
     .from(characters)
