@@ -20,6 +20,9 @@ const nextConfig: NextConfig = withBundleAnalyzer({
       {
         hostname: "i.ytimg.com",
       },
+      {
+        hostname: "cards.enka.network",
+      },
     ],
   },
   experimental: {

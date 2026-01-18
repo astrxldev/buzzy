@@ -50,7 +50,9 @@ export default async function AdminSubmissionView({
           <Avatar char={char} />
         </div>
         <div className="border rounded-md h-full overflow-hidden">
-          {enka && <EnkaBrowser uid={sub?.uid || ""} />}
+          {enka && (
+            <EnkaBrowser uid={sub?.uid || ""} cidAmber={char?.amber || ""} />
+          )}
         </div>
       </div>
     </div>
