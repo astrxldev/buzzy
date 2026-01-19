@@ -55,7 +55,7 @@
         "next-themes": "^0.4.6",
         "pg": "^8.16.3",
         "radix-ui": "^1.4.3",
-        "react": "19.2.0",
+        "react": "19.2.3",
         "react-day-picker": "^9.11.1",
         "react-dom": "19.2.0",
         "react-hook-form": "^7.66.0",
@@ -78,7 +78,7 @@
         "@playwright/test": "^1.56.1",
         "@tailwindcss/postcss": "^4.1.17",
         "@types/node": "^20.19.24",
-        "@types/react": "19.2.7",
+        "@types/react": "19.2.8",
         "@types/react-dom": "19.2.3",
         "drizzle-kit": "^0.31.6",
         "tailwindcss": "^4.1.17",
@@ -949,7 +949,7 @@
 
     "rc9": ["rc9@2.1.2", "", { "dependencies": { "defu": "^6.1.4", "destr": "^2.0.3" } }, "sha512-btXCnMmRIBINM2LDZoEmOogIZU7Qe7zn4BpomSKZ/ykbLObuBdvG+mFq11DL6fjH1DRwHhrlgtYWG96bJiC7Cg=="],
 
-    "react": ["react@19.2.0", "", {}, "sha512-tmbWg6W31tQLeB5cdIBOicJDJRR2KzXsV7uSK9iNfLWQ5bIZfxuPEHp7M8wiHyHnn0DD1i7w3Zmin0FtkrwoCQ=="],
+    "react": ["react@19.2.3", "", {}, "sha512-Ku/hhYbVjOQnXDZFv2+RibmLFGwFdeeKHFcOTlrt7xplBnya5OGn/hIRDsqDiSUcfORsDC7MPxwork8jBwsIWA=="],
 
     "react-day-picker": ["react-day-picker@9.11.1", "", { "dependencies": { "@date-fns/tz": "^1.4.1", "date-fns": "^4.1.0", "date-fns-jalali": "^4.1.0-0" }, "peerDependencies": { "react": ">=16.8.0" } }, "sha512-l3ub6o8NlchqIjPKrRFUCkTUEq6KwemQlfv3XZzzwpUeGwmDJ+0u0Upmt38hJyd7D/vn2dQoOoLV/qAp0o3uUw=="],
 
