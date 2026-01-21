@@ -51,7 +51,7 @@ export function EnkaBrowser({
           <Button
             variant="outline"
             className={cn(
-              "absolute left-1 z-45 bg-[#222a]! backdrop-blur-sm opacity-20 hover:opacity-100",
+              "absolute left-1 z-45 bg-[#222a]! backdrop-blur-sm opacity-50 md:opacity-20 hover:opacity-100",
               useWeb ? "-bottom-19" : "bottom-1",
             )}
             size="icon"
