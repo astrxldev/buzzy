@@ -22,6 +22,7 @@ import {
   SidebarInset,
   SidebarMenu,
   SidebarProvider,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { getArtifactConfig, random, wipe } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
@@ -107,6 +108,9 @@ export default async function AdminLayout({
       </Sidebar>
       <SidebarInset className="bg-transparent">
         {children}
+        <div className="absolute block md:hidden opacity-50 hover:opacity-100 bottom-15 left-4">
+          <SidebarTrigger />
+        </div>
         <Watcher />
       </SidebarInset>
     </SidebarProvider>

@@ -35,13 +35,13 @@ export function EnkaBrowser({
       {!ready && !error && (
         <ScanSearch
           className={cn(
-            "animate-pulse absolute left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 text-muted-foreground z-100",
+            "animate-pulse absolute left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 text-muted-foreground z-45",
             useWeb ? "top-[calc(50%+80px)]" : "top-1/2",
           )}
         />
       )}
       {error && (
-        <div className="flex flex-col items-center gap-2 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-100">
+        <div className="flex flex-col items-center gap-2 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40">
           <OctagonAlert className="size-8 text-red-500" />
           <span>ไม่สามารถโหลดข้อมูลตัวละคร</span>
         </div>
@@ -51,7 +51,7 @@ export function EnkaBrowser({
           <Button
             variant="outline"
             className={cn(
-              "absolute left-1 z-110 bg-[#222a]! backdrop-blur-sm opacity-20 hover:opacity-100",
+              "absolute left-1 z-45 bg-[#222a]! backdrop-blur-sm opacity-20 hover:opacity-100",
               useWeb ? "-bottom-19" : "bottom-1",
             )}
             size="icon"
@@ -78,7 +78,7 @@ export function EnkaBrowser({
       ) : (
         <div
           className={cn(
-            "w-full h-full border-0 bg-card transition-[filter]",
+            "w-full h-full border-0 bg-card transition-[filter] portrait:rotate-90 portrait:scale-175",
             (!ready || error) &&
               "grayscale blur-md brightness-50 pointer-events-none",
           )}

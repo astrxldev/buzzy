@@ -205,11 +205,10 @@ export default async function EndgamePage() {
                       id="name"
                       name="name"
                       type="text"
-                      placeholder="Mr.Buzz"
+                      placeholder={session?.display || "Mr. Buzz"}
                       autoComplete="name"
                       maxLength={32}
                       required
-                      defaultValue={session?.display}
                     />
                   </div>
 
