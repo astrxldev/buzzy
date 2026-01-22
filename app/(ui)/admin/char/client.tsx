@@ -1,5 +1,6 @@
 "use client";
 import { UserPlus } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import Avatar from "@/components/avatar";
 import SearchBox, { type Filters, type ParsedQuery } from "@/components/search";
@@ -45,13 +46,17 @@ export function CharManager({
           className="bg-input sticky top-2"
           onQueryChange={setQuery}
         />
-        <Button className="h-10 w-10">
-          <UserPlus />
+        <Button className="h-10 w-10" asChild>
+          <Link href="/admin/char/create">
+            <UserPlus />
+          </Link>
         </Button>
       </div>
       <div className="flex flex-wrap gap-4 justify-center">
         {filteredChars.map((char) => (
-          <Avatar char={char} key={char.id} />
+          <Link href={`/admin/char/${char.id}`} key={char.id}>
+            <Avatar char={char} />
+          </Link>
         ))}
       </div>
     </div>

@@ -2,10 +2,13 @@
 // The added config here will be used whenever a users loads a page in their browser.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
+import { env } from "node:process";
 import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
   dsn: "https://9a918fb166b0abde6cbb698191ac61c9@o4510549315420160.ingest.us.sentry.io/4510549315616768",
+
+  enabled: env.ENVIRONMENT === "production",
 
   // Add optional integrations for additional features
   integrations: [

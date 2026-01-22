@@ -30,6 +30,7 @@ const nextConfig: NextConfig = withBundleAnalyzer({
     useSkewCookie: true,
     authInterrupts: true,
     imgOptTimeoutInSeconds: 30,
+    typedEnv: true
   },
   deploymentId: process.env.NEXT_DEPLOYMENT_ID,
   // reactCompiler: true,

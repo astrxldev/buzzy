@@ -68,7 +68,7 @@ const columns: ColumnDef<{
     header: "ID",
   },
   {
-    accessorFn: (row) => b2s(Number(row.size)),
+    accessorFn: (row) => b2sClient(Number(row.size)),
     header: "Size",
   },
 ];
@@ -82,7 +82,13 @@ export function CdnTable({
     name: string | null;
     size: string;
   }[];
-  onChoose?: (value: string | null) => void;
+  onChoose?: (
+    value: {
+      id: string;
+      name: string | null;
+      size: string;
+    } | null,
+  ) => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -223,7 +229,7 @@ export function CdnTable({
               },
             },
           ]}
-          onClick={(row) => onChoose?.(row.id)}
+          onClick={(row) => onChoose?.(row)}
         />
       </div>
 
@@ -287,7 +293,7 @@ export function CdnTable({
   );
 }
 
-const b2s = (t: number) => {
+export const b2sClient = (t: number) => {
   let e = (Math.log2(t) / 10) | 0;
   // biome-ignore lint/suspicious/noAssignInExpressions: copied
   return `${(t / 1024 ** (e = e <= 0 ? 0 : e)).toFixed(1)}${" KMGP"[e]}B`;

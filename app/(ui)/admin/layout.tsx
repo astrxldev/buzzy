@@ -16,6 +16,7 @@ import {
   UserRoundSearch,
 } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { SimpleTooltip } from "@/components/tooltip";
 import {
@@ -47,19 +48,20 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import { NavUser } from "@/components/user";
+import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { versions } from "@/lib/db/schema";
 import { SidebarLink, VersionCreateDialogForm } from "./client";
-import { adminCheck } from "@/lib/auth";
-import { redirect } from "next/navigation";
 
 export default async function AdminLayout({
   children,
+  modal,
 }: {
   children: ReactNode;
+  modal: ReactNode;
 }) {
-  if(!await adminCheck()) redirect("/login");
-  
+  if (!(await adminCheck())) redirect("/login");
+
   const vers = await db
     .select()
     .from(versions)
@@ -247,7 +249,10 @@ export default async function AdminLayout({
           <NavUser />
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="bg-transparent">{children}</SidebarInset>
+      <SidebarInset className="bg-transparent">
+        {modal}
+        {children}
+      </SidebarInset>
     </SidebarProvider>
   );
 }
