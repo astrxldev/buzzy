@@ -23,6 +23,7 @@ type FormContextValue = {
   updateValues: (updater: (prev: FormValues) => FormValues) => void;
   clear: () => void;
   submit: () => Promise<void>;
+  closeDialog: () => void;
 };
 
 const FormContext = React.createContext<FormContextValue | null>(null);
@@ -188,6 +189,10 @@ export function FormProvider<T extends TypedFormDataShape>({
     formRef.current?.reset();
   }, [id]);
 
+  const closeDialog = React.useCallback(() => {
+    closerRef.current?.click();
+  }, []);
+
   const submit = React.useCallback(async () => {
     const formData = new FormData();
     for (const [key, value] of Object.entries(values)) {
@@ -226,8 +231,17 @@ export function FormProvider<T extends TypedFormDataShape>({
   }, [onSubmit, values]);
 
   const contextValue = React.useMemo<FormContextValue>(
-    () => ({ id, values, loading, setValue, updateValues, clear, submit }),
-    [id, values, loading, setValue, updateValues, clear, submit],
+    () => ({
+      id,
+      values,
+      loading,
+      setValue,
+      updateValues,
+      clear,
+      submit,
+      closeDialog,
+    }),
+    [id, values, loading, setValue, updateValues, clear, submit, closeDialog],
   );
 
   return (
@@ -339,7 +353,9 @@ type FormActionProps = Omit<
   React.ComponentProps<"button">,
   "type" | "children"
 > & {
-  type: "clear" | "submit";
+  type: "clear" | "submit" | "action";
+
+  action?: () => SubmitFnResult | Promise<SubmitFnResult>;
   children?: React.ReactNode;
   loading?: React.ReactNode;
   asChild?: boolean;
@@ -349,18 +365,52 @@ export function FormAction({
   type,
   children,
   asChild,
+  action,
   loading: loadingComponent,
   ...props
 }: FormActionProps) {
-  const { loading, clear } = useFormContext();
-  const isSubmit = type === "submit";
+  const { loading: formLoading, clear, closeDialog } = useFormContext();
+  const [actionLoading, setActionLoading] = React.useState(false);
+  const loading = formLoading || actionLoading;
 
   const buttonProps = {
     ...props,
-    type: (isSubmit ? "submit" : "button") as "submit" | "button",
-    disabled: isSubmit && loading,
-    onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+    type: (type === "submit" ? "submit" : "button") as "submit" | "button",
+    disabled: type !== "clear" && loading,
+    onClick: async (event: React.MouseEvent<HTMLButtonElement>) => {
       props.onClick?.(event);
+      if (!event.defaultPrevented && type === "action") {
+        setActionLoading(true);
+        try {
+          const res = await action?.();
+          if (res && typeof res === "object") {
+            if ("error" in res) {
+              const { error } = res;
+              if (typeof error === "string") throw new Error(error);
+            }
+            if ("toast" in res) {
+              const { toast: toastMsg } = res;
+              if (typeof toastMsg === "string") toast(toastMsg);
+            }
+            if ("close" in res) {
+              const { close } = res;
+              if (typeof close === "boolean") {
+                if (close) closeDialog();
+              }
+            }
+          }
+        } catch (error) {
+          const message =
+            error instanceof Error
+              ? error.message
+              : typeof error === "string"
+                ? error
+                : "Something went wrong";
+          toast.error(message);
+        } finally {
+          setActionLoading(false);
+        }
+      }
       if (!event.defaultPrevented && type === "clear") clear();
     },
   };

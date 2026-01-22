@@ -1,5 +1,5 @@
 import { desc, eq } from "drizzle-orm";
-import { ArrowRight, Save } from "lucide-react";
+import { ArrowRight, Save, Trash2 } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { TypedFormData } from "@/app/(ui)/rubgram/type";
@@ -88,8 +88,18 @@ export default async function CharacterEditPage({
     return { toast: "Character saved." };
   }
 
+  async function deleteChar() {
+    "use server";
+    if (!(await adminCheck())) redirect("/login");
+
+    await db.delete(characters).where(eq(characters.id, charId));
+
+    revalidatePath("/admin/char");
+    return { toast: "Character deleted.", close: true };
+  }
+
   return (
-    <ModalBase title="Create Character">
+    <ModalBase title="Edit Character">
       <FormProvider
         id="char-create"
         onSubmit={submit}
@@ -198,6 +208,12 @@ export default async function CharacterEditPage({
           </div>
         </div>
         <DialogFooter>
+          <Button asChild variant="destructive">
+            <FormAction type="action" action={deleteChar}>
+              <Trash2 />
+              Delete
+            </FormAction>
+          </Button>
           <DialogClose>
             <Button variant="outline" type="button">
               Cancel
