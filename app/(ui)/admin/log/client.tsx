@@ -1,9 +1,10 @@
 "use client";
 
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, CircleAlert } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { stringify } from "yaml";
 import SearchBox, { type Filters, type ParsedQuery } from "@/components/search";
+import { SimpleTooltip } from "@/components/tooltip";
 import { Button } from "@/components/ui/button";
 import type { auditLog } from "@/lib/db/schema";
 
@@ -173,8 +174,15 @@ export default function AuditLogViewer({
                     onClick={() => toggleExpand(log.id)}
                     role="tree"
                   >
-                    <span className="text-gray-300 leading-relaxed">
-                      {log.text}
+                    <span className="text-gray-300 leading-relaxed flex items-center gap-2">
+                      {log.text}{" "}
+                      {!isExpanded && log.details ? (
+                        <SimpleTooltip text="Click to see details">
+                          <CircleAlert className="opacity-80 size-4" />
+                        </SimpleTooltip>
+                      ) : (
+                        ""
+                      )}
                     </span>
                     {log.details ? (
                       <Button
