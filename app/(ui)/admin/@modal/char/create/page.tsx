@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
+import { actionLog } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { characters, element as elementEnum, versions } from "@/lib/db/schema";
@@ -64,8 +65,10 @@ export default async function CharacterCreatePage() {
       }
     }
 
+    let data: typeof characters.$inferInsert;
+
     try {
-      await db.insert(characters).values({
+      data = {
         id: form.get("id")!,
         name: form.get("name")!,
         vision: form.get("element")!,
@@ -75,11 +78,14 @@ export default async function CharacterCreatePage() {
         version: form.get("version")!,
         weapon: form.get("weapon")!,
         amber: form.get("amber")!,
-      });
+      };
+      await db.insert(characters).values(data);
     } catch (e) {
       console.error(e);
       return { error: "Failed to update character in database." };
     }
+
+    actionLog(`Created character ${data.id}`, data);
 
     revalidatePath("/admin/char");
     return { toast: "Character created successfully.", close: true };

@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
+import { actionLog } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { characters, element as elementEnum, versions } from "@/lib/db/schema";
@@ -65,24 +66,26 @@ export default async function CharacterEditPage({
       }
     }
 
+    let data: typeof characters.$inferInsert;
+
     try {
-      await db
-        .update(characters)
-        .set({
-          name: form.get("name")!,
-          vision: form.get("element")!,
-          stars: parseInt(form.get("stars") || "0", 10) as 4 | 5,
-          image: form.get("image")!,
-          order: parseInt(form.get("order")!, 10),
-          version: form.get("version")!,
-          weapon: form.get("weapon")!,
-          amber: form.get("amber")!,
-        })
-        .where(eq(characters.id, charId));
+      data = {
+        name: form.get("name")!,
+        vision: form.get("element")!,
+        stars: parseInt(form.get("stars") || "0", 10) as 4 | 5,
+        image: form.get("image")!,
+        order: parseInt(form.get("order")!, 10),
+        version: form.get("version")!,
+        weapon: form.get("weapon")!,
+        amber: form.get("amber")!,
+      };
+      await db.update(characters).set(data).where(eq(characters.id, charId));
     } catch (e) {
       console.error(e);
       return { error: "Failed to update character in database." };
     }
+
+    actionLog(`Edited character ${charId}`, data);
 
     revalidatePath("/admin/char");
     return { toast: "Character saved." };
@@ -214,7 +217,7 @@ export default async function CharacterEditPage({
               Delete
             </FormAction>
           </Button>
-          <DialogClose>
+          <DialogClose asChild>
             <Button variant="outline" type="button">
               Cancel
             </Button>
