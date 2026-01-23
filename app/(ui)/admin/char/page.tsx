@@ -3,6 +3,9 @@ import { characters } from "@/lib/db/schema";
 import { CharManager } from "./client";
 
 export default async function CharManagerPage() {
-  const chars = await db.select().from(characters);
+  const chars = await db
+    .select()
+    .from(characters)
+    .orderBy(characters.amber, characters.id);
   return <CharManager chars={chars} />;
 }

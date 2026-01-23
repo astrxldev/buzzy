@@ -24,7 +24,7 @@ export default function AuditLogViewer({
   useEffect(() => {
     const es = new EventSource("/api/ev/log");
     es.onmessage = (res) =>
-      updateLogs((x) => [...x.slice(0, 999), JSON.parse(res.data)]);
+      updateLogs((x) => [...x.slice(-999), JSON.parse(res.data)]);
     return () => es.close();
   }, []);
 
