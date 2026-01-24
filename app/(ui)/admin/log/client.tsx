@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronRight, CircleAlert } from "lucide-react";
+import { ChevronDown, ChevronRight, FormIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { stringify } from "yaml";
 import SearchBox, { type Filters, type ParsedQuery } from "@/components/search";
@@ -30,7 +30,7 @@ export default function AuditLogViewer({
 
   const filters: Filters = {
     user: () => users.map((u) => u.email),
-    has: () => ["artifact", "tierlist", "rubgram", "file"],
+    has: () => ["artifact", "tierlist", "rubgram", "character", "file"],
   };
 
   const [query, setQuery] = useState<ParsedQuery>();
@@ -178,7 +178,7 @@ export default function AuditLogViewer({
                       {log.text}{" "}
                       {!isExpanded && log.details ? (
                         <SimpleTooltip text="Click to see details">
-                          <CircleAlert className="opacity-80 size-4" />
+                          <FormIcon className="opacity-80 size-4" />
                         </SimpleTooltip>
                       ) : (
                         ""

@@ -1,0 +1,42 @@
+services:
+  db:
+    image: pgautoupgrade/pgautoupgrade:trixie
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: dev
+      PGDATA: /pgdata
+    volumes:
+      - pgdata:/pgdata
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -U postgres -d postgres"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    ports:
+      - 5432:5432
+
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+      - redis:/data
+    command: --save 60 1 --loglevel warning
+  redis-commander:
+    depends_on:
+      - redis
+    container_name: redis-commander
+    hostname: redis-commander
+    image: ghcr.io/joeferner/redis-commander:latest
+    restart: always
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "6380:8081"
+    user: redis
+
+volumes:
+  pgdata:
+  drizzle:
+  redis:

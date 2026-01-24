@@ -1,11 +1,16 @@
+import { eq, sql } from "drizzle-orm";
 import {
   ArrowLeftRight,
   Badge,
+  BadgeDollarSign,
   BookUser,
   Columns3Cog,
   Computer,
   Database,
+  ExternalLink,
   GitGraph,
+  Grid3X3,
+  IdCard,
   ListTree,
   MoreHorizontal,
   Package,
@@ -17,7 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import type { ReactNode } from "react";
+import { type ReactNode, Suspense } from "react";
 import { SimpleTooltip } from "@/components/tooltip";
 import {
   Dialog,
@@ -30,6 +35,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -50,7 +59,7 @@ import {
 import { NavUser } from "@/components/user";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { versions } from "@/lib/db/schema";
+import { tierlistTypes, tierlistVersions, versions } from "@/lib/db/schema";
 import { SidebarLink, VersionCreateDialogForm } from "./client";
 
 export default async function AdminLayout({
@@ -66,12 +75,6 @@ export default async function AdminLayout({
     .select()
     .from(versions)
     .catch(() => [{ id: "..", name: "Error Fetching List." }]);
-  const health: {
-    database: boolean;
-    enka: boolean;
-    amber: boolean;
-    red: boolean;
-  } = await fetch("http://localhost:3000/api/health").then((r) => r.json());
 
   return (
     <SidebarProvider>
@@ -96,55 +99,17 @@ export default async function AdminLayout({
         <SidebarContent>
           <SidebarGroup className="pb-0">
             <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton>
-                    <div className="flex justify-between w-full">
-                      <div className="flex gap-1 [&>svg]:size-4 [&>svg]:shrink-0">
-                        {/* Database */}
-                        <SimpleTooltip text="Database">
-                          <Database
-                            className={
-                              health.database
-                                ? "text-emerald-400"
-                                : "text-red-400"
-                            }
-                          />
-                        </SimpleTooltip>{" "}
-                        {/* Enka */}
-                        <SimpleTooltip text="Enka Network API">
-                          <UserRoundSearch
-                            className={
-                              health.enka ? "text-emerald-400" : "text-red-400"
-                            }
-                          />
-                        </SimpleTooltip>{" "}
-                        {/* Amber */}
-                        <SimpleTooltip text="Project Amber">
-                          <BookUser
-                            className={
-                              health.amber ? "text-emerald-400" : "text-red-400"
-                            }
-                          />
-                        </SimpleTooltip>
-                        {/* Cache */}
-                        <SimpleTooltip text="Redis Cache/SSE">
-                          <ArrowLeftRight
-                            className={
-                              health.red ? "text-emerald-400" : "text-red-400"
-                            }
-                          />
-                        </SimpleTooltip>
-                      </div>
-                      <span>
-                        {Object.values(health).some((x) => !x)
-                          ? `${{ database: "ฐานข้อมูล", enka: "Enka ", amber: "Amber ", red: "SSE " }[Object.entries(health).find(([, v]) => !v)![0]]}มีปัญหา`
-                          : "ปกติทุกอย่าง"}
-                      </span>
-                    </div>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
+              <Suspense
+                fallback={
+                  <SidebarMenu>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton>Loading...</SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </SidebarMenu>
+                }
+              >
+                <HealthStatus />
+              </Suspense>
             </SidebarGroupContent>
           </SidebarGroup>
           <SidebarGroup>
@@ -219,6 +184,20 @@ export default async function AdminLayout({
             <SidebarGroupLabel>Global</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
+                <Suspense
+                  fallback={
+                    <SidebarMenu>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton disabled>
+                          <ExternalLink />
+                          Admin Pages
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </SidebarMenu>
+                  }
+                >
+                  <AdminShortcuts />
+                </Suspense>
                 <SidebarMenuItem>
                   <SidebarLink href="/admin/char">
                     <SquareUserRound />
@@ -254,6 +233,120 @@ export default async function AdminLayout({
         {children}
       </SidebarInset>
     </SidebarProvider>
+  );
+}
+
+async function HealthStatus() {
+  const health: {
+    database: boolean;
+    enka: boolean;
+    amber: boolean;
+    red: boolean;
+  } = await fetch("http://localhost:3000/api/health").then((r) => r.json());
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton>
+          <div className="flex justify-between w-full">
+            <div className="flex gap-1 [&>svg]:size-4 [&>svg]:shrink-0">
+              {/* Database */}
+              <SimpleTooltip text="Database">
+                <Database
+                  className={
+                    health.database ? "text-emerald-400" : "text-red-400"
+                  }
+                />
+              </SimpleTooltip>{" "}
+              {/* Enka */}
+              <SimpleTooltip text="Enka Network API">
+                <UserRoundSearch
+                  className={health.enka ? "text-emerald-400" : "text-red-400"}
+                />
+              </SimpleTooltip>{" "}
+              {/* Amber */}
+              <SimpleTooltip text="Project Amber">
+                <BookUser
+                  className={health.amber ? "text-emerald-400" : "text-red-400"}
+                />
+              </SimpleTooltip>
+              {/* Cache */}
+              <SimpleTooltip text="Redis Cache/SSE">
+                <ArrowLeftRight
+                  className={health.red ? "text-emerald-400" : "text-red-400"}
+                />
+              </SimpleTooltip>
+            </div>
+            <span>
+              {Object.values(health).some((x) => !x)
+                ? `${{ database: "ฐานข้อมูล", enka: "Enka ", amber: "Amber ", red: "SSE " }[Object.entries(health).find(([, v]) => !v)![0]]}มีปัญหา`
+                : "ปกติทุกอย่าง"}
+            </span>
+          </div>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}
+
+async function AdminShortcuts() {
+  const versions = await db
+    .select({
+      name: sql<string>`${tierlistTypes.name} || ' ' || ${tierlistVersions.name}`.as(
+        "name",
+      ),
+      url: sql<string>`${tierlistVersions.type} || '/' || ${tierlistVersions.id}`,
+    })
+    .from(tierlistVersions)
+    .orderBy(tierlistTypes.order, tierlistVersions.order)
+    .innerJoin(tierlistTypes, eq(tierlistTypes.id, tierlistVersions.type))
+    .catch(() => []);
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton>
+              <ExternalLink />
+              Admin Pages
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="rounded-lg"
+            side="right"
+            align="start"
+          >
+            <DropdownMenuItem asChild>
+              <Link href="/artifact/admin">
+                <IdCard />
+                Artifact
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/rubgram/admin">
+                <BadgeDollarSign />
+                Rubgram
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <Grid3X3 />
+                Tierlist
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent>
+                  {versions.map((v) => (
+                    <DropdownMenuItem key={v.url} asChild>
+                      <Link href={`/tl/${v.url}/admin`}>{v.name}</Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
   );
 }
 

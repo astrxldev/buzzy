@@ -82,10 +82,16 @@ export default async function CharacterCreatePage() {
       await db.insert(characters).values(data);
     } catch (e) {
       console.error(e);
-      return { error: "Failed to update character in database." };
+      const err = e as Error & { cause: { detail: string; message: string } };
+      return {
+        error:
+          err?.cause?.detail ||
+          err?.cause?.message ||
+          "Failed to update character in database.",
+      };
     }
 
-    actionLog(`Created character ${data.id}`, data);
+    await actionLog(`Created character ${data.id}`, data);
 
     revalidatePath("/admin/char");
     return { toast: "Character created successfully.", close: true };

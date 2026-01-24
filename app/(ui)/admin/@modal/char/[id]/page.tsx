@@ -27,6 +27,8 @@ import { characters, element as elementEnum, versions } from "@/lib/db/schema";
 export default async function CharacterEditPage({
   params,
 }: PageProps<"/admin/char/[id]">) {
+  if (!(await adminCheck())) redirect("/login");
+
   const { id: charId } = await params;
   const [versionList, [char]] = await Promise.all([
     db.select().from(versions).orderBy(desc(versions.id)),
@@ -82,10 +84,16 @@ export default async function CharacterEditPage({
       await db.update(characters).set(data).where(eq(characters.id, charId));
     } catch (e) {
       console.error(e);
-      return { error: "Failed to update character in database." };
+      const err = e as Error & { cause: { detail: string; message: string } };
+      return {
+        error:
+          err?.cause?.detail ||
+          err?.cause?.message ||
+          "Failed to update character in database.",
+      };
     }
 
-    actionLog(`Edited character ${charId}`, data);
+    await actionLog(`Edited character ${charId}`, data);
 
     revalidatePath("/admin/char");
     return { toast: "Character saved." };
@@ -96,6 +104,8 @@ export default async function CharacterEditPage({
     if (!(await adminCheck())) redirect("/login");
 
     await db.delete(characters).where(eq(characters.id, charId));
+
+    await actionLog(`Deleted character ${charId}`, char);
 
     revalidatePath("/admin/char");
     return { toast: "Character deleted.", close: true };

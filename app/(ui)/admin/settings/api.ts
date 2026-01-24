@@ -21,7 +21,7 @@ export async function toggleEnka(state: boolean) {
     .values({ enka: state })
     .onConflictDoUpdate({ target: settings.id, set: { enka: state } });
 
-  actionLog("Changed a settings", { enka: state });
+  await actionLog("Changed a settings", { enka: state });
   revalidatePath("/admin/settings");
   revalidatePath("/artifact");
 }
@@ -30,6 +30,6 @@ export async function syncAmber() {
   const res = await promisify(exec)("bun util/sync 2>&1", {
     env: { ...env, NO_AUTH_CHECK: "1" },
   });
-  actionLog("Triggered an Amber sync", { result: res.stdout });
+  await actionLog("Triggered an Amber sync", { result: res.stdout });
   return res.stdout;
 }

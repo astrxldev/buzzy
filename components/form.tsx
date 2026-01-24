@@ -270,6 +270,7 @@ type FormInputProps = {
   label?: string;
   subLabel?: string;
   children: React.ReactElement;
+  className?: string;
 };
 
 export function FormInput({
@@ -278,6 +279,7 @@ export function FormInput({
   children,
   label,
   subLabel,
+  className,
 }: FormInputProps) {
   const { values, setValue, updateValues } = useFormContext();
   const childProps = children.props as Record<string, unknown>;
@@ -336,15 +338,19 @@ export function FormInput({
 
   return (
     <>
-      {label && (
-        <Label htmlFor={`forminput-${name}`}>
-          {label}{" "}
-          {subLabel && (
-            <span className="font-normal opacity-70">{subLabel}</span>
-          )}
-        </Label>
+      {label ? (
+        <div className={cn("flex flex-col gap-2 grow", className)}>
+          <Label htmlFor={`forminput-${name}`}>
+            {label}{" "}
+            {subLabel && (
+              <span className="font-normal opacity-70">{subLabel}</span>
+            )}
+          </Label>
+          {React.cloneElement(children, nextProps)}
+        </div>
+      ) : (
+        React.cloneElement(children, nextProps)
       )}
-      {React.cloneElement(children, nextProps)}
     </>
   );
 }
@@ -427,4 +433,8 @@ export function FormAction({
       {loadingComponent && loading ? loadingComponent : children}
     </button>
   );
+}
+
+export function FormRow({ className, ...props }: React.ComponentProps<"div">) {
+  return <div className={cn("flex gap-2", className)} {...props} />;
 }
