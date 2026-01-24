@@ -1,7 +1,7 @@
 import { and, eq, gt, lt, not, or } from "drizzle-orm";
 import {
   AlertCircle,
-  ArrowLeft,
+  X,
   BookAlert,
   CircleDollarSign,
   SendHorizonal,
@@ -272,7 +272,7 @@ export default async function EndgamePage() {
                   <SimpleTooltip text="ยกเลิกคิว">
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive" type="button">
-                        <ArrowLeft />
+                        <X />
                       </Button>
                     </AlertDialogTrigger>
                   </SimpleTooltip>
