@@ -44,11 +44,11 @@ export function SettingsServicesSection({
           Sync Amber
         </Button>
         {debug && (
-          <div className="grid gap-1 rounded-sm border border-dashed p-1 w-min">
+          <div className="grid gap-1 rounded-sm border border-dashed p-1 w-fit">
             <span className="text-sm text-muted-foreground">
               Test file input
             </span>
-            <CdnChooser onChange={alert} className="w-50" />
+            <CdnChooser onChange={alert} />
           </div>
         )}
         {syncResult && (

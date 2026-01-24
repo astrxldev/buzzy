@@ -1,6 +1,7 @@
+/** biome-ignore-all lint/a11y/noStaticElementInteractions: yes maam */
 "use client";
 
-import { Check, FileSearch2 } from "lucide-react";
+import { FileSearch2, X } from "lucide-react";
 import {
   type ComponentProps,
   useContext,
@@ -11,6 +12,7 @@ import {
 import { b2sClient, CdnTable } from "@/app/(ui)/admin/cdn/table";
 import type { cdn } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
+import { SimpleTooltip } from "../tooltip";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { Kbd } from "../ui/kbd";
@@ -117,7 +119,7 @@ export function CdnChooser({
   return (
     <>
       <Button
-        onClick={choose}
+        onClick={value ? undefined : choose}
         className={cn("min-w-50 justify-between", className)}
         // size="sm"
         variant="outline"
@@ -125,15 +127,27 @@ export function CdnChooser({
       >
         {children ||
           (meta ? (
-            <span>
+            <span onClick={value ? choose : undefined}>
               {meta.name} <Kbd>{b2sClient(Number(meta.size))}</Kbd>
             </span>
           ) : value ? (
-            "File Selected"
+            <span onClick={value ? choose : undefined}>"File Selected"</span>
           ) : (
             "Select File"
           ))}
-        {value ? <Check /> : <FileSearch2 />}
+        {value ? (
+          <SimpleTooltip text="Unselect">
+            <X
+              className="hover:text-red-500 pointer-events-auto!"
+              onClick={() => {
+                setValue("");
+                setMeta(undefined);
+              }}
+            />
+          </SimpleTooltip>
+        ) : (
+          <FileSearch2 />
+        )}
       </Button>
       <input value={value} hidden {...props} readOnly />
     </>
