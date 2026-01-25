@@ -21,7 +21,7 @@ import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { tierlistTypes } from "@/lib/db/schema";
 
-export default async function CharacterCreatePage({
+export default async function TlTypeEditPage({
   params,
 }: PageProps<"/admin/tl/ver/[type]/edit">) {
   if (!(await adminCheck())) redirect("/login");

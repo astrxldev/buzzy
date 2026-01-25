@@ -127,11 +127,11 @@ export function CdnChooser({
       >
         {children ||
           (meta ? (
-            <span onClick={value ? choose : undefined}>
+            <span onClick={value ? choose : undefined} className="truncate">
               {meta.name} <Kbd>{b2sClient(Number(meta.size))}</Kbd>
             </span>
           ) : value ? (
-            <span onClick={value ? choose : undefined}>"File Selected"</span>
+            <span onClick={value ? choose : undefined}>File Selected</span>
           ) : (
             "Select File"
           ))}

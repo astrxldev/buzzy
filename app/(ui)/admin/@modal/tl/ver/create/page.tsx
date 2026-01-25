@@ -16,7 +16,7 @@ import { db } from "@/lib/db";
 import { tierlistTypes } from "@/lib/db/schema";
 import { genId } from "./overrides";
 
-export default async function CharacterCreatePage() {
+export default async function TlTypeCreatePage() {
   const [{ maxOrder }] = await db
     .select({ maxOrder: sql<number>`MAX(${tierlistTypes.order})` })
     .from(tierlistTypes);

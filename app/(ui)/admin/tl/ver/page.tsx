@@ -37,7 +37,7 @@ export default async function TierlistManagerPage() {
             <div className="md:opacity-0 group-hover/type:opacity-100 transition-opacity flex gap-1">
               <SimpleTooltip text="Create version">
                 <Button asChild>
-                  <Link href={`/admin/tl/${t.id}/create`}>
+                  <Link href={`/admin/tl/ver/${t.id}/create`}>
                     <PlusIcon />
                     <span className="md:hidden">Create</span>
                   </Link>
