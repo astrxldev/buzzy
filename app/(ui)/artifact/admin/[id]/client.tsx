@@ -89,7 +89,10 @@ export function EnkaBrowser({
             fill
             objectFit="contain"
             title="Enka Network"
-            onLoadingComplete={() => setReady(true)}
+            onLoad={() => {
+              setReady(true);
+              setError(false);
+            }}
             onError={() => setError(true)}
           />
         </div>
