@@ -66,6 +66,7 @@ export default async function TlVersionCreatePage({
       from: string;
       image: string;
       disclaimer: string;
+      deprecates: string;
     }>,
   ) {
     "use server";
@@ -86,7 +87,7 @@ export default async function TlVersionCreatePage({
         image: form.get("image")!,
         disclaimer: form.get("disclaimer")!,
         from: form.get("from")!,
-        deprecates: "",
+        deprecates: form.get("deprecates")!,
         order: parseInt(form.get("order")!, 10),
         type: typeId,
       };
@@ -123,7 +124,7 @@ export default async function TlVersionCreatePage({
         <FormInput name="order" label="Order">
           <Input placeholder="1" defaultValue={maxOrder + 10} />
         </FormInput>
-        <FormInput name="deprecate" label="Deprecation Date">
+        <FormInput name="deprecates" label="Deprecation Date">
           <DatePicker />
         </FormInput>
         <FormRow>
