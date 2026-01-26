@@ -98,6 +98,9 @@
     "@prisma/client",
     "prisma",
   ],
+  "patchedDependencies": {
+    "next@16.0.10": "patches/next@16.0.10.patch",
+  },
   "overrides": {
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",

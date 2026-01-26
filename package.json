@@ -113,5 +113,8 @@
     "esbuild",
     "prisma",
     "sharp"
-  ]
+  ],
+  "patchedDependencies": {
+    "next@16.0.10": "patches/next@16.0.10.patch"
+  }
 }

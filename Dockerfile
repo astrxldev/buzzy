@@ -16,6 +16,7 @@ WORKDIR /home/container
 #     && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json bun.lock ./
+COPY patches ./patches
 
 # Install into cache, then persist into real node_modules
 RUN --mount=type=cache,target=/root/.bun bun install --frozen-lockfile
