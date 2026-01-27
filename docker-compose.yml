@@ -23,6 +23,12 @@ services:
     networks:
       - buzz
 
+  backend:
+    build:
+      context: .
+      dockerfile: backend.dockerfile
+    restart: on-failure
+
   backup:
     restart: always
     build: .

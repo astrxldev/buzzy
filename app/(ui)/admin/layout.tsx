@@ -117,19 +117,19 @@ export default async function AdminLayout({
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarLink href="/admin/tl/ver">
+                  <SidebarLink href="/admin/tl/ver" disabled>
                     <GitGraph />
                     Versions
                   </SidebarLink>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarLink href="/admin/tl/badges">
+                  <SidebarLink href="/admin/tl/badges" disabled>
                     <Badge />
                     Badges
                   </SidebarLink>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarLink href="/admin/tl/layout">
+                  <SidebarLink href="/admin/tl/layout" disabled>
                     <Columns3Cog />
                     Layout
                   </SidebarLink>
@@ -170,7 +170,7 @@ export default async function AdminLayout({
               <SidebarMenu>
                 {vers.map((v) => (
                   <SidebarMenuItem key={v.id}>
-                    <SidebarLink href={`/admin/ver/${v.id}`}>
+                    <SidebarLink href={`/admin/ver/${v.id}`} disabled>
                       {v.name}
                     </SidebarLink>
                   </SidebarMenuItem>

@@ -1,5 +1,5 @@
-import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
-import { ArrowRight, PlusIcon } from "lucide-react";
+import { desc, eq } from "drizzle-orm";
+import { ArrowRight, PlusIcon, Trash2 } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -14,7 +14,7 @@ import {
 } from "@/components/form";
 import { ModalBase } from "@/components/modal";
 import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
+import { DialogClose, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import {
@@ -29,34 +29,19 @@ import { actionLog } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { tierlistTypes, tierlistVersions, versions } from "@/lib/db/schema";
-import { genId } from "./overrides";
 
-export default async function TlVersionCreatePage({
+export default async function TlVersionEditPage({
   params,
-}: PageProps<"/admin/tl/ver/[type]/create">) {
+}: PageProps<"/admin/tl/ver/[type]/[ver]/edit">) {
   if (!(await adminCheck())) redirect("/login");
-  const { type: typeId } = await params;
-  const [[{ maxOrder }], [{ disclaimer } = {}], [type], versionList] =
-    await Promise.all([
-      db
-        .select({ maxOrder: sql<number>`MAX(${tierlistVersions.order})` })
-        .from(tierlistVersions)
-        .where(eq(tierlistVersions.type, typeId)),
-      db
-        .select({ disclaimer: tierlistVersions.disclaimer })
-        .from(tierlistVersions)
-        .where(
-          and(
-            eq(tierlistVersions.type, typeId),
-            isNotNull(tierlistVersions.disclaimer),
-          ),
-        )
-        .orderBy(desc(tierlistVersions.id))
-        .limit(1),
-      db.select().from(tierlistTypes).where(eq(tierlistTypes.id, typeId)),
-      db.select().from(versions).orderBy(desc(versions.id)),
-    ]);
+  const { type: typeId, ver: verId } = await params;
+  const [[type], [ver], versionList] = await Promise.all([
+    db.select().from(tierlistTypes).where(eq(tierlistTypes.id, typeId)),
+    db.select().from(tierlistVersions).where(eq(tierlistVersions.id, verId)),
+    db.select().from(versions).orderBy(desc(versions.id)),
+  ]);
   if (!type) notFound();
+  if (!ver) notFound();
 
   async function submit(
     form: TypedFormData<{
@@ -99,7 +84,10 @@ export default async function TlVersionCreatePage({
         order: parseInt(form.get("order")!, 10),
         type: typeId,
       };
-      await db.insert(tierlistVersions).values(data);
+      await db
+        .update(tierlistVersions)
+        .set(data)
+        .where(eq(tierlistVersions.id, verId));
     } catch (e) {
       console.error(e);
       const err = e as Error & { cause: { detail: string; message: string } };
@@ -111,28 +99,40 @@ export default async function TlVersionCreatePage({
       };
     }
 
-    await actionLog(`Created tierlist version ${typeId}/${data.id}`, data);
+    await actionLog(`Updated tierlist version ${typeId}/${data.id}`, data);
 
     revalidatePath("/admin/tl/ver");
-    return { toast: "Version created successfully.", close: true };
+    return { toast: "Version saved successfully.", close: true };
+  }
+
+  async function deleteVersion() {
+    "use server";
+    if (!(await adminCheck())) redirect("/login");
+
+    await db.delete(tierlistVersions).where(eq(tierlistVersions.id, verId));
+
+    await actionLog(`Deleted tierlist version ${verId}`, type);
+
+    revalidatePath("/admin/char");
+    return { toast: "Version deleted.", close: true };
   }
 
   return (
     <ModalBase title={`Create ${type.name} Tierlist`}>
-      <FormProvider id={`tl-${typeId}-create`} onSubmit={submit}>
+      <FormProvider id={`tl-${typeId}-create`} onSubmit={submit} values={ver}>
         <FormInput name="prefix">
           <input defaultValue={typeId} className="hidden" />
         </FormInput>
         <FormRow>
-          <FormInput name="name" override={genId} label="Name">
+          <FormInput name="name" label="Name">
             <Input placeholder="6.3a" autoFocus />
           </FormInput>
-          <FormInput name="id" label="ID" subLabel="auto-generated">
-            <Input placeholder="63a" />
+          <FormInput name="id" label="ID" subLabel="change = break">
+            <Input placeholder="63a" disabled />
           </FormInput>
         </FormRow>
         <FormInput name="order" label="Order">
-          <Input placeholder="1" defaultValue={maxOrder + 10} />
+          <Input placeholder="1" />
         </FormInput>
         <FormInput name="deprecates" label="Deprecation Date">
           <DatePicker />
@@ -171,18 +171,20 @@ export default async function TlVersionCreatePage({
           <FormInput name="image" label="Image" subLabel="optional">
             <CdnChooser />
           </FormInput>
-          <FormInput
-            name="disclaimer"
-            label="Disclaimer"
-            subLabel={disclaimer ? "auto-selected" : "optional"}
-          >
-            <CdnChooser defaultValue={disclaimer || undefined} />
+          <FormInput name="disclaimer" label="Disclaimer" subLabel="optional">
+            <CdnChooser />
           </FormInput>
         </FormRow>
         <DialogFooter>
-          <FormAction type="clear" asChild>
-            <Button variant="outline">Clear</Button>
-          </FormAction>
+          <Button asChild variant="destructive">
+            <FormAction type="action" action={deleteVersion}>
+              <Trash2 />
+              Delete
+            </FormAction>
+          </Button>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
           <Button asChild>
             <FormAction
               type="submit"

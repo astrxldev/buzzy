@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "bun --bun next dev --turbopack",
+    "nextdev": "bun --bun next dev --turbopack",
+    "dev": "cd dev && docker compose up --watch --quiet-build",
+    "$": "cd dev && docker compose exec -it dev bun",
     "build": "bun --bun next build --turbopack && bun run sentry:sourcemaps",
     "analyze": "ANALYZE=true next build --webpack",
     "start": "bun --bun next start",

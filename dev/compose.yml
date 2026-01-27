@@ -1,7 +1,26 @@
 services:
+  dev:
+    build:
+      context: ..
+      dockerfile: dev.dockerfile
+    volumes:
+      - ../app:/home/container/app
+    env_file: .env.development
+    ports:
+      - 3000:3000
+    restart: on-failure
+  backend:
+    build:
+      context: ..
+      dockerfile: backend.dockerfile
+    develop:
+      watch:
+        - path: ../backend
+          action: rebuild
+    env_file: .env.development
+    restart: on-failure
   db:
     image: pgautoupgrade/pgautoupgrade:trixie
-    restart: always
     environment:
       POSTGRES_PASSWORD: dev
       PGDATA: /pgdata
@@ -12,31 +31,31 @@ services:
       interval: 1s
       timeout: 5s
       retries: 10
+    restart: on-failure
     ports:
       - 5432:5432
 
   redis:
     image: redis:latest
-    restart: always
     ports:
       - 6379:6379
     volumes:
       - redis:/data
     command: --save 60 1 --loglevel warning
+    restart: on-failure
   redis-commander:
     depends_on:
       - redis
     container_name: redis-commander
     hostname: redis-commander
     image: ghcr.io/joeferner/redis-commander:latest
-    restart: always
     environment:
       - REDIS_HOSTS=local:redis:6379
     ports:
       - "6380:8081"
     user: redis
+    restart: on-failure
 
 volumes:
   pgdata:
-  drizzle:
   redis:

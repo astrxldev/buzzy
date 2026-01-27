@@ -49,8 +49,9 @@ export function SidebarLink({
   className,
   children,
   href,
+  disabled,
   ...props
-}: React.ComponentProps<typeof Link>) {
+}: React.ComponentProps<typeof Link> & { disabled?: boolean }) {
   const target = useMemo(
     () =>
       href
@@ -60,12 +61,18 @@ export function SidebarLink({
   );
   const pathname = usePathname();
   return (
-    <Link href={href} {...props}>
-      <SidebarMenuButton
-        className={cn(target === pathname ? "bg-accent" : "", className)}
-      >
-        {children}
-      </SidebarMenuButton>
-    </Link>
+    <SidebarMenuButton
+      disabled={disabled}
+      className={cn(target === pathname ? "bg-accent" : "", className)}
+      asChild={!disabled}
+    >
+      {disabled ? (
+        children
+      ) : (
+        <Link href={href} {...props}>
+          {children}
+        </Link>
+      )}
+    </SidebarMenuButton>
   );
 }

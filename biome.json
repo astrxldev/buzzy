@@ -27,7 +27,8 @@
       "recommended": true,
       "suspicious": {
         "noUnknownAtRules": "off",
-        "noConfusingVoidType": "off"
+        "noConfusingVoidType": "off",
+        "noAssignInExpressions": "off"
       },
       "style": {
         "noNonNullAssertion": "off"

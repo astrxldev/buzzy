@@ -1,4 +1,4 @@
-import { isNotNull, lte, or, type SQL } from "drizzle-orm";
+import { isNotNull, lte, or, type SQL, sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
   boolean,
@@ -134,7 +134,7 @@ export const endgameSubmissions = endgame.table("submissions", {
     .generatedAlwaysAs(
       (): SQL =>
         or(
-          lte(endgameSubmissions.price, 0),
+          lte(endgameSubmissions.price, sql.raw("0")),
           isNotNull(endgameSubmissions.slip),
         )!,
     ),

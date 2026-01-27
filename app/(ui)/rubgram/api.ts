@@ -329,7 +329,7 @@ export async function calcPrice(service: string[]) {
       ) - (types.every((s) => service.includes(s.id)) ? allDiscount : 0);
 }
 
-async function removeExpiredSubmissions() {
+export async function removeExpiredSubmissions() {
   // First, get count of items to be removed
   const expiredCond = and(
     not(endgameSubmissions.paid),
