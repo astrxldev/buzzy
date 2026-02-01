@@ -1,7 +1,7 @@
-import { AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { ViewTransition } from "react";
 import { Toaster } from "sonner";
 import Background from "#/bg.jpg";
-import Image from "@/components/image";
 import { SentryDevToolbar } from "@/components/sentry";
 import Providers, { VersionCheck } from "../client";
 
@@ -18,7 +18,7 @@ export default async function UiLayout({
         className="z-[-1] opacity-20 object-cover fixed top-0 left-0 w-full h-full"
       />
       <Providers>
-        <AnimatePresence mode="wait">{children}</AnimatePresence>
+        <ViewTransition enter="slide-in">{children}</ViewTransition>
         <VersionCheck />
         <SentryDevToolbar />
       </Providers>

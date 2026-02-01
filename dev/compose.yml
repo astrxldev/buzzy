@@ -1,15 +1,23 @@
 services:
-  dev:
+  # services
+  app:
+    depends_on:
+      - db
+      - redis
     build:
       context: ..
       dockerfile: dev.dockerfile
     volumes:
       - ../app:/home/container/app
+      - ../lib:/home/container/lib
     env_file: .env.development
     ports:
       - 3000:3000
     restart: on-failure
   backend:
+    depends_on:
+      - db
+      - redis
     build:
       context: ..
       dockerfile: backend.dockerfile
@@ -17,8 +25,13 @@ services:
       watch:
         - path: ../backend
           action: rebuild
+        - path: ../.env
+          action: rebuild
     env_file: .env.development
     restart: on-failure
+    stop_grace_period: 1s
+
+  # databases
   db:
     image: pgautoupgrade/pgautoupgrade:trixie
     environment:
@@ -34,7 +47,6 @@ services:
     restart: on-failure
     ports:
       - 5432:5432
-
   redis:
     image: redis:latest
     ports:
@@ -43,10 +55,17 @@ services:
       - redis:/data
     command: --save 60 1 --loglevel warning
     restart: on-failure
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # tools
   redis-commander:
     depends_on:
       - redis
-    container_name: redis-commander
     hostname: redis-commander
     image: ghcr.io/joeferner/redis-commander:latest
     environment:
@@ -55,6 +74,19 @@ services:
       - "6380:8081"
     user: redis
     restart: on-failure
+  drizzle:
+    depends_on:
+      - db
+    build:
+      context: ..
+      dockerfile: dev.dockerfile
+    volumes:
+      - ../app:/home/container/app
+    env_file: .env.development
+    ports:
+      - 4983:4983
+    restart: on-failure
+    command: ash -c "bun dr studio --host $(hostname)"
 
 volumes:
   pgdata:

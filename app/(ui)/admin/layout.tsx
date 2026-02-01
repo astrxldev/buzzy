@@ -113,11 +113,11 @@ export default async function AdminLayout({
             </SidebarGroupContent>
           </SidebarGroup>
           <SidebarGroup>
-            <SidebarGroupLabel>Tierlist</SidebarGroupLabel>
+            <SidebarGroupLabel>Tierlist [WIP]</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarLink href="/admin/tl/ver" disabled>
+                  <SidebarLink href="/admin/tl/ver">
                     <GitGraph />
                     Versions
                   </SidebarLink>
@@ -138,7 +138,7 @@ export default async function AdminLayout({
             </SidebarGroupContent>
           </SidebarGroup>
           <SidebarGroup>
-            <SidebarGroupLabel>Versions</SidebarGroupLabel>
+            <SidebarGroupLabel>Versions [WIP]</SidebarGroupLabel>
             <Dialog>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

@@ -14,22 +14,16 @@ import { SimpleTooltip } from "@/components/tooltip";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export function EnkaBrowser({
-  uid,
-  cidAmber,
-}: {
-  uid: string;
-  cidAmber: string;
-}) {
-  const [id, setId] = useState(uid);
+export function EnkaBrowser({ sub, uid }: { sub: string; uid: string }) {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
   const [useWeb, setUseWeb] = useState(false);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: for update
   useEffect(() => {
     setReady(false);
     setError(false);
-    setId(`${uid}/${cidAmber}`);
-  }, [uid, cidAmber]);
+  }, [sub, uid]);
   return (
     <div className="h-full w-full relative">
       {!ready && !error && (
@@ -84,8 +78,8 @@ export function EnkaBrowser({
           )}
         >
           <Image
-            src={`https://cards.enka.network/u/${id}/image`}
-            alt={`Enka card for ${id}`}
+            src={`/api/card/${sub}`}
+            alt={`Enka card for ${sub}`}
             fill
             objectFit="contain"
             title="Enka Network"

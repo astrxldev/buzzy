@@ -97,6 +97,16 @@ export const submissions = artifact.table("submissions", {
   checked: boolean().notNull().default(false),
 });
 
+export const cards = artifact.table("cards", {
+  id: text().primaryKey().$defaultFn(uuidv7),
+  submission: text()
+    .references(() => submissions.id, { onDelete: "cascade" })
+    .notNull()
+    .unique(),
+  tries: integer().notNull().default(0),
+  image: bytea(),
+});
+
 export const artifactSettings = artifact.table("settings", {
   id: boolean().primaryKey().default(true),
   locked: boolean().notNull().default(false),
@@ -272,7 +282,7 @@ export const tierlistVersions = tierlist.table("versions", {
 });
 
 export const tierlistStates = tierlist.table("states", {
-  uuid: text().primaryKey().unique().$defaultFn(uuidv7),
+  uuid: text().primaryKey().$defaultFn(uuidv7),
   char: text()
     .notNull()
     .references(() => characters.id, {

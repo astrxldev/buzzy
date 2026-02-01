@@ -116,7 +116,7 @@ async function main() {
               chars.find((c) => c.name === char)
                 ? {
                     list: v.ver,
-                    char: chars.find((c) => c.name === char)?.id!,
+                    char: chars.find((c) => c.name === char)!.id!,
                     comment: dat.comment,
                     badges: dat.badges,
                   }

@@ -295,6 +295,5 @@ export function CdnTable({
 
 export const b2sClient = (t: number) => {
   let e = (Math.log2(t) / 10) | 0;
-  // biome-ignore lint/suspicious/noAssignInExpressions: copied
   return `${(t / 1024 ** (e = e <= 0 ? 0 : e)).toFixed(1)}${" KMGP"[e]}B`;
 };

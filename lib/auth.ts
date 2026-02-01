@@ -9,7 +9,6 @@ import * as schema from "$/db/schema";
 export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
-    disableSignUp: true,
   },
   plugins: [admin()],
   trustedOrigins: [

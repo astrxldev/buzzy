@@ -35,7 +35,10 @@ export const cdnReferences = pgView("cdn_references").as((qb) => {
         cdn: sql<string>`${cols[column as keyof typeof cols]}`.as("cdn"),
         id: cols["id" as keyof typeof cols],
         column: sql<string>`${column}`.as("column"),
-        table: sql<string>`${`${config.schema}.${config.name}`}`.as("table"),
+        table:
+          sql<string>`${config.schema ? `${config.schema}.${config.name}` : config.name}`.as(
+            "table",
+          ),
       })
       .from(table)
       .where(isNotNull(cols[column as keyof typeof cols]));

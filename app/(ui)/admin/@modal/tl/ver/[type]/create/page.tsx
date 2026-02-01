@@ -75,8 +75,6 @@ export default async function TlVersionCreatePage({
     for (const field of [
       "id",
       "name",
-      "image",
-      "disclaimer",
       "from",
       "deprecates",
       "order",

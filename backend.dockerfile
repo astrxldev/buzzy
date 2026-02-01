@@ -36,6 +36,8 @@ RUN adduser -Du 1001 container
 USER container
 WORKDIR /home/container
 
+COPY --chown=1001 .env* .
+
 COPY --from=builder /home/container/dist/backend/* ./
 
 CMD ["bun", "."]

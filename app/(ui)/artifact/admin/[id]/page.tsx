@@ -31,6 +31,7 @@ export default async function AdminSubmissionView({
     .where(eq(characters.name, sub?.char || ""))
     .limit(1);
   const { enka } = await getArtifactConfig();
+  if (!sub) notFound();
   return (
     <div className="p-2 h-full">
       <div className="flex flex-col h-full w-full gap-2">
@@ -54,9 +55,7 @@ export default async function AdminSubmissionView({
           <Avatar char={char} />
         </div>
         <div className="border rounded-md h-full overflow-hidden">
-          {enka && (
-            <EnkaBrowser uid={sub?.uid || ""} cidAmber={char?.amber || ""} />
-          )}
+          {enka && <EnkaBrowser uid={sub.uid} sub={sub.id} />}
         </div>
       </div>
     </div>

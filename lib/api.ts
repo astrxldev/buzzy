@@ -204,7 +204,6 @@ export async function tlPlacements(
 ) {
   if (!(await adminCheck())) throw "Unauthorized";
 
-  // biome-ignore lint/correctness/noUnusedVariables: immutable property removal
   const { untiered, ...placementObj } = placements;
 
   await db
