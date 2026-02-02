@@ -13,7 +13,7 @@
     "format": "biome format --write",
     "dr": "drizzle-kit",
     "ba": "bunx @better-auth/cli",
-    "up": "docker compose build && docker rollout app && docker compose up -d backup && bun ngreload",
+    "up": "bun dr push && docker compose build && docker rollout app && docker compose up -d backup backend && bun ngreload",
     "logs": "docker compose logs -fn50",
     "ngreload": "docker compose restart -t 0 nginx",
     "test": "playwright test",

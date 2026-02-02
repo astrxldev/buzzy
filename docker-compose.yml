@@ -28,6 +28,8 @@ services:
       context: .
       dockerfile: backend.dockerfile
     restart: on-failure
+    networks:
+      - buzz
 
   backup:
     restart: always
@@ -52,6 +54,9 @@ services:
       timeout: 5s
       retries: 3
       start_period: 5s
+    dns:
+      - 127.0.0.11
+      - 1.1.1.1
 
   nginx:
     restart: always
