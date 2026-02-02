@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import Background from "#/bg.jpg";
 import { SentryDevToolbar } from "@/components/sentry";
 import Providers, { VersionCheck } from "../client";
+import { Navbar } from "./navbar";
 
 export default async function UiLayout({
   children,
@@ -21,6 +22,7 @@ export default async function UiLayout({
         <ViewTransition enter="slide-in">{children}</ViewTransition>
         <VersionCheck />
         <SentryDevToolbar />
+        <Navbar />
       </Providers>
       <Toaster theme="dark" richColors closeButton />
     </>

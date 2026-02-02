@@ -1,4 +1,4 @@
-import { desc, not } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { ExternalLink, PencilLine, PlusIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,14 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
 import { db } from "@/lib/db";
 import { tierlistTypes, tierlistVersions } from "@/lib/db/schema";
+import { cn } from "@/lib/utils";
 
 export default async function TierlistManagerPage() {
   const types = await db.select().from(tierlistTypes).orderBy(tierlistTypes.id);
   const versionsList = await db
     .select()
     .from(tierlistVersions)
-    .orderBy(desc(tierlistVersions.id))
-    .where(not(tierlistVersions.hidden));
+    .orderBy(desc(tierlistVersions.order));
   const vers = types.map((t) => ({
     ...t,
     versions: versionsList.filter((v) => v.type === t.id),
@@ -57,11 +57,12 @@ export default async function TierlistManagerPage() {
             {t.versions.map((e) => (
               <div
                 key={e.id}
-                className={
+                className={cn(
                   e.image
                     ? "relative aspect-video w-[calc(100svw-16px)] md:w-60 rounded-sm border group/ver"
-                    : "relative flex items-center justify-center aspect-video w-[calc(100svw-16px)] md:w-60 border rounded-sm bg-[#1118] backdrop-blur-xl font-bold text-4xl group/ver"
-                }
+                    : "relative flex items-center justify-center aspect-video w-[calc(100svw-16px)] md:w-60 border rounded-sm bg-[#1118] backdrop-blur-xl font-bold text-4xl group/ver",
+                  e.hidden && "opacity-50",
+                )}
               >
                 {e.image ? (
                   <>

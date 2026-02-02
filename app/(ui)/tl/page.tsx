@@ -14,7 +14,7 @@ export default async function TierlistSelectionPage() {
   const versionsList = await db
     .select()
     .from(tierlistVersions)
-    .orderBy(desc(tierlistVersions.id))
+    .orderBy(desc(tierlistVersions.order))
     .where(not(tierlistVersions.hidden));
   const vers = types.map((t) => ({
     ...t,

@@ -45,7 +45,14 @@ function logger(group: string) {
           prefix,
           `Running ${formatDistanceToNow(new Date(now + timeout), { addSuffix: true })}`,
         );
-      return setTimeout(() => callback()?.catch(t.error), timeout);
+      return setTimeout(
+        () =>
+          callback()?.catch((e) => {
+            t.error(e);
+            t.schedule(300, callback);
+          }),
+        timeout,
+      );
     },
   };
   return t;
@@ -241,5 +248,6 @@ async function cacheCards() {
 checkRubgramExpiration();
 seedDatabase();
 cacheCards();
+console.log("Tasks assigned");
 
 process.on(15 as unknown as "SIGTERM", process.exit);

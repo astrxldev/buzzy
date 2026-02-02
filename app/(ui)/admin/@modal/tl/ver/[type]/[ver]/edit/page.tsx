@@ -1,5 +1,5 @@
 import { desc, eq } from "drizzle-orm";
-import { ArrowRight, PlusIcon, Trash2 } from "lucide-react";
+import { ArrowRight, PlusIcon, SaveIcon, Trash2 } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -60,8 +60,6 @@ export default async function TlVersionEditPage({
     for (const field of [
       "id",
       "name",
-      "image",
-      "disclaimer",
       "from",
       "deprecates",
       "order",
@@ -191,12 +189,12 @@ export default async function TlVersionEditPage({
               loading={
                 <>
                   <Spinner />
-                  Creating...
+                  Saving...
                 </>
               }
             >
-              <PlusIcon />
-              Create
+              <SaveIcon />
+              Save
             </FormAction>
           </Button>
         </DialogFooter>
