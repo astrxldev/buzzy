@@ -216,8 +216,8 @@ async function cacheCards() {
       ),
     )
     .orderBy(
-      asc(submissions.queue),
       asc(sql`coalesce(${cards.tries}, 0)`),
+      asc(submissions.queue),
       asc(submissions.id),
     )
     .limit(1);

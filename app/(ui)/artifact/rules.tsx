@@ -1,5 +1,5 @@
 import type * as DialogPrimitive from "@radix-ui/react-dialog";
-import { Link } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

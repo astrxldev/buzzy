@@ -12,7 +12,7 @@ export async function GET(
     db.select().from(submissions).where(eq(submissions.id, subId)),
     db.select().from(cards).where(eq(cards.submission, subId)),
   ]);
-  if (image && image.image) return new Response(new Uint8Array(image.image));
+  if (image?.image) return new Response(new Uint8Array(image.image));
   const [char] = await db
     .select()
     .from(characters)
@@ -25,10 +25,18 @@ export async function GET(
   if (!card.ok) return card;
   const fresh = await card.arrayBuffer();
   after(async () => {
-    await db.insert(cards).values({
-      image: Buffer.from(fresh),
-      submission: subId,
-    });
+    await db
+      .insert(cards)
+      .values({
+        image: Buffer.from(fresh),
+        submission: subId,
+      })
+      .onConflictDoUpdate({
+        target: cards.submission,
+        set: {
+          image: Buffer.from(fresh),
+        },
+      });
   });
   return new Response(fresh);
 }

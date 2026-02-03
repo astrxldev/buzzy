@@ -100,7 +100,7 @@ export function CharacterChooser({
   return (
     <>
       <div className="grid gap-2">
-        <Label htmlFor="uid">UID</Label>
+        <Label htmlFor="uid">UID*</Label>
         <Input
           id="uid"
           name="uid"
