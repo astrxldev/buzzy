@@ -270,7 +270,7 @@ export default async function EndgamePage() {
                 <SimpleTooltip text="ยกเลิกคิว">
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive" type="button">
-                      <X />
+                      <X /> ยกเลิก
                     </Button>
                   </AlertDialogTrigger>
                 </SimpleTooltip>

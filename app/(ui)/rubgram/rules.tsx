@@ -1,4 +1,5 @@
 import type * as DialogPrimitive from "@radix-ui/react-dialog";
+import { Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,6 +37,11 @@ export function RulesDialog({
           4. หากไม่ทักหาเกิน 10 นาทีจะข้ามคิวไปก่อน ถ้ามาแล้วสามารถทักหาได้เลย
           <br />
           5. ไม่แนะนำให้ใช้ Truemoney จ่าย
+          <br />
+          6. โดยการกดตกลงจะถือเป็นการยอมรับ{" "}
+          <span className="text-blue-500 underline">
+            <Link href="https://sudloh.com/privacy">Privacy policy</Link>
+          </span>
         </p>
         <DialogFooter>
           <DialogClose asChild>

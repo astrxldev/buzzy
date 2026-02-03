@@ -150,8 +150,18 @@ export const endgameSubmissions = endgame.table("submissions", {
     ),
 });
 
-// deleted submissions
-export const endgameArchive = endgame.table("archive", {
+export const endgameArchive = endgame.table("sarchive", {
+  id: text().primaryKey(),
+  name: text().notNull(),
+  user: text().notNull(),
+  queue: integer().notNull(),
+  price: integer().notNull(),
+  slip: text().references(() => endgameSlips.id),
+  round: integer().notNull(),
+});
+
+// expired submission
+export const endgameExpired = endgame.table("expired", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
   user: text()

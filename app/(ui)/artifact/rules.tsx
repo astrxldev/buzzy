@@ -1,4 +1,5 @@
 import type * as DialogPrimitive from "@radix-ui/react-dialog";
+import { Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -33,6 +34,11 @@ export function RulesDialog({
           สามารถดูได้สูงสุด 8 ตัว
           <br />
           4. โดเนทขั้นต่ำ 10 บาท หากโดเนทมา แล้วลงคิวไปแล้ว แจ้งชื่อที่ลงไปในคิวมาด้วย
+          <br />
+          5. โดยการกดตกลงจะถือเป็นการยอมรับ{" "}
+          <span className="text-blue-500 underline">
+            <Link href="https://sudloh.com/privacy">Privacy policy</Link>
+          </span>
         </p>
         <DialogFooter>
           <DialogClose asChild>

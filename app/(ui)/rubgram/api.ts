@@ -12,6 +12,7 @@ import { ps } from "@/lib/db/redis";
 import {
   endgameArchive,
   endgameDiscord,
+  endgameExpired,
   endgameSettings,
   endgameSlips,
   endgameSubmissions,
@@ -30,10 +31,23 @@ const {
 
 export async function wipe() {
   if (!(await adminCheck())) throw "Unauthorized";
-  await db.delete(endgameSubmissions);
-  await db.execute(
-    sql`ALTER SEQUENCE endgame.submissions_queue_seq RESTART WITH 1`,
-  );
+  await db.transaction(async (tx) => {
+    const deleted = await tx.delete(endgameSubmissions).returning();
+    await tx.execute(
+      sql`ALTER SEQUENCE endgame.submissions_queue_seq RESTART WITH 1`,
+    );
+    const [{ maxRound }] = await db
+      .select({ maxRound: sql<number>`MAX(${endgameArchive.round})` })
+      .from(endgameArchive);
+    await db.insert(endgameArchive).values(
+      deleted
+        .filter((e) => e.paid)
+        .map((s) => ({
+          ...s,
+          round: maxRound + 1,
+        })),
+    );
+  });
   revalidatePath("/rubgram/admin");
   revalidatePath("/rubgram");
 
@@ -227,8 +241,8 @@ export async function submitEndgamePayment(formData: EndgamePaymentFormData) {
       .limit(1);
     const [a] = await tx
       .select()
-      .from(endgameArchive)
-      .where(eq(endgameArchive.id, sid))
+      .from(endgameExpired)
+      .where(eq(endgameExpired.id, sid))
       .limit(1);
     if (!s) {
       if (a)
@@ -351,7 +365,7 @@ export async function removeExpiredSubmissions() {
 
     // Delete expired submissions
     if (expiredQueues.length)
-      await tx.insert(endgameArchive).values(expiredQueues);
+      await tx.insert(endgameExpired).values(expiredQueues);
     await tx.delete(endgameSubmissions).where(expiredCond);
 
     // Update queue numbers for remaining submissions

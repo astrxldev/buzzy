@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/noUnknownTypeSelector: view transitions require me to put transition name in there */
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -190,4 +191,34 @@ img {
   opacity: 0.08;
   pointer-events: none;
   border-radius: inherit;
+}
+
+::view-transition-group(fade),
+::view-transition-image-pair(fade),
+::view-transition-old(fade),
+::view-transition-new(fade) {
+  /* animation: none; */
+  mix-blend-mode: normal;
+  transform: none;
+}
+
+::view-transition-old(fade) {
+  opacity: 1;
+  animation: vt-fade-out 250ms ease forwards;
+}
+
+::view-transition-new(fade) {
+  opacity: 0;
+  animation: vt-fade-in 250ms ease forwards;
+}
+
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-fade-in {
+  to {
+    opacity: 1;
+  }
 }
