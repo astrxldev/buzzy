@@ -158,9 +158,7 @@ export function CharacterChooser({
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
-                    <AlertDialogTitle>
-                      วิธีแก้ไขตัวละครไม่ขึ้น
-                    </AlertDialogTitle>
+                    <AlertDialogTitle>วิธีแก้ไขตัวละครไม่ขึ้น</AlertDialogTitle>
                     <div className="gap-1 flex flex-col">
                       <center>
                         ในเกม เปิด<b>เมนูเกม</b>แล้วไปที่ <b>แก้ไขข้อมูลส่วนตัว</b>

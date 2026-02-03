@@ -306,7 +306,7 @@ export async function actionLog(text: string, details?: unknown) {
 
   try {
     revalidatePath("/admin/log");
-  } catch { }
+  } catch {}
 
   if (res) ps.publish(res, { topic: "log" });
 }

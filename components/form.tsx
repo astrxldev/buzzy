@@ -436,5 +436,10 @@ export function FormAction({
 }
 
 export function FormRow({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("flex gap-2 flex-wrap items-end", className)} {...props} />;
+  return (
+    <div
+      className={cn("flex gap-2 flex-wrap items-end", className)}
+      {...props}
+    />
+  );
 }
