@@ -38,6 +38,9 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-mention-foreground: var(--mention-foreground);
+  --color-mention-background: var(--mention-background);
+  --color-mention-hover: var(--mention-hover);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -77,6 +80,17 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.623 0.214 259.815);
+  --mention-foreground: color-mix(
+    in oklab,
+    hsl(228.785 calc(1 * 100%) 79.02% / 1) 100%,
+    #000 0%
+  );
+  --mention-background: color-mix(
+    in oklab,
+    hsl(234.935 calc(1 * 85.556%) 64.706% / 0.23921568627450981) 100%,
+    hsl(0 0% 0% / 0.23921568627450981) 0%
+  );
+  --mention-hover: hsl(234.935 calc(1 * 85.556%) 64.706% / 1);
 }
 
 .dark {
