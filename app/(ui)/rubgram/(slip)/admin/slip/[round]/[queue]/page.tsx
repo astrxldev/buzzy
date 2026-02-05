@@ -1,7 +1,6 @@
 import { YAML } from "bun";
 import { and, eq, getTableColumns } from "drizzle-orm";
 import { ReceiptText } from "lucide-react";
-import { CopyButton } from "@/app/(ui)/artifact/admin/[id]/client";
 import { calcPrice } from "@/app/(ui)/rubgram/api";
 import Image from "@/components/image";
 import { DiscordMentionable } from "@/components/mentionable";
@@ -22,6 +21,7 @@ import {
 import { db } from "@/lib/db";
 import { endgameArchive, endgameDiscord, endgameSlips } from "@/lib/db/schema";
 import { parseParamNumber } from "@/lib/utils";
+import { DataViewer } from "./client";
 
 export default async function ({
   params,
@@ -43,6 +43,14 @@ export default async function ({
     .innerJoin(endgameDiscord, eq(endgameDiscord.uid, endgameArchive.user))
     .innerJoin(endgameSlips, eq(endgameSlips.id, endgameArchive.slip))
     .limit(1);
+
+  const entryYaml = YAML.stringify(
+    { ...entry, slip: { ...entry.slip, data: undefined } },
+    null,
+    2,
+  );
+  const slipYaml = YAML.stringify(entry.slip, null, 2);
+
   if (!entry)
     return (
       <Empty>
@@ -56,7 +64,7 @@ export default async function ({
     );
 
   return (
-    <div className="flex h-full p-2">
+    <div className="flex flex-col sm:flex-row h-full p-2">
       <div className="flex flex-1 justify-center items-center p-5">
         <div className="relative rounded border border-dashed border-white">
           <Image
@@ -85,15 +93,7 @@ export default async function ({
             </CardAction>
           </CardHeader>
           <CardContent>
-            <div className="relative max-h-[60svh] overflow-auto rounded-xl border bg-black/40 p-4 text-xs font-mono leading-relaxed">
-              <div className="sticky -top-2 -mr-2 flex justify-end -mt-10">
-                <CopyButton text={JSON.stringify(entry, null, 2)} />
-              </div>
-
-              <pre className="whitespace-pre-wrap wrap-break-word">
-                {YAML.stringify(entry, null, 2)}
-              </pre>
-            </div>
+            <DataViewer {...{ entryYaml, slipYaml }} />
           </CardContent>
         </Card>
       </div>

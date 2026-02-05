@@ -174,7 +174,9 @@ async function ThisSidebar({ round }: { round: number }) {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg">รายได้</SidebarMenuButton>
+            <SidebarMenuButton size="lg" className="justify-center">
+              รายได้รวม {entries.reduce((a, e) => a + e.price, 0)} บาท
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
