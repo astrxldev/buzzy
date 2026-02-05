@@ -38,7 +38,7 @@ function logger(group: string) {
         timeout = target.length
           ? target
               .map((d) => d.getTime() - now)
-              .reduce((a, b) => Math.min(a, b), 0)
+              .reduce((a, b) => Math.min(a, b), 3600000)
           : 60000;
       if (typeof target === "number" || target.length)
         console.log(

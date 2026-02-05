@@ -7,9 +7,11 @@ services:
     build:
       context: ..
       dockerfile: dev.dockerfile
-    volumes:
-      - ../app:/home/container/app
-      - ../lib:/home/container/lib
+    develop:
+      watch:
+        - path: ..
+          target: /home/container
+          action: sync
     env_file: .env.development
     ports:
       - 3000:3000

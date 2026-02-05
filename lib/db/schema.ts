@@ -158,6 +158,10 @@ export const endgameArchive = endgame.table("sarchive", {
   price: integer().notNull(),
   slip: text().references(() => endgameSlips.id),
   round: integer().notNull(),
+  service: text()
+    .references(() => endgameTypes.id)
+    .array()
+    .notNull(),
 });
 
 // expired submission

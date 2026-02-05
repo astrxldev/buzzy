@@ -1,0 +1,102 @@
+import { YAML } from "bun";
+import { and, eq, getTableColumns } from "drizzle-orm";
+import { ReceiptText } from "lucide-react";
+import { CopyButton } from "@/app/(ui)/artifact/admin/[id]/client";
+import { calcPrice } from "@/app/(ui)/rubgram/api";
+import Image from "@/components/image";
+import { DiscordMentionable } from "@/components/mentionable";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { db } from "@/lib/db";
+import { endgameArchive, endgameDiscord, endgameSlips } from "@/lib/db/schema";
+import { parseParamNumber } from "@/lib/utils";
+
+export default async function ({
+  params,
+}: PageProps<"/rubgram/admin/slip/[round]/[queue]">) {
+  const { round: r, queue: q } = await params;
+  const round = parseParamNumber(r) || 1;
+  const queue = parseParamNumber(q) || 1;
+  const { slip, ...slipColumns } = getTableColumns(endgameSlips);
+  const [entry] = await db
+    .select({
+      ...getTableColumns(endgameArchive),
+      user: getTableColumns(endgameDiscord),
+      slip: slipColumns,
+    })
+    .from(endgameArchive)
+    .where(
+      and(eq(endgameArchive.round, round), eq(endgameArchive.queue, queue)),
+    )
+    .innerJoin(endgameDiscord, eq(endgameDiscord.uid, endgameArchive.user))
+    .innerJoin(endgameSlips, eq(endgameSlips.id, endgameArchive.slip))
+    .limit(1);
+  if (!entry)
+    return (
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <ReceiptText />
+          </EmptyMedia>
+          <EmptyTitle>ยังไม่มีสลิป</EmptyTitle>
+        </EmptyHeader>
+      </Empty>
+    );
+
+  return (
+    <div className="flex h-full p-2">
+      <div className="flex flex-1 justify-center items-center p-5">
+        <div className="relative rounded border border-dashed border-white">
+          <Image
+            src={`/api/slip/${entry.slip.id}`}
+            alt="Slip"
+            className="object-contain"
+            width={1000}
+            height={1000}
+          />
+          <div className="absolute top-0 left-0 bottom-0 right-0 backdrop-blur-lg hover:opacity-0 transition-opacity" />
+        </div>
+      </div>
+      <div className="flex justify-center items-center flex-1">
+        <Card>
+          <CardHeader>
+            <CardTitle>จ่าย {entry.price} บาท</CardTitle>
+            <CardDescription>
+              {entry.service.join(", ")} (รวม {calcPrice(entry.service)} บาท)
+            </CardDescription>
+            <CardAction>
+              <DiscordMentionable
+                id={entry.user.uid}
+                name={entry.user.display}
+                type="user"
+              />
+            </CardAction>
+          </CardHeader>
+          <CardContent>
+            <div className="relative max-h-[60svh] overflow-auto rounded-xl border bg-black/40 p-4 text-xs font-mono leading-relaxed">
+              <div className="sticky -top-2 -mr-2 flex justify-end -mt-10">
+                <CopyButton text={JSON.stringify(entry, null, 2)} />
+              </div>
+
+              <pre className="whitespace-pre-wrap wrap-break-word">
+                {YAML.stringify(entry, null, 2)}
+              </pre>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

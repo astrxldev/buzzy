@@ -21,7 +21,14 @@ export async function GET(
       >,
   );
   if (!res.playerInfo) return Response.json(res);
-  if (res.ttl)
-    await redis.setex(`enka:${uid}`, res.ttl - 2, JSON.stringify(res));
+  if (res.ttl) {
+    const ttl = res.ttl - 2;
+    await redis.setex(
+      `enka:${uid}`,
+      // sometimes it goes crazy
+      Number.isNaN(ttl) || ttl < 0 || ttl > 1000 ? 60 : ttl,
+      JSON.stringify(res),
+    );
+  }
   return Response.json(res);
 }

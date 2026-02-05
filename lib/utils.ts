@@ -170,3 +170,13 @@ export function shortestPrefixes(values: readonly string[]) {
 
   return res;
 }
+export function parseParamNumber(param: string | string[] | undefined) {
+  if (Array.isArray(param)) {
+    if (param.length < 1) return 0;
+    return parseParamNumber(param[0]);
+  }
+  if (!param) return 0;
+  const int = parseInt(param, 10);
+  if (Number.isNaN(int)) return 0;
+  return int;
+}
