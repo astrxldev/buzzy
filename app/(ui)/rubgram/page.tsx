@@ -6,6 +6,7 @@ import {
   SendHorizonal,
   X,
 } from "lucide-react";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -66,8 +67,9 @@ import {
 import { EndgameFormWrapper } from "./form";
 import { RulesDialog } from "./rules";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "รับกรรมแทนทางบ้าน",
+  description: "รับเล่นคอนเท้น Endgame เกนชินแทนคนดู",
 };
 
 export default async function EndgamePage() {

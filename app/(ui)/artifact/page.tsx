@@ -1,6 +1,7 @@
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
 import { eq } from "drizzle-orm";
 import { BookAlert, CircleDollarSign, SendHorizonal } from "lucide-react";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -29,8 +30,9 @@ import { ArtifactFormWrapper } from "./form";
 import { LiveButton } from "./live";
 import { RulesDialog } from "./rules";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "เสือกไอดีชาวบ้าน",
+  description: "ระบบลงคิวดูอาร์ติแฟกต์เกนชินในไลฟ์สตรีม",
 };
 
 export default async function ArtifactFormPage() {

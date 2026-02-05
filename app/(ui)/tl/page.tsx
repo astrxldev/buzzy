@@ -1,12 +1,14 @@
 import { desc, not } from "drizzle-orm";
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "@/components/image";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { db } from "@/lib/db";
 import { tierlistTypes, tierlistVersions } from "@/lib/db/schema";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "จัดเทียร์ลิสต์",
+  description: "ระบบจัดเทียร์ลิสต์ตัวละครของคอนเท้น Abyss และ Stygain",
 };
 
 export default async function TierlistSelectionPage() {
