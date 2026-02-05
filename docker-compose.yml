@@ -28,6 +28,7 @@ services:
       context: .
       dockerfile: backend.dockerfile
     restart: on-failure
+    stop_grace_period: 1s
     networks:
       - buzz
 
