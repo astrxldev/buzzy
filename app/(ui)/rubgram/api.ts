@@ -216,7 +216,10 @@ export async function submitEndgame(formData: EndgameFormData) {
     })
     .returning({ queue: endgameSubmissions.queue, id: endgameSubmissions.id });
   revalidatePath("/rubgram/admin");
-  ps.publish({}, { topic: "rubgram", event: "update" });
+  ps.publish(
+    { type: "submit", sub: queue.id },
+    { topic: "rubgram", event: "update" },
+  );
   return queue;
 }
 
@@ -286,7 +289,11 @@ export async function submitEndgamePayment(formData: EndgamePaymentFormData) {
       .where(eq(endgameSubmissions.id, sid));
   });
   revalidatePath("/rubgram/admin");
-  ps.publish({}, { topic: "rubgram", event: "update" });
+  if (Array.isArray(queue))
+    ps.publish(
+      { type: "paid", sub: queue[0].id },
+      { topic: "rubgram", event: "update" },
+    );
   return Array.isArray(queue) ? queue[0] : queue;
 }
 
@@ -401,7 +408,7 @@ export async function cancel(sid: string) {
 
   await removeExpiredSubmissions();
 
-  ps.publish({}, { topic: "rubgram", event: "update" });
+  ps.publish({ type: "cancel" }, { topic: "rubgram", event: "update" });
 
   revalidatePath("/rubgram");
 }

@@ -175,8 +175,8 @@ export default async function EndgamePage() {
                     <span className="font-bold text-lg">
                       ยอดชำระ {q.price} บาท{" "}
                       {q.expires && (
-                        <Kbd>
-                          <Countdown time={q.expires} />
+                        <Kbd suppressHydrationWarning>
+                          <Countdown time={q.expires} refreshWhenOver />
                         </Kbd>
                       )}
                     </span>

@@ -1,4 +1,5 @@
 import { env } from "node:process";
+import { redis } from "bun";
 import { formatDistanceToNow } from "date-fns";
 import { and, asc, eq, isNull, lt, not, sql } from "drizzle-orm";
 import { removeExpiredSubmissions } from "@/app/(ui)/rubgram/api";
@@ -16,6 +17,7 @@ import {
   tierlistTiers,
   user,
 } from "@/lib/db/schema";
+import { rubgramWebhookTemplate } from "./webhook";
 
 function logger(group: string) {
   const prefix = `[${group}]`;
@@ -245,9 +247,53 @@ async function cacheCards() {
   } else schedule(120, cacheCards);
 }
 
+const redisSubscribers: Record<
+  string,
+  (payload: { data: unknown; event?: string }) => void
+> = {
+  "sse:rubgram": async ({ data, event }) => {
+    type RubgramEvent = { type: "submit" | "paid" | "cancel"; sub: string };
+    if (event !== "update") return;
+    const { type, sub } = data as RubgramEvent;
+    if (type === "cancel") return;
+    if (!process.env.WEBHOOK_RUBGRAM_SUBMIT) return;
+    const body = rubgramWebhookTemplate(
+      type,
+      await db
+        .select()
+        .from(endgameSubmissions)
+        .where(eq(endgameSubmissions.id, sub))
+        .limit(1)
+        .then((s) => s[0]),
+      await db.select().from(endgameTypes),
+    );
+    const res = await fetch(
+      `${process.env.WEBHOOK_RUBGRAM_SUBMIT}?with_components=true`,
+      {
+        method: "POST",
+        body: JSON.stringify(body),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    if (!res.ok)
+      console.error(
+        "Webhook request wasn't ok.",
+        await res.clone().json().catch(res.text.bind(res)),
+      );
+  },
+};
+
 checkRubgramExpiration();
 seedDatabase();
 cacheCards();
 console.log("Tasks assigned");
+for (const [name, handler] of Object.entries(redisSubscribers))
+  redis.subscribe(name, (p) => handler(JSON.parse(p)));
+
+process
+  .addListener("uncaughtException", console.error)
+  .addListener("unhandledRejection", console.error);
 
 process.on(15 as unknown as "SIGTERM", process.exit);

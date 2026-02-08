@@ -187,7 +187,7 @@ export function CharacterChooser({
                       </span>
                     </div>
                     <center>ออกจากเกมเพื่อให้ข้อมูลอัพเดท แล้วกดรีโหลด</center>
-                    <AlertDialogFooter>
+                    <AlertDialogFooter suppressHydrationWarning>
                       <AlertDialogCancel>ปิดหน้าต่าง</AlertDialogCancel>
                       <Countdown
                         time={cacheTtl}

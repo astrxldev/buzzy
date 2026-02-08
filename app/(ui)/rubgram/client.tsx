@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRight, Check, Download, LogIn, ScrollText } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Blocker } from "@/components/blocker";
@@ -185,11 +186,22 @@ export function DownloadButton() {
 export function Countdown({
   time,
   render = String,
+  refreshWhenOver = false,
 }: {
   time: Date;
   render?: (time: string | null) => ReactNode;
+  refreshWhenOver?: boolean;
 }) {
   const [now, setNow] = useState(new Date());
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!refreshWhenOver) return;
+    const wait = time.getTime() - Date.now();
+    if (wait < 0) return;
+    const timeout = setTimeout(() => router.refresh(), wait);
+    return () => clearTimeout(timeout);
+  }, [time, router, refreshWhenOver]);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 1000);
