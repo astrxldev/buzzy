@@ -2,7 +2,7 @@
 This is a Next.js project running multiple events for a YouTuber, Buzz. It have been branched into 5 different parts:
 - Artifact: Monthly watcher-submitted ID review
 - Tierlist: Versionly tierlist for best characters for Abyss & Stygian
-- `WIP` Rubgram: A paid event that basically lets Buzz play Abyss/Imaginarium Theater/Stygian for you.
+- Rubgram: A paid event that basically lets Buzz play Abyss/Imaginarium Theater/Stygian for you.
 - `WIP` Admin: Admin panel where you can manage versions, characters, tierlists, external services, etc.
 
 ## Architecture
