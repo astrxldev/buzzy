@@ -1,5 +1,6 @@
 import { and, eq, inArray, isNull, or } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
+import { ViewTransition } from "react";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
@@ -81,6 +82,10 @@ export default async function TierlistPage({
   if (!config)
     // console.log(config);
     notFound();
-  return <TierList editable {...config} />;
+  return (
+    <ViewTransition update="none">
+      <TierList editable {...config} />
+    </ViewTransition>
+  );
   // return <pre>{JSON.stringify(config, null, 2)}</pre>;
 }
