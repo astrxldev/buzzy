@@ -28,7 +28,7 @@ import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { endgameSubmissions } from "@/lib/db/schema";
 import { getEndgameConfig, random, wipe } from "../api";
-import { LimitManager, SubmissionList, Watcher } from "./client";
+import { LimitManager, SlipButton, SubmissionList, Watcher } from "./client";
 
 export default async function AdminLayout({
   children,
@@ -62,6 +62,7 @@ export default async function AdminLayout({
               >
                 <Dice3 size={24} className="size-6" />
               </Button>
+              <SlipButton />
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="ghost" size="icon" className="size-8">

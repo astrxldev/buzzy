@@ -1,7 +1,7 @@
 "use client";
 
 import { useProgress } from "@bprogress/next";
-import { Lock, Unlock } from "lucide-react";
+import { Lock, Logs, Unlock } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -298,4 +298,26 @@ export function Watcher() {
   }, [router]);
 
   return <div></div>;
+}
+
+export function SlipButton() {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+    <Button
+      variant="ghost"
+      size="icon"
+      className="size-8"
+      onClick={() => {
+        window.location.href = "/rubgram/admin/slip";
+      }}
+    >
+      <Logs size={24} className="size-6" />
+    </Button>
+    </TooltipTrigger>
+    <TooltipContent>
+      <p>All time คิว</p>
+    </TooltipContent>
+    </Tooltip>
+  );
 }
