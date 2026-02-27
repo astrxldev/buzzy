@@ -98,7 +98,7 @@ export default function LoginPage({
                 <div className="text-center text-sm">
                   Don&apos;t have an account?{" "}
                   <a
-                    href="https://cdn.dgnr.us/signup"
+                    href="https://cdn.gunshiz.top/signup"
                     className="underline underline-offset-4"
                   >
                     Sign Up

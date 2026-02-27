@@ -5,10 +5,11 @@ import Image from "@/components/image";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { db } from "@/lib/db";
 import { tierlistTypes, tierlistVersions } from "@/lib/db/schema";
+import TierlistLogo from "#/logos/tierlist.webp";
 
 export const metadata: Metadata = {
   title: "จัดเทียร์ลิสต์",
-  description: "ระบบจัดเทียร์ลิสต์ตัวละครของคอนเท้น Abyss และ Stygain",
+  description: "ระบบจัดเทียร์ลิสต์ตัวละครของคอนเท้นเอนเกม",
 };
 
 export default async function TierlistSelectionPage() {
@@ -24,8 +25,17 @@ export default async function TierlistSelectionPage() {
   }));
   return (
     <div className="max-w-full min-h-full flex flex-col justify-center gap-2 mx-2">
-      <center className="text-6xl font-bold mb-8">
-        <Link href="/">จัดเทียร์ลิสต์</Link>
+      <center className="text-6xl font-bold mb-2">
+            <Link href="/">
+              <Image
+                src={TierlistLogo}
+                alt="Tierlist"
+                className="rounded-t-x w-3/4 sm:w-96"
+                width={500}
+                height={100}
+                fetchPriority="high"
+              />
+            </Link>
       </center>
       {vers.map((t) => (
         <div className="flex flex-col gap-1" key={t.id}>
@@ -46,7 +56,7 @@ export default async function TierlistSelectionPage() {
                         fill
                         className="rounded-sm border object-cover bg-primary"
                       />
-                      <div className="flex absolute w-full justify-center bottom-0 py-1 bg-card rounded-b-sm">
+                      <div className="flex absolute w-full justify-center bottom-0 py-1 bg-black/50 rounded-b-sm">
                         {e.name}
                       </div>
                     </div>

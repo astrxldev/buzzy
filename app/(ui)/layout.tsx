@@ -16,7 +16,7 @@ export default async function UiLayout({
       <Image
         src={Background}
         alt="Background"
-        className="z-[-1] opacity-20 object-cover fixed top-0 left-0 w-full h-full min-h-dvh"
+        className="z-[-1] opacity-50 object-cover fixed top-0 left-0 w-full h-full min-h-dvh"
       />
       <Providers>
         <ViewTransition>{children}</ViewTransition>
