@@ -1,11 +1,12 @@
 import { desc, not } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
+import TierlistLogo from "#/logos/tierlist.webp";
+import { HorizontalDiv } from "@/components/horizontal";
 import Image from "@/components/image";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollBar } from "@/components/ui/scroll-area";
 import { db } from "@/lib/db";
 import { tierlistTypes, tierlistVersions } from "@/lib/db/schema";
-import TierlistLogo from "#/logos/tierlist.webp";
 
 export const metadata: Metadata = {
   title: "จัดเทียร์ลิสต์",
@@ -26,16 +27,16 @@ export default async function TierlistSelectionPage() {
   return (
     <div className="max-w-full min-h-full flex flex-col justify-center gap-2 mx-2">
       <center className="text-6xl font-bold mb-2">
-            <Link href="/">
-              <Image
-                src={TierlistLogo}
-                alt="Tierlist"
-                className="rounded-t-x w-3/4 sm:w-96"
-                width={500}
-                height={100}
-                fetchPriority="high"
-              />
-            </Link>
+        <Link href="/">
+          <Image
+            src={TierlistLogo}
+            alt="Tierlist"
+            className="w-3/4 sm:w-96"
+            width={500}
+            height={100}
+            fetchPriority="high"
+          />
+        </Link>
       </center>
       {vers.map((t) => (
         <div className="flex flex-col gap-1" key={t.id}>
@@ -44,7 +45,7 @@ export default async function TierlistSelectionPage() {
               {t.name}
             </div>
           </div>
-          <ScrollArea>
+          <HorizontalDiv>
             <div className="flex gap-2 max-w-full">
               {t.versions.map((e) => (
                 <Link href={`/tl/${t.id}/${e.id}`} key={e.id}>
@@ -69,7 +70,7 @@ export default async function TierlistSelectionPage() {
               ))}
             </div>
             <ScrollBar orientation="horizontal" />
-          </ScrollArea>
+          </HorizontalDiv>
         </div>
       ))}
     </div>
