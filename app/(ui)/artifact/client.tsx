@@ -329,7 +329,12 @@ export function Disclaimer() {
 export function ClearCookie() {
   // biome-ignore lint/suspicious/noTsIgnore: typescript issue
   // @ts-ignore
-  cookieStore.delete("sid");
+
+  try {
+    cookieStore.delete("sid");
+  } catch {
+    // not in browser(im too lazy to check)
+  }
   return "";
 }
 
