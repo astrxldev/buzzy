@@ -49,7 +49,8 @@ export default async function ArtifactFormPage() {
       label: characters.name,
       value: characters.name,
     })
-    .from(characters);
+    .from(characters)
+    .orderBy(characters.name);
   const config = await getArtifactConfig();
   const count = await db.$count(submissions);
 
