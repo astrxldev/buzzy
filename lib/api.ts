@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, inArray, not, or, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, not, or, sql } from "drizzle-orm";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -13,6 +13,7 @@ import { cdnReferences } from "./db/references";
 import {
   artifactSettings,
   auditLog,
+  cards,
   cdn,
   characters,
   settings,
@@ -78,8 +79,20 @@ export async function submitArtifact(formData: FormData) {
     })
     .returning({ queue: submissions.queue, id: submissions.id });
   revalidatePath("/artifact/admin");
-  ps.publish({}, { topic: "artifact", event: "update" });
+  ps.publish({ type: "submit" }, { topic: "artifact", event: "update" });
   return queue;
+}
+
+export async function getCardStatus(submissionId: string) {
+  if (!(await adminCheck())) throw "Unauthorized";
+  const [res] = await db
+    .select({
+      cached: sql<boolean>`${isNotNull(cards.image)}`,
+      error: cards.error,
+    })
+    .from(cards)
+    .where(eq(cards.submission, submissionId));
+  return res;
 }
 
 export async function toggleCheck(submissionId: string) {
@@ -89,10 +102,12 @@ export async function toggleCheck(submissionId: string) {
     .set({
       checked: not(submissions.checked),
     })
-    .where(eq(submissions.id, submissionId));
+    .where(eq(submissions.id, submissionId))
+    .returning({});
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
+  ps.publish({ type: "toggleCheck" }, { topic: "artifact", event: "update" });
   await actionLog(`Toggled an artifact submission check mark`);
 }
 
@@ -109,6 +124,7 @@ export async function toggleLock() {
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
+  ps.publish({ type: "toggleLock" }, { topic: "artifact", event: "update" });
   await actionLog(
     `${(existing.length ? existing[0].locked : true) ? "Locked" : "Unlocked"} artifact submission`,
   );
@@ -131,6 +147,7 @@ export async function setLimit(limit: number) {
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
+  ps.publish({ type: "setLimit" }, { topic: "artifact", event: "update" });
   await actionLog(
     `Set artifact submit limit to ${limit < 0 ? "unlimited" : limit}`,
   );
