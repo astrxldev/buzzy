@@ -49,9 +49,9 @@ export async function submitArtifact(formData: FormData) {
   const character = form.get("character")?.toString();
   const comment = form.get("comment")?.toString() || "";
   if (!name || !uid || !character) return "กรุณากรอกข้อมูลให้ครบถ้วน";
-  if (name.length > 32) return "ชื่อยาวเกินไป ต้องไม่เกิน 32 ตัวอักษร";
-  if (!uidRegex.test(uid)) return "UID ไม่ถูกต้อง ต้องเป็นเลข 9 หลัก";
-  if (comment.length > 256) return "ข้อความเพิ่มเติมยาวเกินไป ต้องไม่เกิน 512 ตัวอักษร";
+  if (name.length > 64) return "ชื่อยาวเกินไป ต้องไม่เกิน 64 ตัวอักษร";
+  if (!uidRegex.test(uid)) return "UID ไม่ถูกต้อง ต้องเป็นเลข 9 หรือ 10 หลัก เท่านั้น";
+  if (comment.length > 1024) return "ข้อความเพิ่มเติมยาวเกินไป ต้องไม่เกิน 1024 ตัวอักษร";
   if (config.locked) return "ปิดรับลงทะเบียนชั่วคราว เนื่องจากมีผู้ลงจำนวนมาก";
   const count = await db.$count(submissions);
   if (config.limit !== -1 && count >= config.limit)

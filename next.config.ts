@@ -18,6 +18,9 @@ const nextConfig: NextConfig = withBundleAnalyzer({
         hostname: "cdn.dgnr.us",
       },
       {
+        hostname: "cdn.gunshiz.top",
+      },
+      {
         hostname: "i.ytimg.com",
       },
       {

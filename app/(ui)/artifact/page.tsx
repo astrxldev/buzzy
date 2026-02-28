@@ -106,7 +106,7 @@ export default async function ArtifactFormPage() {
                   type="text"
                   placeholder="Mr.Buzz"
                   autoComplete="name"
-                  maxLength={32}
+                  maxLength={64}
                   required
                 />
               </div>
@@ -144,7 +144,7 @@ export default async function ArtifactFormPage() {
                   name="comment"
                   placeholder="เช่น Er พอไหมครับ, คริสวยยังครับ (ไม่บังคับ)"
                   className="bg-card!"
-                  maxLength={512}
+                  maxLength={1024}
                 />
               </div>
             </div>
