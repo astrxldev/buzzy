@@ -104,6 +104,7 @@ export const cards = artifact.table("cards", {
     .notNull()
     .unique(),
   tries: integer().notNull().default(0),
+  error: text(),
   image: bytea(),
 });
 
