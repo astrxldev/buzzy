@@ -239,7 +239,8 @@ async function cacheCards() {
     log(`Wasn't okay, queueing for retry.`);
     let text = await res.text();
     error(text.includes("502") ? "502" : text);
-    if (text.includes("findIndex")) text = "ผู้เล่นนี้ไม่มีโชว์เคส มองไม่เห็นตัวละครใดๆ";
+    if (text.includes("findIndex") || text === "Showcase is not public")
+      text = "ผู้เล่นนี้ไม่มีโชว์เคส มองไม่เห็นตัวละครใดๆ";
     else if (text === "Invalid character provided")
       text = "ตัวละครที่ผู้เล่นเลือก ไม่ได้อยู่ในโชว์เคส";
     else if (text === "Failed to find card." || text === "Invalid UID Provided")
