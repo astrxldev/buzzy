@@ -102,8 +102,7 @@ export async function toggleCheck(submissionId: string) {
     .set({
       checked: not(submissions.checked),
     })
-    .where(eq(submissions.id, submissionId))
-    .returning({});
+    .where(eq(submissions.id, submissionId));
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
