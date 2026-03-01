@@ -1,6 +1,11 @@
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
 import { eq } from "drizzle-orm";
-import { BookAlert, CircleDollarSign, SendHorizonal } from "lucide-react";
+import {
+  BookAlert,
+  CircleDollarSign,
+  SendHorizonal,
+  SquarePlay,
+} from "lucide-react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
@@ -18,6 +23,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,7 +66,10 @@ export default async function ArtifactFormPage() {
   const count = await db.$count(submissions);
 
   return (
-    <div className="flex flex-col justify-around items-center h-svh">
+    <div className="flex justify-around items-center h-svh">
+      <div className="hidden md:block p-5">
+        <div className="aspect-video w-110"></div>
+      </div>
       <Card className="w-full max-w-md">
         {q ? (
           <Blocker>
@@ -206,6 +220,37 @@ export default async function ArtifactFormPage() {
           </div>
         </CardFooter>
       </Card>
+      <div className="hidden md:block bg-card p-5 rounded border border-border relative">
+        <span className="absolute font-semibold text-7xl -translate-y-3/4 w-110 text-center text-shadow-lg/80">
+          Guide
+        </span>
+        <video
+          src="https://cdn.gunshiz.top/buzz/artifact/guide.mp4"
+          controls
+          className="aspect-video w-110"
+        >
+          <track kind="captions" />
+        </video>
+      </div>
+      <Dialog>
+        <DialogTrigger asChild>
+          <div className="md:hidden absolute w-full bottom-0 p-1 font-semibold div flex justify-center items-center gap-2 text-xl bg-input/30 border">
+            <SquarePlay />
+            วิธีลงทะเบียน
+          </div>
+        </DialogTrigger>
+        <DialogContent className="p-1">
+          <DialogTitle className="hidden">Guide</DialogTitle>
+          <video
+            src="https://cdn.gunshiz.top/buzz/artifact/guide.mp4"
+            controls
+            autoPlay
+            className="aspect-video w-110"
+          >
+            <track kind="captions" />
+          </video>
+        </DialogContent>
+      </Dialog>
       {sid && !q && <ClearCookie />}
     </div>
   );
