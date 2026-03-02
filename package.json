@@ -90,7 +90,7 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
-    "@better-auth/cli": "^1.4.6",
+    "@better-auth/cli": "^1.4.21",
     "@biomejs/biome": "2.3.13",
     "@playwright/test": "^1.57.0",
     "@tailwindcss/postcss": "^4.1.17",
