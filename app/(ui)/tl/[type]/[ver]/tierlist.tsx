@@ -61,7 +61,6 @@ import type {
 import { TierListCell } from "./cell";
 import { Draggable } from "./character";
 import { TierListContext } from "./context";
-import { TlStatusOverlay } from "./overlay";
 
 function Untiered({
   children,
@@ -118,12 +117,12 @@ export function TierList({
   const [states, setStates] = useState<(typeof tierlistStates.$inferSelect)[]>(
     [],
   );
-  const [evStatus, setEvStatus] = useState<{
+  const [_evStatus, setEvStatus] = useState<{
     upload: boolean;
     download: boolean;
     ev: "unknown" | "connecting" | "ready";
   }>({ upload: false, download: false, ev: "unknown" });
-  const [updated] = shared.state("updated");
+  const [_updated] = shared.state("updated");
 
   //#region error handling
   useEffect(() => {
