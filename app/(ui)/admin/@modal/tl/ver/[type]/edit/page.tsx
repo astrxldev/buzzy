@@ -39,12 +39,13 @@ export default async function TlTypeEditPage({
       id: string;
       order: string;
       image: string;
+      mode: string;
     }>,
   ) {
     "use server";
     if (!(await adminCheck())) redirect("/login");
 
-    for (const field of ["name", "id", "order"] as const) {
+    for (const field of ["name", "id", "order", "mode"] as const) {
       if (!form.get(field)) {
         return { error: `Field "${field}" is required.` };
       }
@@ -58,6 +59,7 @@ export default async function TlTypeEditPage({
         name: form.get("name")!,
         image: form.get("image")!,
         order: parseInt(form.get("order")!, 10),
+        mode: form.get("mode")!,
       };
       await db
         .update(tierlistTypes)
@@ -103,6 +105,9 @@ export default async function TlTypeEditPage({
         </FormRow>
         <FormInput name="order" label="Order">
           <Input placeholder="1" />
+        </FormInput>
+        <FormInput name="mode" label="Mode">
+          <Input placeholder="Maybe pls let me sleep my mom gonaa kill me soon :sob:" />
         </FormInput>
 
         <FormInput name="image" label="Image" subLabel="optional">

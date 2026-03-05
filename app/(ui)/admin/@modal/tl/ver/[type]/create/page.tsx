@@ -14,7 +14,7 @@ import {
 } from "@/components/form";
 import { ModalBase } from "@/components/modal";
 import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
+import { DialogClose, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import {
@@ -178,9 +178,9 @@ export default async function TlVersionCreatePage({
           </FormInput>
         </FormRow>
         <DialogFooter>
-          <FormAction type="clear" asChild>
-            <Button variant="outline">Clear</Button>
-          </FormAction>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
           <Button asChild>
             <FormAction
               type="submit"

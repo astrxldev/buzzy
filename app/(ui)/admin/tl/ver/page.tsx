@@ -30,7 +30,7 @@ export default async function TierlistManagerPage() {
       </Button>
       {vers.map((t) => (
         <div className="flex flex-col gap-1 group/type" key={t.id}>
-          <div className="font-bold text-4xl flex items-center gap-2">
+          <div className="font-semibold text-4xl flex items-center gap-2 w-fit text-nowrap">
             <div className="px-2 py-1 border w-min rounded-md bg-[#2228] flex">
               {t.name} <Kbd>{t.id}</Kbd>
             </div>
