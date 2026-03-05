@@ -3,7 +3,7 @@
 import { Activity, Home } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import Lost from "#/assets/lost_traveler.webp";
+import Dottore from "#/assets/dottore.webp";
 import Background from "#/bg.jpg";
 import Image from "@/components/image";
 import { Button } from "@/components/ui/button";
@@ -16,22 +16,11 @@ export default function ErrorPage() {
 
   useEffect(() => {
     const messages = [
-      "หลุดเรทอีกแล้ว...",
-      "stamina หมด จมน้ำตาย...",
-      "โดน Hilichurl(s) ดับ...",
-      "Paimon กินหน้านี้ไปแล้ว...",
-      "ไม่เหลือเพชรให้สุ่มแล้ว...",
-      "ไม่ติดคริอีกแล้ว...",
-      "ลงแต่ Def อีกแล้ว...",
-      "เกลือแฟลกอีกแล้ว...",
-      "น้ำแช่แข็งหน้านี้ไปแล้ว...",
-      "กดผิด เผลอลบหน้านี้ทิ้ง...",
-      "Zhongli ไม่อนุญาตให้ผ่าน...",
-      "ได้ไม่ครบ 36 ดาวอีกแล้ว...",
-      "Venti ไม่อนุญาตให้ผ่าน...",
-      "Aether เดินสะดุดสายเซิพ...",
-      "กด E แทน Q อีกแล้ว...",
-      "บุสทำลายหน้านี้ไปแล้ว...",
+      "ตรงนี้ไม่มีที่หลบหมอนะ...",
+      "ระวังหมอมาเจอตรงนี้นะ...",
+      "ไม่มีที่ตรงนี้นะ ลองถามหมอด้านบนดูสิ...",
+      "หมอกำลังมองหาหน้านี้อยู่...",
+      "หน้านี้อาจโดนหมอทำลายไปแล้วนะ...",
     ];
 
     setMessage(messages[Math.floor(Math.random() * messages.length)]);
@@ -47,8 +36,8 @@ export default function ErrorPage() {
       <div className="h-full w-full bg-[#2225] backdrop-grayscale backdrop-blur-md flex flex-col gap-2 justify-center items-center">
         <div className="p-4 pb-12 bg-white shadow-lg rounded-sm rotate-1 max-sm:landscape:hidden">
           <Image
-            src={Lost}
-            alt="Lost Traveler"
+            src={Dottore}
+            alt="Dottore"
             className="bg-gray-300 w-64 h-64 vintage-filter"
             width={256}
             height={256}

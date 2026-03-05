@@ -26,13 +26,13 @@ export default async function TierlistSelectionPage() {
   }));
   return (
     <div className="max-w-full min-h-full flex flex-col justify-center gap-2 mx-2">
-      <center className="text-6xl font-bold mb-2">
+      <center className="mb-2">
         <Link href="/">
           <Image
             src={TierlistLogo}
             alt="Tierlist"
-            className="w-3/4 sm:w-96"
-            width={500}
+            className="w-1/2 sm:w-96"
+            width={200}
             height={100}
             fetchPriority="high"
           />
