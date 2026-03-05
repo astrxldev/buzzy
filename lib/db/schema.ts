@@ -225,6 +225,7 @@ export const tierlistTypes = tierlist.table("types", {
     onUpdate: "cascade",
   }),
   order: integer().notNull(),
+  mode: text().notNull(),
 });
 
 export const tierlistTiers = tierlist.table("tiers", {

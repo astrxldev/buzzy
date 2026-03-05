@@ -7,7 +7,7 @@ import {
   useDroppable,
 } from "@dnd-kit/core";
 import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
-import { Calculator, ChevronDown, ChevronUp, X } from "lucide-react";
+import { Calculator, ChevronDown, ChevronUp, X, Settings, Home, Settings2, FileQuestionMark } from "lucide-react";
 import Link from "next/link";
 import {
   Fragment,
@@ -350,7 +350,7 @@ export function TierList({
               โปรดปรับจอเป็นแนวนอน
             </div>
           </Blocker>*/}
-          {version.disclaimer && disclaimer && !updated ? (
+          {version.disclaimer && disclaimer ? (
             <Blocker inner className=" not-portrait:block md:block">
               <Image
                 src={`/cdn/${version.disclaimer}`}
@@ -370,33 +370,39 @@ export function TierList({
               </Button>
             </Blocker>
           ) : (
-            <TlStatusOverlay ev={evStatus} deprecates={version.deprecates} />
+            ""
           )}
           <div className="flex-1 min-h-0 overflow-auto">
             <div
               className={`grid w-full *:border`}
               style={{
                 gridTemplateColumns: `min-content repeat(${columns.length}, 1fr)`,
-                gridTemplateRows: `min-content repeat(${tiers.length}, minmax(0, min-content))`,
+                gridTemplateRows: `min-content min-content repeat(${tiers.length}, minmax(0, min-content))`,
               }}
             >
-              <Dialog>
+              <div
+                className="bg-[#0005] text-center font-semibold py-1 relative"
+                style={{ gridColumn: '1 / -1' }}
+              >
+                <span>{type.name} เวอร์ชั่น {version.name} ระดับ 
+                <span className="text-yellow-400">{type.mode}</span> ใช้ได้ถึง </span>
+                <span className="text-green-400">{version.deprecates}</span>
+              </div>
+              <div className="grid place-items-center bg-[#2225] cursor-pointer">
+                <Dialog>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <div className="flex flex-col font-bold items-center justify-center aspect-square w-min h-min whitespace-nowrap bg-[#2225] cursor-pointer">
-                      <span>{type.name}</span>
-                      <span>{version.name}</span>
-                    </div>
+                    <Settings className="size-8" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     <Link href="/tl">
-                      <DropdownMenuItem>หน้าหลัก</DropdownMenuItem>
+                      <DropdownMenuItem> <Home className="size-4" />หน้าหลัก</DropdownMenuItem>
                     </Link>
                     <DialogTrigger asChild>
-                      <DropdownMenuItem>การตั้งค่า</DropdownMenuItem>
+                      <DropdownMenuItem> <Settings2 className="size-4" />การตั้งค่า</DropdownMenuItem>
                     </DialogTrigger>
                     <DropdownMenuItem onClick={() => showDisclaimer(true)}>
-                      แสดงเงื่อนไข
+                      <FileQuestionMark className="size-4" />แสดงเงื่อนไข
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -516,6 +522,8 @@ export function TierList({
                   </div>
                 </DialogContent>
               </Dialog>
+              </div>
+
               {columns.map((c) => (
                 <div
                   key={`C${c.id}`}
@@ -526,8 +534,9 @@ export function TierList({
                     <Image
                       src={`/cdn/${c.image}`}
                       alt={c.name}
-                      fill
-                      className="p-2 object-cover"
+                      width={200}
+                      height={100}
+                      className="p-2 object-contain w-full h-auto max-h-13"
                     />
                   ) : (
                     c.name
@@ -543,6 +552,8 @@ export function TierList({
                         alt={t.name}
                         height={100}
                         width={100}
+                        className="object-contain max-w-12"
+                        sizes="4"
                       />
                     ) : (
                       t.name
@@ -581,7 +592,7 @@ export function TierList({
               variant="outline"
               className="rounded-none"
             >
-              ({placements.untiered.length}) ตัวละครที่ยังไม่ได้จัดเทียร์
+              ({placements.untiered.length}) ตัวละครที่ไม่ได้อยู่ในเทียร์
               {untieredOpen ? (
                 <ChevronDown className="ml-1" />
               ) : (
