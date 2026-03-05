@@ -69,7 +69,7 @@ export default function ErrorPage({
             <Image
               src={Dottore}
               alt="Dottore"
-              className="bg-gray-300 w-full vintage-filter"
+              className="bg-gray-300 w-64 h-64 vintage-filter"
             />
           </div>
           <h2 className="font-bold text-2xl">เกิดข้อผิดพลาดขึ้น</h2>
