@@ -119,7 +119,7 @@ export function Draggable({
                 {...attributes}
                 onContextMenu={(ev) => {
                   ev.preventDefault();
-                  if (state) setPanelOpen((x) => !x);
+                  setPanelOpen((x) => !x);
                 }}
               >
                 <div className="relative">
