@@ -15,6 +15,7 @@ type SharedStates = Partial<{
   connected: boolean;
   updated: boolean;
   "rubgram.services": string[];
+  "tl.deleteMode": boolean;
   _raw: Record<string, unknown>;
 }>;
 

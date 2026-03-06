@@ -188,7 +188,7 @@ export async function tlState(
       or(
         eq(tierlistStates.uuid, `${data.uuid}`),
         and(
-          eq(tierlistStates.char, `${data.char}`),
+          eq(tierlistStates.ref, `${data.ref}`),
           eq(tierlistStates.list, `${data.list}`),
         ),
       ),
@@ -197,7 +197,7 @@ export async function tlState(
     await db
       .update(tierlistStates)
       .set(data)
-      .where(eq(tierlistStates.uuid, `${data.uuid}`));
+      .where(eq(tierlistStates.uuid, existing.uuid));
   else
     await db
       .insert(tierlistStates)

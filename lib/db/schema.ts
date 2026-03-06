@@ -305,6 +305,7 @@ export const tierlistStates = tierlist.table("states", {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
+  ref: text().notNull(), // for manually created tiles, the id would be char#Date.now() instead
   list: text()
     .notNull()
     .references(() => tierlistVersions.id, {

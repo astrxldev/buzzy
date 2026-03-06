@@ -1,5 +1,6 @@
 "use client";
 
+import { Trash } from "lucide-react";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 import AmberIcon from "#/amber.png";
@@ -21,13 +22,22 @@ export function Draggable({
   char,
   state,
   tier,
+  cid,
 }: {
   char: typeof characters.$inferSelect;
   state?: typeof tierlistStates.$inferInsert;
   tier?: string;
+  cid?: string;
 }) {
-  const { tileSize, badgeSize, badges, setState, editable } =
-    useContext(TierListContext);
+  const {
+    tileSize,
+    badgeSize,
+    badges,
+    setState,
+    editable,
+    deleteMode,
+    removeChar,
+  } = useContext(TierListContext);
 
   const [panelOpen, setPanelOpen] = useState(false);
 
@@ -43,12 +53,12 @@ export function Draggable({
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (!dirty) return;
+      if (!dirty || !cid) return;
       setDirty(0);
-      setState(char.id, { comment, badges: assignedBadges });
+      setState(cid, { comment, badges: assignedBadges });
     }, dirty);
     return () => clearTimeout(timeout);
-  }, [dirty, comment, setState, char, assignedBadges]);
+  }, [dirty, comment, setState, cid, assignedBadges]);
 
   function toggleBadge(badge: string) {
     setDirty(200);
@@ -60,152 +70,192 @@ export function Draggable({
   }
 
   return (
-    <SortableDraggable id={char.id}>
-      {({ listeners, attributes, setNodeRef, style }) => (
-        <Popover open={panelOpen} onOpenChange={setPanelOpen}>
-          <PopoverTrigger asChild>
-            <button
-              ref={setNodeRef}
-              style={style}
-              suppressHydrationWarning
-              {...listeners}
-              {...attributes}
-              onContextMenu={(ev) => {
-                ev.preventDefault();
-                setPanelOpen((x) => !x);
-              }}
-            >
-              <div className="relative">
-                <SimpleTooltip text={char.name} delayDuration={1000}>
-                  <Image
-                    src={`/cdn/${char.image}`}
-                    style={{
-                      background: `rgba(${
-                        char.stars === 5
-                          ? "200,124,36"
-                          : char.stars === 4
-                            ? "148,112,187"
-                            : "100,100,100"
-                      }) linear-gradient(136deg,rgba(49,43,71,.5294117647058824),transparent)`,
-                    }}
-                    className="rounded hover:brightness-110"
-                    alt={char.name}
-                    height={tileSize}
-                    width={tileSize}
-                  />
-                </SimpleTooltip>
-                {[
-                  "bottom-0.5 right-0.5",
-                  "bottom-0.5 left-0.5",
-                  "top-0.5 right-0.5",
-                  "top-0.5 left-0.5",
-                ].map((p, i) => {
-                  if (!assignedBadges[i]) return "";
-                  const badge = badges.find((e) => e.id === assignedBadges[i]);
-                  if (!badge) return "";
-                  return badge.image ? (
-                    <Image
-                      key={p}
-                      src={`/cdn/${badge.image}`}
-                      className={`bg-[#2228] ${p} absolute rounded border`}
-                      alt="badge"
-                      width={badgeSize}
-                      height={badgeSize}
-                    />
-                  ) : (
-                    <div
-                      key={p}
-                      style={{ width: badgeSize, height: badgeSize }}
-                      className={`bg-[#2228] ${p} absolute rounded border font-bold`}
-                    >
-                      {badge.name}
-                    </div>
-                  );
-                })}
-              </div>
-            </button>
-          </PopoverTrigger>
-          <PopoverContent
-            side="right"
-            className="bg-[#2225] backdrop-blur-md p-1"
+    <SortableDraggable id={cid || char.id}>
+      {({ listeners, attributes, setNodeRef, style }) =>
+        deleteMode ? (
+          <button
+            ref={setNodeRef}
+            style={style}
+            suppressHydrationWarning
+            {...listeners}
+            {...attributes}
+            onContextMenu={(ev) => {
+              ev.preventDefault();
+              if (cid) removeChar(cid);
+            }}
           >
-            <div className="flex gap-2">
-              {editable && (
-                <div className="flex flex-col justify-between shrink-0 gap-2">
-                  <div className="grid grid-cols-2 gap-1 h-min items-stretch">
-                    {badges
-                      .filter(
-                        (b) =>
-                          assignedBadges.includes(b.id) ||
-                          !b.tier.length ||
-                          !tier ||
-                          b.tier.includes(tier),
-                      )
-                      .map((e) =>
-                        e.image ? (
-                          <Image
-                            src={`/cdn/${e.image}`}
-                            alt={e.name}
-                            key={`B${e.id}`}
-                            width={32}
-                            height={32}
-                            className={cn(
-                              "border rounded hover:brightness-110 hover:backdrop-brightness-300 cursor-pointer",
-                              assignedBadges.includes(e.id) &&
-                                "backdrop-brightness-500",
-                            )}
-                            onClick={() => toggleBadge(e.id)}
-                          />
-                        ) : (
-                          <button
-                            key={`B${e.id}`}
-                            className={cn(
-                              "border rounded hover:brightness-110 hover:backdrop-brightness-300 flex justify-center items-center font-bold cursor-pointer min-w-8 min-h-8",
-                              assignedBadges.includes(e.id) &&
-                                "backdrop-brightness-500",
-                            )}
-                            onClick={() => toggleBadge(e.id)}
-                            type="button"
-                          >
-                            {e.name}
-                          </button>
-                        ),
-                      )}
-                  </div>
-                  <Link
-                    href={`https://gi.yatta.moe/en/archive/avatar/${char.amber}/${char.name.replace(/ /g, "-").toLowerCase()}`}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                  >
-                    <Button variant="outline" className="p-1 w-full">
-                      <Image
-                        src={AmberIcon}
-                        alt="Amber"
-                        width={16}
-                        height={16}
-                      />
-                      <div className="flex flex-col items-start">
-                        <span className="text-[8px]">เปิดใน</span>
-                        <span className="text-[10px]">Amber</span>
-                      </div>
-                    </Button>
-                  </Link>
+            <div className="relative">
+              <SimpleTooltip text="คลิ๊กขวาเพื่อลบ">
+                <div className="absolute justify-center items-center top-0 left-0 bottom-0 right-0 rounded bg-[#0005] flex opacity-0 hover:opacity-100 transition-opacity">
+                  <Trash />
                 </div>
-              )}
-              <Textarea
-                placeholder="Comment..."
-                className="aspect-square bg-card resize-none disabled:opacity-90"
-                value={comment}
-                onChange={(ev) => {
-                  setDirty(500);
-                  setComment(ev.target.value);
+              </SimpleTooltip>
+              <Image
+                src={`/cdn/${char.image}`}
+                style={{
+                  background: `rgba(${
+                    char.stars === 5
+                      ? "200,124,36"
+                      : char.stars === 4
+                        ? "148,112,187"
+                        : "100,100,100"
+                  }) linear-gradient(136deg,rgba(49,43,71,.5294117647058824),transparent)`,
                 }}
-                disabled={!editable}
+                className="rounded hover:brightness-110"
+                alt={char.name}
+                height={tileSize}
+                width={tileSize}
               />
             </div>
-          </PopoverContent>
-        </Popover>
-      )}
+          </button>
+        ) : (
+          <Popover open={panelOpen} onOpenChange={setPanelOpen}>
+            <PopoverTrigger asChild>
+              <button
+                ref={setNodeRef}
+                style={style}
+                suppressHydrationWarning
+                {...listeners}
+                {...attributes}
+                onContextMenu={(ev) => {
+                  ev.preventDefault();
+                  setPanelOpen((x) => !x);
+                }}
+              >
+                <div className="relative">
+                  <SimpleTooltip text={char.name} delayDuration={1000}>
+                    <Image
+                      src={`/cdn/${char.image}`}
+                      style={{
+                        background: `rgba(${
+                          char.stars === 5
+                            ? "200,124,36"
+                            : char.stars === 4
+                              ? "148,112,187"
+                              : "100,100,100"
+                        }) linear-gradient(136deg,rgba(49,43,71,.5294117647058824),transparent)`,
+                      }}
+                      className="rounded hover:brightness-110"
+                      alt={char.name}
+                      height={tileSize}
+                      width={tileSize}
+                    />
+                  </SimpleTooltip>
+                  {[
+                    "bottom-0.5 right-0.5",
+                    "bottom-0.5 left-0.5",
+                    "top-0.5 right-0.5",
+                    "top-0.5 left-0.5",
+                  ].map((p, i) => {
+                    if (!assignedBadges[i]) return "";
+                    const badge = badges.find(
+                      (e) => e.id === assignedBadges[i],
+                    );
+                    if (!badge) return "";
+                    return badge.image ? (
+                      <Image
+                        key={p}
+                        src={`/cdn/${badge.image}`}
+                        className={`bg-[#2228] ${p} absolute rounded border`}
+                        alt="badge"
+                        width={badgeSize}
+                        height={badgeSize}
+                      />
+                    ) : (
+                      <div
+                        key={p}
+                        style={{ width: badgeSize, height: badgeSize }}
+                        className={`bg-[#2228] ${p} absolute rounded border font-bold`}
+                      >
+                        {badge.name}
+                      </div>
+                    );
+                  })}
+                </div>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              side="right"
+              className="bg-[#2225] backdrop-blur-md p-1"
+            >
+              <div className="flex gap-2">
+                {editable && (
+                  <div className="flex flex-col justify-between shrink-0 gap-2">
+                    <div className="grid grid-cols-2 gap-1 h-min items-stretch">
+                      {badges
+                        .filter(
+                          (b) =>
+                            assignedBadges.includes(b.id) ||
+                            !b.tier.length ||
+                            !tier ||
+                            b.tier.includes(tier),
+                        )
+                        .map((e) =>
+                          e.image ? (
+                            <Image
+                              src={`/cdn/${e.image}`}
+                              alt={e.name}
+                              key={`B${e.id}`}
+                              width={32}
+                              height={32}
+                              className={cn(
+                                "border rounded hover:brightness-110 hover:backdrop-brightness-300 cursor-pointer",
+                                assignedBadges.includes(e.id) &&
+                                  "backdrop-brightness-500",
+                              )}
+                              onClick={() => toggleBadge(e.id)}
+                            />
+                          ) : (
+                            <button
+                              key={`B${e.id}`}
+                              className={cn(
+                                "border rounded hover:brightness-110 hover:backdrop-brightness-300 flex justify-center items-center font-bold cursor-pointer min-w-8 min-h-8",
+                                assignedBadges.includes(e.id) &&
+                                  "backdrop-brightness-500",
+                              )}
+                              onClick={() => toggleBadge(e.id)}
+                              type="button"
+                            >
+                              {e.name}
+                            </button>
+                          ),
+                        )}
+                    </div>
+                    <Link
+                      href={`https://gi.yatta.moe/en/archive/avatar/${char.amber}/${char.name.replace(/ /g, "-").toLowerCase()}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      <Button variant="outline" className="p-1 w-full">
+                        <Image
+                          src={AmberIcon}
+                          alt="Amber"
+                          width={16}
+                          height={16}
+                        />
+                        <div className="flex flex-col items-start">
+                          <span className="text-[8px]">เปิดใน</span>
+                          <span className="text-[10px]">Amber</span>
+                        </div>
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+                <Textarea
+                  placeholder="Comment..."
+                  className="aspect-square bg-card resize-none disabled:opacity-90"
+                  value={comment}
+                  onChange={(ev) => {
+                    setDirty(500);
+                    setComment(ev.target.value);
+                  }}
+                  disabled={!editable}
+                />
+              </div>
+            </PopoverContent>
+          </Popover>
+        )
+      }
     </SortableDraggable>
   );
 }

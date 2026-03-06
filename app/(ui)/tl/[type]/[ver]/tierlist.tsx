@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/a11y/noStaticElementInteractions: i dont know */
 "use client";
 
 import {
@@ -7,7 +8,18 @@ import {
   useDroppable,
 } from "@dnd-kit/core";
 import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
-import { Calculator, ChevronDown, ChevronUp, X, Settings, Home, Settings2, FileQuestionMark } from "lucide-react";
+import {
+  Calculator,
+  ChevronDown,
+  ChevronUp,
+  CopyPlus,
+  FileQuestionMark,
+  Home,
+  Settings,
+  Settings2,
+  Trash2,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import {
   Fragment,
@@ -26,7 +38,9 @@ import Qiqi from "#/assets/qiqi.webp";
 import BadgeSP from "#/assets/sp.webp";
 import BadgeSSS from "#/assets/sss.webp";
 import { Blocker } from "@/components/blocker";
+import { ComboBox } from "@/components/combobox";
 import Image from "@/components/image";
+import { SimpleTooltip } from "@/components/tooltip";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -58,6 +72,7 @@ import type {
   tierlistTypes,
   tierlistVersions,
 } from "@/lib/db/schema";
+import { cn } from "@/lib/utils";
 import { TierListCell } from "./cell";
 import { Draggable } from "./character";
 import { TierListContext } from "./context";
@@ -114,6 +129,7 @@ export function TierList({
   const [badgeSize, setBadgeSize] = useLocalStorage<number>("tl_badgeSize", 24);
   const [tileSizeAuto, setTileSizeAuto] = useState(0);
   const tileSize = tileSizeSetting || tileSizeAuto;
+  const [deleteMode, setDeleteMode] = shared.state("tl.deleteMode");
   const [states, setStates] = useState<(typeof tierlistStates.$inferSelect)[]>(
     [],
   );
@@ -130,7 +146,12 @@ export function TierList({
       toast.error("Unexpected Error Occured", {
         description: `${ev?.error?.message || ev?.error || "*unknown error*"}`,
       });
+    const promiseHandler = (ev: PromiseRejectionEvent) =>
+      toast.error("Unexpected Error Occured", {
+        description: `${ev.reason || ev || "*unknown error*"}`,
+      });
     window.addEventListener("error", handler);
+    window.addEventListener("unhandledrejection", promiseHandler);
     return () => window.removeEventListener("error", handler);
   });
   //#endregion
@@ -256,8 +277,8 @@ export function TierList({
 
     let newPlacements = { ...placements };
 
-    // Check if dropped on another character (sorting within same cell)
-    if (chars.some((ch) => ch.id === targetId)) {
+    if (chars.some((ch) => ch.id === targetId.split("#")[0])) {
+      // Check if dropped on another character (sorting within same cell)
       // Find target cell
       let targetCell: string | undefined;
       for (const cell in placements) {
@@ -322,18 +343,30 @@ export function TierList({
         tileSize,
         badgeSize,
         editable,
-        async setState(char, data) {
+        deleteMode: !!deleteMode,
+        async setState(ref, data) {
           const newEntry = {
-            ...states.find((e) => e.char === char),
+            ...states.find((e) => e.ref === ref),
             ...(Object.fromEntries(
               Object.entries(data).filter(([_, v]) => v !== undefined),
             ) as typeof tierlistStates.$inferSelect),
             list: version.id,
-            char,
+            char: ref.split("#")[0],
+            ref,
           };
-          setStates((s) => [...s.filter((e) => e.char !== char), newEntry]);
+          setStates((s) => [...s.filter((e) => e.ref !== ref), newEntry]);
           tlState(newEntry).catch((e) =>
             toast.error(`Sync ล้มเหลว: ${e.message || e}`),
+          );
+        },
+        async removeChar(cid: string) {
+          setPlacements((s) =>
+            Object.fromEntries(
+              Object.entries(s).map(([k, v]) => [
+                k,
+                v.filter((id) => id !== cid),
+              ]),
+            ),
           );
         },
       }}
@@ -381,146 +414,159 @@ export function TierList({
             >
               <div
                 className="bg-[#0005] text-center font-semibold py-1 relative"
-                style={{ gridColumn: '1 / -1' }}
+                style={{ gridColumn: "1 / -1" }}
               >
-                <span>{type.name} เวอร์ชั่น {version.name} ระดับ 
-                <span className="text-yellow-400">{type.mode}</span> ใช้ได้ถึง </span>
+                <span>
+                  {type.name} เวอร์ชั่น {version.name} ระดับ
+                  <span className="text-yellow-400">{type.mode}</span> ใช้ได้ถึง{" "}
+                </span>
                 <span className="text-green-400">{version.deprecates}</span>
               </div>
               <div className="grid place-items-center bg-[#2225] cursor-pointer">
                 <Dialog>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Settings className="size-8" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <Link href="/tl">
-                      <DropdownMenuItem> <Home className="size-4" />หน้าหลัก</DropdownMenuItem>
-                    </Link>
-                    <DialogTrigger asChild>
-                      <DropdownMenuItem> <Settings2 className="size-4" />การตั้งค่า</DropdownMenuItem>
-                    </DialogTrigger>
-                    <DropdownMenuItem onClick={() => showDisclaimer(true)}>
-                      <FileQuestionMark className="size-4" />แสดงเงื่อนไข
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>การตั้งค่า</DialogTitle>
-                  </DialogHeader>
-                  <div className="flex justify-between">
-                    <div className="flex flex-col gap-2">
-                      <div className="grid gap-2 group">
-                        <span className="flex gap-1">
-                          ขนาดตัวละคร{" "}
-                          <span className="flex gap-1 text-muted-foreground md:opacity-0 group-hover:opacity-100 transition-opacity">
-                            (px){" "}
-                            {tileSizeSetting ? (
-                              ""
-                            ) : (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Calculator className="text-emerald-400" />
-                                </TooltipTrigger>
-                                <TooltipContent>คำนวณอัตโนมัติ</TooltipContent>
-                              </Tooltip>
-                            )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Settings className="size-8" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <Link href="/tl">
+                        <DropdownMenuItem>
+                          {" "}
+                          <Home className="size-4" />
+                          หน้าหลัก
+                        </DropdownMenuItem>
+                      </Link>
+                      <DialogTrigger asChild>
+                        <DropdownMenuItem>
+                          {" "}
+                          <Settings2 className="size-4" />
+                          การตั้งค่า
+                        </DropdownMenuItem>
+                      </DialogTrigger>
+                      <DropdownMenuItem onClick={() => showDisclaimer(true)}>
+                        <FileQuestionMark className="size-4" />
+                        แสดงเงื่อนไข
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>การตั้งค่า</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex justify-between">
+                      <div className="flex flex-col gap-2">
+                        <div className="grid gap-2 group">
+                          <span className="flex gap-1">
+                            ขนาดตัวละคร{" "}
+                            <span className="flex gap-1 text-muted-foreground md:opacity-0 group-hover:opacity-100 transition-opacity">
+                              (px){" "}
+                              {tileSizeSetting ? (
+                                ""
+                              ) : (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Calculator className="text-emerald-400" />
+                                  </TooltipTrigger>
+                                  <TooltipContent>คำนวณอัตโนมัติ</TooltipContent>
+                                </Tooltip>
+                              )}
+                            </span>
                           </span>
-                        </span>
-                        <div className="flex gap-1">
-                          <Input
-                            value={tileSizeSetting || Math.round(tileSizeAuto)}
-                            onChange={(ev) =>
-                              setTileSize(Number(ev.target.value))
-                            }
-                            type="number"
-                          />
-                          <Button
-                            onClick={() =>
-                              setTileSize((x) => (x || tileSize) + 1)
-                            }
-                            variant="outline"
-                            size="icon"
-                          >
-                            <ChevronUp />
-                          </Button>
-                          <Button
-                            onClick={() =>
-                              setTileSize((x) => (x || tileSize) - 1)
-                            }
-                            variant="outline"
-                            size="icon"
-                          >
-                            <ChevronDown />
-                          </Button>
+                          <div className="flex gap-1">
+                            <Input
+                              value={
+                                tileSizeSetting || Math.round(tileSizeAuto)
+                              }
+                              onChange={(ev) =>
+                                setTileSize(Number(ev.target.value))
+                              }
+                              type="number"
+                            />
+                            <Button
+                              onClick={() =>
+                                setTileSize((x) => (x || tileSize) + 1)
+                              }
+                              variant="outline"
+                              size="icon"
+                            >
+                              <ChevronUp />
+                            </Button>
+                            <Button
+                              onClick={() =>
+                                setTileSize((x) => (x || tileSize) - 1)
+                              }
+                              variant="outline"
+                              size="icon"
+                            >
+                              <ChevronDown />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="grid gap-2 group">
+                          <span>
+                            ขนาดเครื่องหมาย{" "}
+                            <span className="text-muted-foreground md:opacity-0 group-hover:opacity-100 transition-opacity">
+                              (px)
+                            </span>
+                          </span>
+                          <div className="flex gap-1">
+                            <Input
+                              value={badgeSize}
+                              onChange={(ev) =>
+                                setBadgeSize(Number(ev.target.value))
+                              }
+                              type="number"
+                            />
+                            <Button
+                              onClick={() =>
+                                setBadgeSize((x) => (x || tileSize) + 1)
+                              }
+                              variant="outline"
+                              size="icon"
+                            >
+                              <ChevronUp />
+                            </Button>
+                            <Button
+                              onClick={() =>
+                                setBadgeSize((x) => (x || tileSize) - 1)
+                              }
+                              variant="outline"
+                              size="icon"
+                            >
+                              <ChevronDown />
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                      <div className="grid gap-2 group">
-                        <span>
-                          ขนาดเครื่องหมาย{" "}
-                          <span className="text-muted-foreground md:opacity-0 group-hover:opacity-100 transition-opacity">
-                            (px)
-                          </span>
-                        </span>
-                        <div className="flex gap-1">
-                          <Input
-                            value={badgeSize}
-                            onChange={(ev) =>
-                              setBadgeSize(Number(ev.target.value))
-                            }
-                            type="number"
+                      <div>
+                        <div
+                          style={{
+                            background:
+                              "rgba(200,124,36) linear-gradient(136deg,rgba(49,43,71,.5294117647058824),transparent)",
+                            width: tileSize,
+                          }}
+                          className="rounded aspect-square relative"
+                        >
+                          <Image src={Qiqi} alt="Qiqi" fill />
+                          <Image
+                            className="bg-[#2225] backdrop-blur-sm bottom-0.5 left-0.5 absolute rounded border"
+                            src={BadgeSSS}
+                            alt="Test Badge"
+                            width={badgeSize}
+                            height={badgeSize}
                           />
-                          <Button
-                            onClick={() =>
-                              setBadgeSize((x) => (x || tileSize) + 1)
-                            }
-                            variant="outline"
-                            size="icon"
-                          >
-                            <ChevronUp />
-                          </Button>
-                          <Button
-                            onClick={() =>
-                              setBadgeSize((x) => (x || tileSize) - 1)
-                            }
-                            variant="outline"
-                            size="icon"
-                          >
-                            <ChevronDown />
-                          </Button>
+                          <Image
+                            className="bg-[#2225] backdrop-blur-sm bottom-0.5 right-0.5 absolute border rounded"
+                            src={BadgeSP}
+                            alt="Test Badge"
+                            width={badgeSize}
+                            height={badgeSize}
+                          />
                         </div>
                       </div>
                     </div>
-                    <div>
-                      <div
-                        style={{
-                          background:
-                            "rgba(200,124,36) linear-gradient(136deg,rgba(49,43,71,.5294117647058824),transparent)",
-                          width: tileSize,
-                        }}
-                        className="rounded aspect-square relative"
-                      >
-                        <Image src={Qiqi} alt="Qiqi" fill />
-                        <Image
-                          className="bg-[#2225] backdrop-blur-sm bottom-0.5 left-0.5 absolute rounded border"
-                          src={BadgeSSS}
-                          alt="Test Badge"
-                          width={badgeSize}
-                          height={badgeSize}
-                        />
-                        <Image
-                          className="bg-[#2225] backdrop-blur-sm bottom-0.5 right-0.5 absolute border rounded"
-                          src={BadgeSP}
-                          alt="Test Badge"
-                          width={badgeSize}
-                          height={badgeSize}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+                  </DialogContent>
+                </Dialog>
               </div>
 
               {columns.map((c) => (
@@ -561,8 +607,14 @@ export function TierList({
                   {columns.map((c) => {
                     const cellId = `${t.id}-${c.id}`;
                     const cellChars = placements[cellId]
-                      .map((id) => chars.find((ch) => ch.id === id))
-                      .filter((x): x is typeof characters.$inferSelect => !!x);
+                      .map((id) => [
+                        id,
+                        chars.find((ch) => ch.id === id.split("#")[0]),
+                      ])
+                      .filter(
+                        (x): x is [string, typeof characters.$inferSelect] =>
+                          !!x[1],
+                      );
                     return (
                       <TierListCell
                         key={cellId}
@@ -570,12 +622,13 @@ export function TierList({
                         tier={t}
                         items={placements[cellId]}
                       >
-                        {cellChars.map((ch) => (
+                        {cellChars.map(([id, ch]) => (
                           <Draggable
-                            key={ch.id}
+                            key={id}
+                            cid={id}
                             char={ch}
                             tier={t.id}
-                            state={states.find((s) => s.char === ch.id)}
+                            state={states.find((s) => s.ref === id)}
                           />
                         ))}
                       </TierListCell>
@@ -589,13 +642,52 @@ export function TierList({
             <Button
               onClick={() => setUntieredOpen(!untieredOpen)}
               variant="outline"
-              className="rounded-none"
+              className="rounded-none flex"
             >
-              ({placements.untiered.length}) ตัวละครที่ไม่ได้อยู่ในเทียร์
-              {untieredOpen ? (
-                <ChevronDown className="ml-1" />
-              ) : (
-                <ChevronUp className="ml-1" />
+              {editable && untieredOpen && <div className="w-9 h-4" />}
+              <span className="w-full flex gap-1 items-center justify-center">
+                ({placements.untiered.length}) ตัวละครที่ไม่ได้อยู่ในเทียร์
+                {untieredOpen ? (
+                  <ChevronDown className="ml-1" />
+                ) : (
+                  <ChevronUp className="ml-1" />
+                )}
+              </span>
+              {editable && untieredOpen && (
+                <div
+                  className="flex gap-1 items-center justify-center"
+                  onClick={(ev) => ev.stopPropagation()}
+                >
+                  <ComboBox
+                    placeholder="ค้นหาตัวละคร"
+                    id="character"
+                    name="character"
+                    data={chars.map((c) => ({ label: c.name, value: c.id }))}
+                    className="w-full bg-transparent! hover:bg-accent!"
+                    trigger={
+                      <CopyPlus className="text-emerald-400 pointer-events-auto!" />
+                    }
+                    onValueSelect={(v) => {
+                      setPlacements((x) => ({
+                        ...x,
+                        untiered: [`${v}#${Date.now()}`, ...x.untiered],
+                      }));
+                      toast.success(`เพิ่ม ${v} เข้าเทียร์ลิสต์แล้้ว`);
+                    }}
+                  />
+                  <SimpleTooltip text="ลบตัวละครออก">
+                    <Trash2
+                      className={cn(
+                        "pointer-events-auto! text-red-500",
+                        deleteMode && "animate-pulse",
+                      )}
+                      onClick={(ev) => {
+                        ev.stopPropagation();
+                        setDeleteMode((x) => !x);
+                      }}
+                    />
+                  </SimpleTooltip>
+                </div>
               )}
             </Button>
             <SortableContext
@@ -606,13 +698,15 @@ export function TierList({
                 {untieredOpen &&
                   placements.untiered
                     .map((id) => {
-                      const ch = chars.find((c) => c.id === id);
+                      const cid = id.split("#")[0];
+                      const ch = chars.find((c) => c.id === cid);
                       if (!ch) return null;
                       return (
                         <Draggable
-                          key={ch.id}
+                          key={id}
+                          cid={id}
                           char={ch}
-                          state={states.find((s) => s.char === ch.id)}
+                          state={states.find((s) => s.ref === cid)}
                         />
                       );
                     })
@@ -623,7 +717,10 @@ export function TierList({
         </div>
         <DragOverlay>
           {dragging && (
-            <Draggable char={chars.find((c) => c.id === dragging)!} />
+            <Draggable
+              char={chars.find((c) => c.id === dragging.split("#")[0])!}
+              cid={dragging}
+            />
           )}
         </DragOverlay>
       </DndContext>
