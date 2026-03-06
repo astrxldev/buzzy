@@ -72,7 +72,7 @@ export function Draggable({
   return (
     <SortableDraggable id={cid || char.id}>
       {({ listeners, attributes, setNodeRef, style }) =>
-        deleteMode ? (
+        editable && deleteMode ? (
           <button
             ref={setNodeRef}
             style={style}
@@ -86,7 +86,7 @@ export function Draggable({
           >
             <div className="relative">
               <SimpleTooltip text="คลิ๊กขวาเพื่อลบ">
-                <div className="absolute justify-center items-center top-0 left-0 bottom-0 right-0 rounded bg-[#0005] flex opacity-0 hover:opacity-100 transition-opacity">
+                <div className="absolute justify-center items-center top-0 left-0 bottom-0 right-0 rounded bg-[#0005] flex opacity-0 hover:opacity-100 transition-opacity text-red-500">
                   <Trash />
                 </div>
               </SimpleTooltip>
