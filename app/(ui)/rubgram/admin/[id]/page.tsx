@@ -24,7 +24,7 @@ import {
   endgameSubmissions,
   endgameTypes,
 } from "@/lib/db/schema";
-import { CallButton, CopyButton, DebugSlipUpload } from "./client";
+import { CallButton, CopyButton, DebugSlipUpload, Evernight } from "./client";
 
 export default async function AdminSubmissionView({
   params,
@@ -128,7 +128,9 @@ export default async function AdminSubmissionView({
             <DebugSlipUpload sid={sub.id} />
           )}
         </div>
-        <div className="border rounded-md h-full overflow-hidden"></div>
+        <div className="border rounded-md h-full overflow-hidden">
+           <Evernight/>
+        </div>
       </div>
     </div>
   );
