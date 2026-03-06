@@ -701,14 +701,7 @@ export function TierList({
                       const cid = id.split("#")[0];
                       const ch = chars.find((c) => c.id === cid);
                       if (!ch) return null;
-                      return (
-                        <Draggable
-                          key={id}
-                          cid={id}
-                          char={ch}
-                          state={states.find((s) => s.ref === cid)}
-                        />
-                      );
+                      return <Draggable key={id} cid={id} char={ch} />;
                     })
                     .filter(Boolean)}
               </Untiered>
