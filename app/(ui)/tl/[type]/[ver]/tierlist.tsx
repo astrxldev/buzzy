@@ -662,7 +662,9 @@ export function TierList({
                     placeholder="ค้นหาตัวละคร"
                     id="character"
                     name="character"
-                    data={chars.map((c) => ({ label: c.name, value: c.id }))}
+                    data={chars
+                      .map((c) => ({ label: c.name, value: c.id }))
+                      .sort()}
                     className="w-full bg-transparent! hover:bg-accent!"
                     trigger={
                       <CopyPlus className="text-emerald-400 pointer-events-auto!" />
