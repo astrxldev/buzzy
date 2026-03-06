@@ -19,7 +19,7 @@ export function rubgramWebhookTemplate(
                 type: 10,
                 content:
                   type === "submit"
-                    ? "## :wave: New Submission"
+                    ? "## :incoming_envelope: New Submission"
                     : "## :money_with_wings: Submission Paid",
               },
             ],
