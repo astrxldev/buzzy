@@ -119,6 +119,7 @@ async function main() {
                     char: chars.find((c) => c.name === char)!.id!,
                     comment: dat.comment,
                     badges: dat.badges,
+                    ref: chars.find((c) => c.name === char)!.id!,
                   }
                 : false,
             )
