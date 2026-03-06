@@ -664,7 +664,7 @@ export function TierList({
                     name="character"
                     data={chars
                       .map((c) => ({ label: c.name, value: c.id }))
-                      .sort()}
+                      .sort((a, b) => a.label.localeCompare(b.label))}
                     className="w-full bg-transparent! hover:bg-accent!"
                     trigger={
                       <CopyPlus className="text-emerald-400 pointer-events-auto!" />
