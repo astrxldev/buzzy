@@ -413,7 +413,10 @@ export function TierList({
               }}
             >
               <div
-                className="bg-[#0005] text-center font-semibold py-1 relative"
+                className={cn(
+                  "text-center font-semibold py-1 relative transition-colors duration-200",
+                  deleteMode ? "bg-red-500/30" : "bg-[#0005]",
+                )}
                 style={{ gridColumn: "1 / -1" }}
               >
                 <span>
@@ -421,6 +424,11 @@ export function TierList({
                   <span className="text-yellow-400">{type.mode}</span> ใช้ได้ถึง{" "}
                 </span>
                 <span className="text-green-400">{version.deprecates}</span>
+                {deleteMode && (
+                  <span className="text-red-500 font-semibold ml-2">
+                    (คุณอยู่ในโหมดลบตัวละคร)
+                  </span>
+                )}
               </div>
               <div className="grid place-items-center bg-[#2225] cursor-pointer">
                 <Dialog>
@@ -655,29 +663,33 @@ export function TierList({
               </span>
               {editable && untieredOpen && (
                 <div
-                  className="flex gap-1 items-center justify-center"
+                  className="flex gap-2 items-center justify-center"
                   onClick={(ev) => ev.stopPropagation()}
                 >
-                  <ComboBox
-                    placeholder="ค้นหาตัวละคร"
-                    id="character"
-                    name="character"
-                    data={chars
-                      .map((c) => ({ label: c.name, value: c.id }))
-                      .sort((a, b) => a.label.localeCompare(b.label))}
-                    className="w-full bg-transparent! hover:bg-accent!"
-                    trigger={
-                      <CopyPlus className="text-emerald-400 pointer-events-auto!" />
-                    }
-                    onValueSelect={(v) => {
-                      setPlacements((x) => ({
-                        ...x,
-                        untiered: [`${v}#${Date.now()}`, ...x.untiered],
-                      }));
-                      toast.success(`เพิ่ม ${v} เข้าเทียร์ลิสต์แล้้ว`);
-                    }}
-                  />
-                  <SimpleTooltip text="ลบตัวละครออก">
+                   <SimpleTooltip text="เพิ่มตัวละคร">
+                    <span>
+                      <ComboBox
+                        placeholder="ค้นหาตัวละคร"
+                        id="character"
+                        name="character"
+                        data={chars
+                          .map((c) => ({ label: c.name, value: c.id }))
+                          .sort((a, b) => a.label.localeCompare(b.label))}
+                        className="w-full bg-transparent! hover:bg-accent!"
+                        trigger={
+                          <CopyPlus className="text-emerald-400 pointer-events-auto!" />
+                        }
+                        onValueSelect={(v) => {
+                          setPlacements((x) => ({
+                            ...x,
+                            untiered: [`${v}#${Date.now()}`, ...x.untiered],
+                          }));
+                          toast.success(`เพิ่ม ${v} เข้าเทียร์ลิสต์แล้ว`);
+                        }}
+                      />
+                    </span>
+                  </SimpleTooltip>
+                  <SimpleTooltip text={deleteMode ? "คลิกอีกครั้งเพื่อออกจากโหมดลบ" : "ลบตัวละครออก"}>
                     <Trash2
                       className={cn(
                         "pointer-events-auto! text-red-500",
