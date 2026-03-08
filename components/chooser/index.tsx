@@ -1,9 +1,10 @@
 /** biome-ignore-all lint/a11y/noStaticElementInteractions: yes maam */
 "use client";
 
-import { FileSearch2, X } from "lucide-react";
+import { FileSearch2, Search, X } from "lucide-react";
 import {
   type ComponentProps,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -15,6 +16,11 @@ import { cn } from "@/lib/utils";
 import { SimpleTooltip } from "../tooltip";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "../ui/input-group";
 import { Kbd } from "../ui/kbd";
 import { Spinner } from "../ui/spinner";
 import { listFiles } from "./api";
@@ -25,24 +31,44 @@ export function CdnChooserProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [files, setFiles] = useState<
     Omit<typeof cdn.$inferSelect, "data">[] | null
   >(null);
+  const [options, setOptions] = useState<{ type?: string }>();
   const callback = useRef<((value: CdnFile | null) => void) | null>(null);
+  const [search, setSearch] = useState("");
 
-  async function call(options?: { type?: string }): Promise<CdnFile | null> {
-    setOpen(true);
-    const list = await listFiles().catch(() => []);
-    setFiles(
-      options?.type
-        ? list.filter((file) => file.type.startsWith(options.type!))
-        : list,
-    );
-    return new Promise<CdnFile | null>((resolve) => {
-      callback.current = resolve;
-    }).finally(() => setOpen(false));
-  }
+  const filtered = search
+    ? files?.filter(
+        (f) => f.name?.toLowerCase().includes(search) || f.id === search,
+      )
+    : files;
+
+  const updateList = useCallback(
+    async (opt = options) => {
+      const list = await listFiles().catch(() => []);
+      setFiles(
+        opt?.type
+          ? list.toReversed().filter((file) => file.type.startsWith(opt.type!))
+          : list.toReversed(),
+      );
+    },
+    [options],
+  );
+
+  const call = useCallback(
+    async (options?: { type?: string }): Promise<CdnFile | null> => {
+      setSearch("");
+      setOpen(true);
+      await updateList(options);
+      setOptions(options);
+      return new Promise<CdnFile | null>((resolve) => {
+        callback.current = resolve;
+      }).finally(() => setOpen(false));
+    },
+    [updateList],
+  );
 
   return (
     <CdnChooserContext value={{ call }}>
@@ -55,12 +81,27 @@ export function CdnChooserProvider({
         }}
       >
         <DialogContent className="max-h-[85vh] flex flex-col gap-4 md:max-w-[50svw]">
-          <DialogTitle className="px-6 pt-6">Choose File</DialogTitle>
+          <DialogTitle className="px-6 flex justify-between items-center">
+            Choose File{" "}
+            <InputGroup className="max-w-xs">
+              <InputGroupInput
+                placeholder="Search..."
+                onChange={(ev) => setSearch(ev.target.value.toLowerCase())}
+              />
+              <InputGroupAddon>
+                <Search />
+              </InputGroupAddon>
+              <InputGroupAddon align="inline-end">
+                {filtered?.length || 0} results
+              </InputGroupAddon>
+            </InputGroup>
+          </DialogTitle>
           {files ? (
             <div className="flex-1 min-h-0 overflow-y-auto">
               <CdnTable
-                files={files}
+                files={filtered || []}
                 onChoose={(value) => callback.current?.(value)}
+                onChange={updateList}
               />
             </div>
           ) : (
