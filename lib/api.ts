@@ -38,36 +38,46 @@ export async function getArtifactConfig() {
   return { locked: false, limit: -1, enka: false, ...art, ...glob };
 }
 
-const ArtifactSubmission = z.object(
-  {
-    name: z.string().max(64, "ชื่อยาวเกินไป ต้องไม่เกิน 64 ตัวอักษร"),
-    uid: z
-      .string()
-      .regex(uidRegex, "UID ไม่ถูกต้อง ต้องเป็นเลข 9 หรือ 10 หลัก เท่านั้น")
-      .refine(
-        (uid) =>
+const ArtifactSubmission = (editToken?: string) =>
+  z.object(
+    {
+      name: z.string().max(64, "ชื่อยาวเกินไป ต้องไม่เกิน 64 ตัวอักษร"),
+      uid: z
+        .string()
+        .regex(uidRegex, "UID ไม่ถูกต้อง ต้องเป็นเลข 9 หรือ 10 หลัก เท่านั้น")
+        .refine(
+          (uid) =>
+            db
+              .select()
+              .from(submissions)
+              .where(
+                and(
+                  eq(submissions.uid, uid),
+                  editToken
+                    ? not(eq(submissions.editToken, editToken))
+                    : undefined,
+                ),
+              )
+              .limit(1)
+              .then((r) => !r.length),
+          "คุณลงทะเบียนไปแล้ว",
+        ),
+      character: z.string().refine(
+        (char) =>
           db
             .select()
-            .from(submissions)
-            .where(eq(submissions.uid, uid))
+            .from(characters)
+            .where(eq(characters.name, char))
             .limit(1)
-            .then((r) => !r.length),
-        "คุณลงทะเบียนไปแล้ว",
+            .then((r) => !!r.length),
+        "ไม่พบตัวละครที่เลือก",
       ),
-    character: z.string().refine(
-      (char) =>
-        db
-          .select()
-          .from(characters)
-          .where(eq(characters.name, char))
-          .limit(1)
-          .then((r) => !!r.length),
-      "ไม่พบตัวละครที่เลือก",
-    ),
-    comment: z.string().max(1024, "ข้อความเพิ่มเติมยาวเกินไป ต้องไม่เกิน 1024 ตัวอักษร"),
-  },
-  "กรุณากรอกข้อมูลให้ครบถ้วน",
-);
+      comment: z
+        .string()
+        .max(1024, "ข้อความเพิ่มเติมยาวเกินไป ต้องไม่เกิน 1024 ตัวอักษร"),
+    },
+    "กรุณากรอกข้อมูลให้ครบถ้วน",
+  );
 
 export async function submitArtifact(
   formData: FormData,
@@ -78,9 +88,9 @@ export async function submitArtifact(
   const count = await db.$count(submissions);
   if (config.limit !== -1 && count >= config.limit)
     return `คิวลงทะเบียนเต็มแล้ว (${config.limit} ครั้ง)`;
-  const { success, data, error } = await ArtifactSubmission.safeParseAsync(
-    Object.fromEntries(formData.entries()),
-  );
+  const { success, data, error } = await ArtifactSubmission(
+    edit?.token,
+  ).safeParseAsync(Object.fromEntries(formData.entries()));
   if (!success) return z.prettifyError(error);
   if (edit) {
     const [existing] = await db
