@@ -51,7 +51,7 @@ const ArtifactSubmission = z.object(
             .from(submissions)
             .where(eq(submissions.uid, uid))
             .limit(1)
-            .then((r) => !!r.length),
+            .then((r) => !r.length),
         "คุณลงทะเบียนไปแล้ว",
       ),
     character: z.string().refine(
