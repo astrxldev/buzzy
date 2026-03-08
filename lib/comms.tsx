@@ -16,6 +16,7 @@ type SharedStates = Partial<{
   updated: boolean;
   "rubgram.services": string[];
   "tl.deleteMode": boolean;
+  inspect: Record<string, string>;
   _raw: Record<string, unknown>;
 }>;
 
@@ -164,5 +165,24 @@ export const shared = {
   },
   raw() {
     return [shared.state("_raw")[0]];
+  },
+  inspect(k: string, v: Parameters<typeof console.log>[0]) {
+    const comms = use(IccContext);
+    // unmount handler
+    useEffect(
+      () => () => {
+        const { [k]: removed, ...rest } = comms.get("inspect") || {};
+        comms.set("inspect", rest);
+      },
+      [],
+    );
+    // value updater
+    useEffect(() => {
+      const obj = comms.get("inspect") || {};
+      comms.set("inspect", {
+        ...obj,
+        [k]: typeof v === "string" ? v : JSON.stringify(v),
+      });
+    }, [v]);
   },
 };

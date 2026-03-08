@@ -41,21 +41,21 @@ export default async function TierlistSelectionPage() {
       </center>
       {vers.map((t) => (
         <div className="flex flex-col gap-1" key={t.id}>
-            <Link href={`/tl/${t.id}`} className="font-bold text-4xl w-fit">
-              <div className="flex items-center gap-2">
-                <div className="px-2 py-1 border rounded-md bg-[#2228]">
-                  {t.name}
-                  <span className="text-sm text-muted-foreground ml-2">
-                    {t.mode}
-                  </span>
-                </div>
+          <Link href={`/tl/${t.id}`} className="font-bold text-4xl w-fit">
+            <div className="flex items-center gap-2">
+              <div className="px-2 py-1 border rounded-md bg-[#2228]">
+                {t.name}
+                <span className="text-sm text-muted-foreground ml-2">
+                  {t.mode}
+                </span>
+              </div>
               <SimpleTooltip text="ดูเทียร์ลิสต์ของคอนเทนต์นี้ทั้งหมด">
-               <span className="text-sm text-muted-foreground ml-2">
-                 ดูทั้งหมด
-               </span>
-               </SimpleTooltip>
-             </div>
-           </Link>
+                <span className="text-sm text-muted-foreground ml-2">
+                  ดูทั้งหมด
+                </span>
+              </SimpleTooltip>
+            </div>
+          </Link>
           <HorizontalDiv>
             <div className="flex gap-2 max-w-full">
               {t.versions.map((e) => (

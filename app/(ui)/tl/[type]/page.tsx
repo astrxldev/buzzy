@@ -12,7 +12,9 @@ export const metadata: Metadata = {
 
 export default async function TierlistSelectionPage({
   params,
-}: { params: Promise<{ type: string }> }) {
+}: {
+  params: Promise<{ type: string }>;
+}) {
   const { type: typeId } = await params;
   const types = await db
     .select()
@@ -38,25 +40,24 @@ export default async function TierlistSelectionPage({
                 {t.mode}
               </span>
             </div>
-
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
             {t.versions.map((e) => (
-                <Link href={`/tl/${t.id}/${e.id}`} key={e.id}>
+              <Link href={`/tl/${t.id}/${e.id}`} key={e.id}>
                 {e.image ? (
                   <div className="relative aspect-video w-full rounded-lg border overflow-hidden">
                     <Image
                       src={`/cdn/${e.image}`}
                       alt={e.name}
                       fill
-                        className="rounded-sm border object-cover bg-primary"
+                      className="rounded-sm border object-cover bg-primary"
                     />
-                      <div className="flex absolute w-full justify-center bottom-0 py-1 bg-black/50 rounded-b-sm">
-                        {e.name}
+                    <div className="flex absolute w-full justify-center bottom-0 py-1 bg-black/50 rounded-b-sm">
+                      {e.name}
                     </div>
                   </div>
                 ) : (
-                    <div className="flex items-center justify-center aspect-video w-60 border rounded-sm bg-[#1118] backdrop-blur-xl font-bold text-4xl">
+                  <div className="flex items-center justify-center aspect-video w-60 border rounded-sm bg-[#1118] backdrop-blur-xl font-bold text-4xl">
                     {e.name}
                   </div>
                 )}

@@ -129,7 +129,7 @@ export default async function AdminSubmissionView({
           )}
         </div>
         <div className="border rounded-md h-full overflow-hidden">
-           <Evernight/>
+          <Evernight />
         </div>
       </div>
     </div>

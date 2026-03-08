@@ -44,21 +44,29 @@ import { RulesDialog } from "./rules";
 
 export function CharacterChooser({
   clist,
+  uid: defaultUid = "",
+  char: defaultChar,
 }: {
   clist: {
     value: string;
     label: string;
   }[];
+  uid?: string;
+  char?: string;
 }) {
-  const [uid, setUid] = useState("");
+  const [uid, setUid] = useState(defaultUid);
   const [chars, setChars] = useState<(typeof characters.$inferSelect)[]>([]);
-  const [selected, setSelected] = useState<string | undefined>();
+  const [selected, setSelected] = useState<string | undefined>(defaultChar);
   const [isError, setIsError] = useState<boolean | string>(false);
   const [isLoading, setIsLoading] = useState(false);
   const [manual, setManual] = useState(false);
   const [isRefreshing, setRefreshing] = useState(false);
   const [guideDialogOpen, setGuideDialogOpen] = useState(false);
   const [cacheTtl, setCacheTtl] = useState(new Date());
+
+  useEffect(() => {
+    if (defaultUid) setUid(defaultUid);
+  }, [defaultUid]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -83,10 +91,15 @@ export function CharacterChooser({
           c.avatarId.toString(),
         );
         const chars = await getCharacters(charIds);
-        setChars(
-          charIds.map((e) => chars.find((c) => c.amber === e)!).filter(Boolean),
+        const userChars = charIds
+          .map((e) => chars.find((c) => c.amber === e)!)
+          .filter(Boolean);
+        setChars(userChars);
+        setSelected(
+          userChars.some((c) => c.name === defaultChar)
+            ? defaultChar
+            : undefined,
         );
-        setSelected(undefined);
       } catch (e) {
         console.error(e);
         setIsError("ข้อผิดพลาดภายในระบบ");
@@ -95,7 +108,7 @@ export function CharacterChooser({
     fetchChars()
       .catch(() => setIsError(true))
       .finally(() => setIsLoading(false));
-  }, [uid]);
+  }, [uid, defaultChar]);
 
   return (
     <>
@@ -108,6 +121,7 @@ export function CharacterChooser({
           required
           placeholder="814006303"
           onChange={(ev) => setUid(ev.target.value)}
+          defaultValue={defaultUid}
         />
       </div>
       <Label htmlFor="character">

@@ -666,7 +666,7 @@ export function TierList({
                   className="flex gap-2 items-center justify-center"
                   onClick={(ev) => ev.stopPropagation()}
                 >
-                   <SimpleTooltip text="เพิ่มตัวละคร">
+                  <SimpleTooltip text="เพิ่มตัวละคร">
                     <span>
                       <ComboBox
                         placeholder="ค้นหาตัวละคร"
@@ -689,7 +689,11 @@ export function TierList({
                       />
                     </span>
                   </SimpleTooltip>
-                  <SimpleTooltip text={deleteMode ? "คลิกอีกครั้งเพื่อออกจากโหมดลบ" : "ลบตัวละครออก"}>
+                  <SimpleTooltip
+                    text={
+                      deleteMode ? "คลิกอีกครั้งเพื่อออกจากโหมดลบ" : "ลบตัวละครออก"
+                    }
+                  >
                     <Trash2
                       className={cn(
                         "pointer-events-auto! text-red-500",

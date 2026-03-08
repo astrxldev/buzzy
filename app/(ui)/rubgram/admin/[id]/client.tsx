@@ -13,10 +13,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { debugUploadSlip, discordCall } from "../../api";
 
 export function Evernight() {
-  return (
-    <div className="h-full w-full relative">
-    </div>
-  );
+  return <div className="h-full w-full relative"></div>;
 }
 
 export function CopyButton({ text }: { text: string }) {

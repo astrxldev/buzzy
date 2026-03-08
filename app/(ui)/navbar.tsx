@@ -9,7 +9,8 @@ import { cn } from "@/lib/utils";
 export function Navbar() {
   const pathname = usePathname();
 
-  if (!/^\/(?:tl(?:\/[a-zA-Z0-9]+)?|rubgram|artifact)$/gm.test(pathname)) return "";
+  if (!/^\/(?:tl(?:\/[a-zA-Z0-9]+)?|rubgram|artifact)$/gm.test(pathname))
+    return "";
   return (
     <div className="flex gap-2 p-2 rounded-lg absolute top-3 left-3 border bg-card">
       <Item icon={<Home size={16} />} name="หน้าหลัก" href="/" divide />

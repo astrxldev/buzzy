@@ -26,6 +26,7 @@ export function ComboBox({
   className,
   trigger,
   onValueSelect,
+  defaultValue = "",
   ...props
 }: React.ComponentProps<"button"> & {
   data: { value: string; label: string }[];
@@ -34,7 +35,11 @@ export function ComboBox({
   onValueSelect?: (val: string) => void;
 }) {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
+  const [value, setValue] = React.useState(defaultValue);
+
+  React.useEffect(() => {
+    if (defaultValue) setValue(defaultValue);
+  }, [defaultValue]);
 
   return (
     <>

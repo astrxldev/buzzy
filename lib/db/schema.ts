@@ -94,6 +94,8 @@ export const submissions = artifact.table("submissions", {
       onUpdate: "cascade",
     }),
   queue: serial(),
+  editToken: text().notNull().$defaultFn(uuidv7),
+  edits: integer().notNull().default(0),
   checked: boolean().notNull().default(false),
 });
 

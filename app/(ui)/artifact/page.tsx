@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import {
   BookAlert,
   CircleDollarSign,
+  PencilIcon,
   SendHorizonal,
   SquarePlay,
 } from "lucide-react";
@@ -46,14 +47,13 @@ export const metadata: Metadata = {
   description: "ระบบลงคิวดูอาร์ติแฟกต์เกนชินในไลฟ์สตรีม",
 };
 
-export default async function ArtifactFormPage() {
+export default async function ArtifactFormPage({
+  searchParams,
+}: PageProps<"/artifact">) {
   const cookie = await cookies();
   const sid = cookie.get("sid");
   const [q] = sid?.value
-    ? await db
-        .select({ queue: submissions.queue })
-        .from(submissions)
-        .where(eq(submissions.id, sid.value))
+    ? await db.select().from(submissions).where(eq(submissions.id, sid.value))
     : [];
   const clist = await db
     .select({
@@ -64,6 +64,8 @@ export default async function ArtifactFormPage() {
     .orderBy(characters.name);
   const config = await getArtifactConfig();
   const count = await db.$count(submissions);
+  const { edit: searchEdit } = await searchParams;
+  const editing = q && searchEdit === q.editToken && q.edits < 5;
 
   return (
     <div className="flex justify-around items-center h-svh">
@@ -71,12 +73,37 @@ export default async function ArtifactFormPage() {
         <div className="aspect-video w-110"></div>
       </div>
       <Card className="w-full max-w-md">
-        {q ? (
+        {editing ? (
+          ""
+        ) : q ? (
           <Blocker>
             <div className="flex gap-1 flex-col items-center">
               <span className="font-bold text-3xl">คิวของคุณคือหมายเลข</span>
               <span className="font-bold text-5xl">{q.queue}</span>
             </div>
+            {q.edits < 5 && !q.checked ? (
+              <SimpleTooltip text="แก้ไข">
+                <Button
+                  className="absolute bottom-0 right-0 m-2"
+                  variant="outline"
+                  size="icon"
+                  asChild
+                >
+                  <Link href={`?edit=${q.editToken}`}>
+                    <PencilIcon />
+                  </Link>
+                </Button>
+              </SimpleTooltip>
+            ) : (
+              <Button
+                className="absolute bottom-0 right-0 m-2 bg-red-500/50!"
+                variant="outline"
+                disabled
+              >
+                <PencilIcon />
+                แก้ไม่ได้แล้ว
+              </Button>
+            )}
           </Blocker>
         ) : config.locked ? (
           <Blocker>
@@ -111,7 +138,10 @@ export default async function ArtifactFormPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ArtifactFormWrapper id="mainform">
+          <ArtifactFormWrapper
+            id="mainform"
+            edit={q ? { token: q.editToken, sub: q.id } : undefined}
+          >
             <div className="flex flex-col gap-3">
               <div className="grid gap-2">
                 <Label htmlFor="name">ชื่อ*</Label>
@@ -123,10 +153,15 @@ export default async function ArtifactFormPage() {
                   autoComplete="name"
                   maxLength={64}
                   required
+                  defaultValue={editing ? q.name : undefined}
                 />
               </div>
               {config.enka ? (
-                <CharacterChooser clist={clist} />
+                editing ? (
+                  <CharacterChooser clist={clist} uid={q.uid} char={q.char} />
+                ) : (
+                  <CharacterChooser clist={clist} />
+                )
               ) : (
                 <>
                   <div className="grid gap-2">
@@ -138,6 +173,7 @@ export default async function ArtifactFormPage() {
                       required
                       placeholder="814006303"
                       maxLength={10}
+                      defaultValue={editing ? q.uid : undefined}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -148,6 +184,7 @@ export default async function ArtifactFormPage() {
                       name="character"
                       data={clist}
                       className="w-full bg-transparent! hover:bg-accent!"
+                      defaultValue={editing ? q.char : undefined}
                     />
                   </div>
                 </>
@@ -160,6 +197,7 @@ export default async function ArtifactFormPage() {
                   placeholder="เช่น Er พอไหมครับ, คริสวยยังครับ (ไม่บังคับ)"
                   className="bg-card!"
                   maxLength={1024}
+                  defaultValue={editing ? q.comment : undefined}
                 />
               </div>
             </div>
@@ -196,9 +234,15 @@ export default async function ArtifactFormPage() {
               </RulesDialog>
               <TooltipContent>อ่านกฏการลงคิว</TooltipContent>
             </Tooltip>
-            <Suspense>
-              <LiveButton />
-            </Suspense>
+            {editing ? (
+              <Button variant="destructive" asChild>
+                <Link href="?">ยกเลิก</Link>
+              </Button>
+            ) : (
+              <Suspense>
+                <LiveButton />
+              </Suspense>
+            )}
           </div>
           <div className="flex gap-2 items-center">
             <span className="p-1">
@@ -209,12 +253,12 @@ export default async function ArtifactFormPage() {
                 type="submit"
                 form="mainform"
                 disabled={
-                  !!q ||
+                  (!!q && !editing) ||
                   config.locked ||
                   (config.limit >= 0 && count >= config.limit)
                 }
               >
-                <SendHorizonal />
+                {editing ? <PencilIcon /> : <SendHorizonal />}
               </Button>
             </SimpleTooltip>
           </div>

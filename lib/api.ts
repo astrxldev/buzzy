@@ -1,10 +1,11 @@
 "use server";
 
-import { and, eq, inArray, isNotNull, not, or, sql } from "drizzle-orm";
+import { randomUUIDv7 } from "bun";
+import { and, eq, inArray, isNotNull, lt, not, or, sql } from "drizzle-orm";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import type { TypedFormData } from "@/app/(ui)/rubgram/type";
+import z from "zod";
 import { adminCheck } from "./auth";
 import { uidRegex } from "./const";
 import { db } from "./db";
@@ -37,45 +38,84 @@ export async function getArtifactConfig() {
   return { locked: false, limit: -1, enka: false, ...art, ...glob };
 }
 
-export async function submitArtifact(formData: FormData) {
-  const form = formData as unknown as TypedFormData<{
-    name: string;
-    uid: string;
-    character: string;
-    comment: string;
-  }>;
+const ArtifactSubmission = z.object(
+  {
+    name: z.string().max(64, "ชื่อยาวเกินไป ต้องไม่เกิน 64 ตัวอักษร"),
+    uid: z
+      .string()
+      .regex(uidRegex, "UID ไม่ถูกต้อง ต้องเป็นเลข 9 หรือ 10 หลัก เท่านั้น")
+      .refine(
+        (uid) =>
+          db
+            .select()
+            .from(submissions)
+            .where(eq(submissions.uid, uid))
+            .limit(1)
+            .then((r) => !!r.length),
+        "คุณลงทะเบียนไปแล้ว",
+      ),
+    character: z.string().refine(
+      (char) =>
+        db
+          .select()
+          .from(characters)
+          .where(eq(characters.name, char))
+          .limit(1)
+          .then((r) => !!r.length),
+      "ไม่พบตัวละครที่เลือก",
+    ),
+    comment: z.string().max(1024, "ข้อความเพิ่มเติมยาวเกินไป ต้องไม่เกิน 1024 ตัวอักษร"),
+  },
+  "กรุณากรอกข้อมูลให้ครบถ้วน",
+);
+
+export async function submitArtifact(
+  formData: FormData,
+  edit?: { sub: string; token: string },
+) {
   const config = await getArtifactConfig();
-  const name = form.get("name")?.toString();
-  const uid = form.get("uid")?.toString();
-  const character = form.get("character")?.toString();
-  const comment = form.get("comment")?.toString() || "";
-  if (!name || !uid || !character) return "กรุณากรอกข้อมูลให้ครบถ้วน";
-  if (name.length > 64) return "ชื่อยาวเกินไป ต้องไม่เกิน 64 ตัวอักษร";
-  if (!uidRegex.test(uid)) return "UID ไม่ถูกต้อง ต้องเป็นเลข 9 หรือ 10 หลัก เท่านั้น";
-  if (comment.length > 1024) return "ข้อความเพิ่มเติมยาวเกินไป ต้องไม่เกิน 1024 ตัวอักษร";
   if (config.locked) return "ปิดรับลงทะเบียนชั่วคราว เนื่องจากมีผู้ลงจำนวนมาก";
   const count = await db.$count(submissions);
   if (config.limit !== -1 && count >= config.limit)
     return `คิวลงทะเบียนเต็มแล้ว (${config.limit} ครั้ง)`;
-  const [char] = await db
-    .select()
-    .from(characters)
-    .where(eq(characters.name, character))
-    .limit(1);
-  if (!char) return "ไม่พบตัวละครที่เลือก";
-  const [existing] = await db
-    .select()
-    .from(submissions)
-    .where(eq(submissions.uid, uid))
-    .limit(1);
-  if (existing) return "คุณลงทะเบียนไปแล้ว";
+  const { success, data, error } = await ArtifactSubmission.safeParseAsync(
+    Object.fromEntries(formData.entries()),
+  );
+  if (!success) return z.prettifyError(error);
+  if (edit) {
+    const [existing] = await db
+      .delete(submissions)
+      .where(
+        and(
+          eq(submissions.id, edit.sub),
+          eq(submissions.editToken, edit.token),
+          lt(submissions.edits, 5),
+          not(submissions.checked),
+        ),
+      )
+      .returning();
+
+    if (!existing) return "คิวนี้แก้ไม่ได้แล้ว";
+
+    const [queue] = await db
+      .insert(submissions)
+      .values({
+        ...data,
+        char: data.character,
+        queue: existing.queue,
+        edits: existing.edits + 1,
+        editToken: randomUUIDv7(),
+      })
+      .returning({ queue: submissions.queue, id: submissions.id });
+    revalidatePath("/artifact/admin");
+    ps.publish({ type: "submit" }, { topic: "artifact", event: "update" });
+    return queue;
+  }
   const [queue] = await db
     .insert(submissions)
     .values({
-      uid,
-      name,
-      comment,
-      char: char.name,
+      ...data,
+      char: data.character,
     })
     .returning({ queue: submissions.queue, id: submissions.id });
   revalidatePath("/artifact/admin");

@@ -48,7 +48,7 @@ export default async function AdminLayout({
       queue: submissions.queue,
     })
     .from(submissions)
-    .orderBy(submissions.id);
+    .orderBy(submissions.queue);
   const config = await getArtifactConfig();
   return (
     <SidebarProvider>
