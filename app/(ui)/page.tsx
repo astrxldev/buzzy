@@ -39,7 +39,7 @@ export default function Home() {
             name="รับกรรมแทนคนดู"
             desc={
               <>
-                รับเล่นคอนเท้น Endgame แทนคนดู{" "}
+                รับเล่นคอนเทนต์เอนเกมแทนคนดู{" "}
                 <span className="text-red-500">ไม่ฟรีนะคับ</span>
               </>
             }
@@ -48,7 +48,7 @@ export default function Home() {
           />
           <HomeLink
             name="จัดเทียร์ลิสต์อบิส"
-            desc="ระบบจัดเทียร์ลิสต์ตัวละครของคอนเท้น Abyss และ Stygain"
+            desc="ระบบจัดเทียร์ลิสต์ตัวละครของคอนเทนต์ Abyss และ Stygian"
             href="/tl"
             logo={TierlistLogo}
           />
