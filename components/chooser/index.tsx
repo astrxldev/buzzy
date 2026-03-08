@@ -31,7 +31,7 @@ export function CdnChooserProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [files, setFiles] = useState<
     Omit<typeof cdn.$inferSelect, "data">[] | null
   >(null);
