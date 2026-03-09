@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "@/components/image";
 import { db } from "@/lib/db";
 import { tierlistTypes, tierlistVersions } from "@/lib/db/schema";
+import { ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "จัดเทียร์ลิสต์",
@@ -33,6 +34,9 @@ export default async function TierlistSelectionPage({
     <div className="max-w-7xl min-h-full flex flex-col gap-6 mx-auto py-8 px-4">
       {vers.map((t) => (
         <div className="flex flex-col gap-1" key={t.id}>
+          <Link href="/tl" className="flex hover:underline cursor-default text-muted-foreground">
+            <ArrowLeft/> กลับไปหน้าแรก
+          </Link>
           <div className="font-bold text-4xl">
             <div className="px-2 py-1 border w-fit rounded-md bg-[#2228]">
               {t.name}

@@ -50,7 +50,7 @@ export default async function TierlistSelectionPage() {
                 </span>
               </div>
               <SimpleTooltip text="ดูเทียร์ลิสต์ของคอนเทนต์นี้ทั้งหมด">
-                <span className="text-sm text-muted-foreground ml-2">
+                <span className="text-sm font-normal text-muted-foreground ml-2 hover:underline ">
                   ดูทั้งหมด
                 </span>
               </SimpleTooltip>
