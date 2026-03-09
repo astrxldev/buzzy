@@ -15,6 +15,8 @@ import {
   CopyPlus,
   FileQuestionMark,
   Home,
+  TriangleAlert,
+  Pencil,
   Settings,
   Settings2,
   Trash2,
@@ -72,6 +74,7 @@ import type {
   tierlistTypes,
   tierlistVersions,
 } from "@/lib/db/schema";
+import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { TierListCell } from "./cell";
 import { Draggable } from "./character";
@@ -139,6 +142,9 @@ export function TierList({
     ev: "unknown" | "connecting" | "ready";
   }>({ upload: false, download: false, ev: "unknown" });
   const [_updated] = shared.state("updated");
+
+  const session = authClient.useSession();
+  const user = session.data?.user;
 
   //#region error handling
   useEffect(() => {
@@ -426,9 +432,19 @@ export function TierList({
                 <span className="text-green-400">{version.deprecates}</span>
                 {deleteMode && (
                   <span className="text-red-500 font-semibold ml-2">
+                    <TriangleAlert className="inline"/> {" "}
                     (คุณอยู่ในโหมดลบตัวละคร)
                   </span>
                 )}
+                <span className="font-normal absolute right-0">
+                 {user && !editable && (
+                  <SimpleTooltip text="ไปหน้าแก้ไข (Admin)">
+                    <Link href={`/tl/${type.id}/${version.id}/admin`}>
+                      <Pencil className="text-gray-400 size-4" />
+                    </Link>
+                  </SimpleTooltip>
+                  )}
+                </span>
               </div>
               <div className="grid place-items-center bg-[#2225] cursor-pointer">
                 <Dialog>
@@ -444,6 +460,14 @@ export function TierList({
                           หน้าหลัก
                         </DropdownMenuItem>
                       </Link>
+                     {user && !editable && (
+                        <DropdownMenuItem asChild>
+                          <Link href={`/tl/${type.id}/${version.id}/admin`}>
+                            <Pencil className="size-4" />
+                            ไปหน้าแก้ไข
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
                       <DialogTrigger asChild>
                         <DropdownMenuItem>
                           {" "}
