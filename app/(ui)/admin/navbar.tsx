@@ -26,6 +26,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
 import { useEffect, useRef, useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 type NavbarEntry = {
@@ -155,6 +156,7 @@ function DropdownMenu({
 
 export function AdminNavbar() {
   const pathname = usePathname();
+  const isMobile = useIsMobile();
   const [showLabels, setShowLabels] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
@@ -216,7 +218,18 @@ export function AdminNavbar() {
     },
   ];
 
-  const activeParent = findActiveParent(items, pathname);
+  const [scopeOverride, setScopeOverride] = useState<"root" | null>(null);
+
+  // Reset override whenever pathname changes (navigating resets scope)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: used for other purepose
+  useEffect(() => {
+    setScopeOverride(null);
+  }, [pathname]);
+
+  const activeParent =
+    scopeOverride === "root" ? null : findActiveParent(items, pathname);
+  const prefixParent =
+    scopeOverride === "root" ? findActiveParent(items, pathname) : activeParent;
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -228,18 +241,25 @@ export function AdminNavbar() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // const scopedItems = activeParent ? activeParent.sub! : items;
-
-  const prefixParent = activeParent;
+  if (!isMobile) return "";
 
   return (
     <div ref={navRef} className="sticky top-0 z-49">
       <div className="flex items-center gap-1 px-2 py-1.5 border-b border-white/10 bg-card/50 backdrop-blur-sm">
         <div className="flex items-center gap-1 shrink-0">
           {prefixParent && (
-            <div className="flex items-center justify-center w-6 h-6 rounded opacity-50">
+            <button
+              type="button"
+              onClick={() =>
+                setScopeOverride(scopeOverride === "root" ? null : "root")
+              }
+              className={cn(
+                "flex items-center justify-center w-6 h-6 rounded transition-colors opacity-50 hover:opacity-100",
+                scopeOverride === "root" && "opacity-100 bg-white/15",
+              )}
+            >
               <prefixParent.icon size={14} name={prefixParent.name} />
-            </div>
+            </button>
           )}
           <button
             type="button"
