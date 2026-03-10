@@ -107,7 +107,7 @@ export default async function TlTypeEditPage({
           <Input placeholder="1" />
         </FormInput>
         <FormInput name="mode" label="Mode">
-          <Input placeholder="Maybe pls let me sleep my mom gonaa kill me soon :sob:" />
+          <Input placeholder="ชั้น 12" />
         </FormInput>
 
         <FormInput name="image" label="Image" subLabel="optional">

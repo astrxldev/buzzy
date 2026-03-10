@@ -84,7 +84,7 @@ export default async function TlTypeCreatePage() {
           <Input placeholder="1" defaultValue={maxOrder + 10} />
         </FormInput>
         <FormInput name="mode" label="Mode">
-          <Input placeholder="Maybe pls let me sleep my mom gonaa kill me soon :sob:" />
+          <Input placeholder="ชั้น 12" />
         </FormInput>
         <FormInput name="image" label="Image" subLabel="optional">
           <CdnChooser />

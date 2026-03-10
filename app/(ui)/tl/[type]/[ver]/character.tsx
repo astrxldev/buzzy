@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash } from "lucide-react";
+import { MessageSquareText, Trash } from "lucide-react";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 import AmberIcon from "#/amber.png";
@@ -123,7 +123,7 @@ export function Draggable({
                 }}
               >
                 <div className="relative">
-                  <SimpleTooltip text={char.name} delayDuration={1000}>
+                  <SimpleTooltip text={char.name} delayDuration={500}>
                     <Image
                       src={`/cdn/${char.image}`}
                       style={{
@@ -147,9 +147,21 @@ export function Draggable({
                     "top-0.5 right-0.5",
                     "top-0.5 left-0.5",
                   ].map((p, i) => {
-                    if (!assignedBadges[i]) return "";
+                    const items = [...assignedBadges, ...(comment ? ["__comment__"] : [])];
+                    if (!items[i]) return "";
+                    if (items[i] === "__comment__") {
+                      return (
+                        <div
+                          key={p}
+                          style={{ width: badgeSize, height: badgeSize }}
+                          className={`bg-[#2228] ${p} absolute rounded border flex items-center justify-center`}
+                        >
+                          <MessageSquareText style={{ width: badgeSize * 0.7, height: badgeSize * 0.7 }} />
+                        </div>
+                      );
+                    }
                     const badge = badges.find(
-                      (e) => e.id === assignedBadges[i],
+                      (e) => e.id === items[i],
                     );
                     if (!badge) return "";
                     return badge.image ? (

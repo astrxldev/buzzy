@@ -25,14 +25,17 @@ export default async function TierlistManagerPage() {
       <Button className="w-fit" asChild>
         <Link href={`/admin/tl/ver/create`}>
           <PlusIcon />
-          <span>Create</span>
+          <span>Create type</span>
         </Link>
       </Button>
       {vers.map((t) => (
         <div className="flex flex-col gap-1 group/type" key={t.id}>
           <div className="font-semibold text-4xl flex items-center gap-2 w-fit text-nowrap">
-            <div className="px-2 py-1 border w-min rounded-md bg-[#2228] flex">
+            <div className="px-2 py-1 border w-min rounded-md bg-[#2228] flex-auto">
               {t.name} <Kbd>{t.id}</Kbd>
+              <Kbd className="text-sm text-muted-foreground ml-2">
+                {t.mode}
+              </Kbd>
             </div>
             <div className="md:opacity-0 group-hover/type:opacity-100 transition-opacity flex gap-1">
               <SimpleTooltip text="Create version">
