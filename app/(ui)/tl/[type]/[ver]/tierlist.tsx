@@ -432,17 +432,16 @@ export function TierList({
                 <span className="text-green-400">{version.deprecates}</span>
                 {deleteMode && (
                   <span className="text-red-500 font-semibold ml-2">
-                    <TriangleAlert className="inline"/> {" "}
-                    (คุณอยู่ในโหมดลบตัวละคร)
+                    <TriangleAlert className="inline" /> (คุณอยู่ในโหมดลบตัวละคร)
                   </span>
                 )}
                 <span className="font-normal absolute right-0">
-                 {user && !editable && (
-                  <SimpleTooltip text="ไปหน้าแก้ไข (Admin)">
-                    <Link href={`/tl/${type.id}/${version.id}/admin`}>
-                      <Pencil className="text-gray-400 size-4" />
-                    </Link>
-                  </SimpleTooltip>
+                  {user && !editable && (
+                    <SimpleTooltip text="ไปหน้าแก้ไข (Admin)">
+                      <Link href={`/tl/${type.id}/${version.id}/admin`}>
+                        <Pencil className="text-gray-400 size-4" />
+                      </Link>
+                    </SimpleTooltip>
                   )}
                 </span>
               </div>
@@ -460,7 +459,7 @@ export function TierList({
                           หน้าหลัก
                         </DropdownMenuItem>
                       </Link>
-                     {user && !editable && (
+                      {user && !editable && (
                         <DropdownMenuItem asChild>
                           <Link href={`/tl/${type.id}/${version.id}/admin`}>
                             <Pencil className="size-4" />

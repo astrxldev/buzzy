@@ -147,7 +147,10 @@ export function Draggable({
                     "top-0.5 right-0.5",
                     "top-0.5 left-0.5",
                   ].map((p, i) => {
-                    const items = [...assignedBadges, ...(comment ? ["__comment__"] : [])];
+                    const items = [
+                      ...assignedBadges,
+                      ...(comment ? ["__comment__"] : []),
+                    ];
                     if (!items[i]) return "";
                     if (items[i] === "__comment__") {
                       return (
@@ -156,13 +159,16 @@ export function Draggable({
                           style={{ width: badgeSize, height: badgeSize }}
                           className={`bg-[#2228] ${p} absolute rounded border flex items-center justify-center`}
                         >
-                          <MessageSquareText style={{ width: badgeSize * 0.7, height: badgeSize * 0.7 }} />
+                          <MessageSquareText
+                            style={{
+                              width: badgeSize * 0.7,
+                              height: badgeSize * 0.7,
+                            }}
+                          />
                         </div>
                       );
                     }
-                    const badge = badges.find(
-                      (e) => e.id === items[i],
-                    );
+                    const badge = badges.find((e) => e.id === items[i]);
                     if (!badge) return "";
                     return badge.image ? (
                       <Image
