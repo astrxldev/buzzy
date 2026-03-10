@@ -45,7 +45,7 @@ function VersionBadge({
 }) {
   return (
     <span className={cn("text-[10px] font-bold leading-none", className)}>
-      {name}
+      {name?.match(/[0-9.]+$/)?.[1]}
     </span>
   );
 }
@@ -154,7 +154,19 @@ function DropdownMenu({
   );
 }
 
-export function AdminNavbar() {
+export function AdminNavbar({
+  adminShortcuts,
+  tierlistVersions,
+}: {
+  adminShortcuts: {
+    name: string;
+    url: string;
+  }[];
+  tierlistVersions: {
+    id: string;
+    name: string;
+  }[];
+}) {
   const pathname = usePathname();
   const isMobile = useIsMobile();
   const [showLabels, setShowLabels] = useState(false);
@@ -162,7 +174,7 @@ export function AdminNavbar() {
   const navRef = useRef<HTMLDivElement>(null);
 
   const items: NavbarEntry[] = [
-    { name: "หน้าหลัก", href: "/admin/", icon: Home, divide: true },
+    { name: "หน้าหลัก", href: "/admin", icon: Home, divide: true },
     {
       name: "Tierlist",
       icon: Table,
@@ -178,8 +190,11 @@ export function AdminNavbar() {
       sub: [
         { name: "Types", icon: Form, href: "/admin/ver/types" },
         { name: "Create", icon: Plus, href: "/admin/ver/create" },
-        { name: "6.4", icon: VersionBadge, href: "/admin/ver/64" },
-        { name: "6.3", icon: VersionBadge, href: "/admin/ver/63" },
+        ...tierlistVersions.map((v) => ({
+          name: v.name,
+          icon: VersionBadge,
+          href: `/admin/ver/${v.id}`,
+        })),
       ],
     },
     {
@@ -195,18 +210,11 @@ export function AdminNavbar() {
             {
               name: "Tierlist",
               icon: Grid3x3,
-              sub: [
-                {
-                  name: "Abyss 6.4",
-                  icon: VersionBadge,
-                  href: "/tl/aby/64/admin",
-                },
-                {
-                  name: "Abyss 6.3",
-                  icon: VersionBadge,
-                  href: "/tl/aby/63/admin",
-                },
-              ],
+              sub: adminShortcuts.map((s) => ({
+                name: s.name,
+                icon: VersionBadge,
+                href: `/tl/${s.url}/admin`,
+              })),
             },
           ],
         },
@@ -245,7 +253,7 @@ export function AdminNavbar() {
 
   return (
     <div ref={navRef} className="sticky top-0 z-49">
-      <div className="flex items-center gap-1 px-2 py-1.5 border-b border-white/10 bg-card/50 backdrop-blur-sm">
+      <div className="flex items-center gap-1 px-2 py-1.5 border-b border-white/10 bg-card/75 backdrop-blur-sm">
         <div className="flex items-center gap-1 shrink-0">
           {prefixParent && (
             <button
