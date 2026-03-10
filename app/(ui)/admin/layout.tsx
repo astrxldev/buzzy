@@ -61,6 +61,7 @@ import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { tierlistTypes, tierlistVersions, versions } from "@/lib/db/schema";
 import { SidebarLink, VersionCreateDialogForm } from "./client";
+import { AdminNavbar } from "./navbar";
 
 export default async function AdminLayout({
   children,
@@ -229,6 +230,7 @@ export default async function AdminLayout({
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="bg-transparent">
+        <AdminNavbar />
         {modal}
         {children}
       </SidebarInset>
