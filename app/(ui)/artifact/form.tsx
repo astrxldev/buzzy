@@ -4,10 +4,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { submitArtifact } from "@/lib/api";
 
-export function ArtifactFormWrapper(props: React.ComponentProps<"form">) {
+export function ArtifactFormWrapper({
+  edit,
+  ...props
+}: React.ComponentProps<"form"> & { edit?: { sub: string; token: string } }) {
   const router = useRouter();
   async function submit(data: FormData) {
-    submitArtifact(data)
+    submitArtifact(data, edit)
       .then((q) => {
         if (typeof q === "string") return toast.error(q);
         try {

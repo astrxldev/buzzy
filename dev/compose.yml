@@ -2,8 +2,10 @@ services:
   # services
   app:
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     build:
       context: ..
       dockerfile: dev.dockerfile
@@ -18,8 +20,10 @@ services:
     restart: on-failure
   backend:
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     build:
       context: ..
       dockerfile: backend.dockerfile
@@ -46,6 +50,7 @@ services:
       interval: 1s
       timeout: 5s
       retries: 10
+      start_period: 10s
     restart: on-failure
     ports:
       - 5432:5432
@@ -67,7 +72,8 @@ services:
   # tools
   redis-commander:
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     hostname: redis-commander
     image: ghcr.io/joeferner/redis-commander:latest
     environment:
@@ -78,7 +84,8 @@ services:
     restart: on-failure
   drizzle:
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     build:
       context: ..
       dockerfile: dev.dockerfile

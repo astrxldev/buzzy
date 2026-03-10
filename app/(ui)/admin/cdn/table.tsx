@@ -76,6 +76,7 @@ const columns: ColumnDef<{
 export function CdnTable({
   files,
   onChoose,
+  onChange,
 }: {
   files: {
     id: string;
@@ -89,6 +90,7 @@ export function CdnTable({
       size: string;
     } | null,
   ) => void;
+  onChange?: () => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -108,6 +110,7 @@ export function CdnTable({
       toast.promise(cdnify(file), {
         loading: `Uploading ${file.name}...`,
         success: () => {
+          onChange?.();
           return `${file.name} has been uploaded to CDN.`;
         },
         error: `Error uploading ${file.name}.`,
@@ -130,6 +133,7 @@ export function CdnTable({
           throw "";
         }
         setRowSelection({});
+        onChange?.();
         return `${selectedIds.length} files has been deleted.`;
       },
       error: `Error deleting the files.`,
@@ -145,6 +149,7 @@ export function CdnTable({
     toast.promise(fetchToCdn(urlList), {
       loading: `Fetching ${urlList.length} files...`,
       success: () => {
+        onChange?.();
         return `${urlList.length} URLs has been uploaded to CDN.`;
       },
       error: "Error fetching the files.",
@@ -201,6 +206,7 @@ export function CdnTable({
 
                 toast.promise(rename(row.id, newName), {
                   success() {
+                    onChange?.();
                     return "เปลี่ยนชื่อสำเร็จ";
                   },
                   error() {
@@ -219,6 +225,7 @@ export function CdnTable({
                       const file = files.find((f) => f.id === res.id);
                       throw `${file ? file.name || `[${res.id}]` : `[${res.id}]`} ยังถูกใช้โดย ${res.refs.join(", ")}`;
                     }
+                    onChange?.();
                     return "ลบสำเร็จ";
                   },
                   error(err: { message: string; description: string }) {

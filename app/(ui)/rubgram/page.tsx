@@ -69,7 +69,7 @@ import { RulesDialog } from "./rules";
 
 export const metadata: Metadata = {
   title: "รับกรรมแทนทางบ้าน",
-  description: "รับเล่นคอนเท้น Endgame เกนชินแทนคนดู",
+  description: "รับเล่นคอนเทนต์เอนเกมเกนชินแทนคนดู",
 };
 
 export default async function EndgamePage() {

@@ -304,20 +304,20 @@ export function SlipButton() {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-    <Button
-      variant="ghost"
-      size="icon"
-      className="size-8"
-      onClick={() => {
-        window.location.href = "/rubgram/admin/slip";
-      }}
-    >
-      <Logs size={24} className="size-6" />
-    </Button>
-    </TooltipTrigger>
-    <TooltipContent>
-      <p>All time คิว</p>
-    </TooltipContent>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8"
+          onClick={() => {
+            window.location.href = "/rubgram/admin/slip";
+          }}
+        >
+          <Logs size={24} className="size-6" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>All time คิว</p>
+      </TooltipContent>
     </Tooltip>
   );
 }

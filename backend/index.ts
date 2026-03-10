@@ -1,7 +1,7 @@
 import { env } from "node:process";
 import { redis } from "bun";
 import { formatDistanceToNow } from "date-fns";
-import { and, asc, eq, isNull, lt, not, sql } from "drizzle-orm";
+import { and, asc, eq, gt, isNull, lt, not, sql } from "drizzle-orm";
 import { removeExpiredSubmissions } from "@/app/(ui)/rubgram/api";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -203,7 +203,7 @@ async function seedDatabase() {
 }
 
 async function cacheCards() {
-  const { log, schedule } = logger("cacheCards");
+  const { log, error, schedule } = logger("cacheCards");
   const [notCached] = await db
     .select({
       id: submissions.id,
@@ -228,19 +228,44 @@ async function cacheCards() {
     return;
   }
   log(`Generating card for ${notCached.id}`);
-  const res = await fetch(`http://app:3000/api/card/${notCached.id}`);
+  const res = await fetch(`http://app:3000/api/card/${notCached.id}`).catch(
+    () => ({
+      ok: false,
+      status: 502,
+      text: () => "เกิดข้อผิดพลาดภายในระบบ กำลังพยายามลองใหม่",
+    }),
+  );
   if (!res.ok) {
     log(`Wasn't okay, queueing for retry.`);
+    let text = await res.text();
+    error(text.includes("502") ? "502" : text);
+    if (text.includes("findIndex") || text === "Showcase is not public")
+      text = "ผู้เล่นนี้ไม่มีโชว์เคส มองไม่เห็นตัวละครใดๆ";
+    else if (text === "Invalid character provided")
+      text = "ตัวละครที่ผู้เล่นเลือก ไม่ได้อยู่ในโชว์เคส";
+    else if (text === "Failed to find card." || text === "Invalid UID Provided")
+      text = "ผู้เล่นนี้ไม่มีอยู่จริง โดนแบนไปแล้วรีเปล่า";
+    else if (text.length > 2000 || res.status === 502)
+      text = "ไม่สามารถสร้างการ์ดได้ กำลังพยายามลองใหม่";
+    text = text.split("\n")[0];
     await db
       .insert(cards)
       .values({
         submission: notCached.id,
         tries: 1,
+        error: text,
       })
       .onConflictDoUpdate({
         target: cards.submission,
         set: {
-          tries: res.status === 400 ? 20 : sql<number>`${cards.tries} + 1`,
+          tries:
+            res.status === 400 || text === "ผู้เล่นนี้ไม่มีโชว์เคส มองไม่เห็นตัวละครใดๆ"
+              ? 21
+              : sql<number>`${cards.tries} + 1`,
+          error: sql<string>`case when ${gt(cards.tries, 15)}
+            then ${text.replace(" กำลังพยายามลองใหม่", "")}
+            else ${text}
+          end`,
         },
       });
     schedule(60, cacheCards);

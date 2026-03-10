@@ -47,7 +47,7 @@ export default async function generate({
         <div>{title}</div>
         <div
           style={{
-            fontSize: 32,
+            fontSize: 24,
             marginTop: "-20",
             color: "#aaa",
           }}

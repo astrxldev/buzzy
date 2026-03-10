@@ -9,6 +9,5 @@ export async function listFiles() {
 
   return await db
     .select({ id: cdn.id, name: cdn.name, size: cdn.size, type: cdn.type })
-    .from(cdn)
-    .orderBy(cdn.name);
+    .from(cdn);
 }

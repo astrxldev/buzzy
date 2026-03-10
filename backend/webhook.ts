@@ -19,8 +19,8 @@ export function rubgramWebhookTemplate(
                 type: 10,
                 content:
                   type === "submit"
-                    ? "## :wave: New Submission"
-                    : "## :money_with_wings: Submission Paid",
+                    ? "## :incoming_envelope: ลูกค้าลงคิว"
+                    : "## :money_with_wings: จ่ายเงินแล้ว",
               },
             ],
             accessory: {
@@ -37,13 +37,13 @@ export function rubgramWebhookTemplate(
           },
           {
             type: 10,
-            content: `**Name**: ${sub.name}\n**Service**:\n${sub.service
+            content: `**ชื่อ**: ${sub.name}\n**บริการ**:\n${sub.service
               .map((s) => types.find((t) => t.id === s)?.display)
               .filter(Boolean)
               .map((s) => `- ${s}`)
               .join(
                 "\n",
-              )}\n**Server**: ${{ us: "America", eu: "Europe", as: "Asia", tw: "Taiwan" }[sub.server]}\n-# ${type === "submit" ? "**Not** p" : "P"}aid: **${sub.price} ฿** | <@${sub.user}>`,
+              )}\n**เซิพ**: ${{ us: "America", eu: "Europe", as: "Asia", tw: "Taiwan" }[sub.server]}\n-# ${type === "submit" ? "**Not** p" : "P"}aid: **${sub.price} ฿** | <@${sub.user}>`,
           },
         ],
         accent_color: type === "paid" ? 0x0ef06d : 15714574,

@@ -10,7 +10,7 @@ export const contentType = "image/png";
 
 // Image generation
 export default async function Image() {
-  return generate({ title: "จัดเทียร์ลิสต์", sub: "" });
+  return generate({ title: "เทียร์ลิสต์", sub: "" });
 }
 
 export const dynamic = "force-dynamic";

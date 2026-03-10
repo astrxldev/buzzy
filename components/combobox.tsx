@@ -24,32 +24,43 @@ export function ComboBox({
   id,
   name,
   className,
+  trigger,
+  onValueSelect,
+  defaultValue = "",
   ...props
 }: React.ComponentProps<"button"> & {
   data: { value: string; label: string }[];
   placeholder?: string;
+  trigger?: React.ReactNode;
+  onValueSelect?: (val: string) => void;
 }) {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
+  const [value, setValue] = React.useState(defaultValue);
+
+  React.useEffect(() => {
+    if (defaultValue) setValue(defaultValue);
+  }, [defaultValue]);
 
   return (
     <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className={cn("w-[200px] justify-between", className)}
-            {...props}
-          >
-            {value
-              ? data.find((ent) => ent.value === value)?.label
-              : placeholder}
-            <ChevronsUpDown className="opacity-50" />
-          </Button>
+          {trigger || (
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className={cn("w-50 justify-between", className)}
+              {...props}
+            >
+              {value
+                ? data.find((ent) => ent.value === value)?.label
+                : placeholder}
+              <ChevronsUpDown className="opacity-50" />
+            </Button>
+          )}
         </PopoverTrigger>
-        <PopoverContent className="w-[400px] p-0">
+        <PopoverContent className="w-100 p-0">
           <Command>
             <CommandInput placeholder={placeholder} className="h-9" />
             <CommandList>
@@ -60,7 +71,8 @@ export function ComboBox({
                     key={ent.value}
                     value={ent.value}
                     onSelect={(currentValue) => {
-                      setValue(currentValue === value ? "" : currentValue);
+                      if (onValueSelect) onValueSelect(currentValue);
+                      else setValue(currentValue === value ? "" : currentValue);
                       setOpen(false);
                     }}
                   >
