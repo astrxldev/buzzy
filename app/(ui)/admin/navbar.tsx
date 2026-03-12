@@ -105,17 +105,17 @@ function DropdownMenu({
                   type="button"
                   onClick={() => setOpenSub(isOpen ? null : item.name)}
                   className={cn(
-                    "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-left",
-                    "transition-colors text-xs",
+                    "flex items-center gap-2 w-full px-2.5 py-2 rounded-md text-left",
+                    "transition-colors text-[13px]",
                     active
                       ? "bg-white/15 text-white"
                       : "text-white/60 hover:text-white hover:bg-white/10",
                   )}
                 >
-                  <Icon size={14} name={item.name} className="shrink-0" />
+                  <Icon size={16} name={item.name} className="shrink-0" />
                   <span className="flex-1">{item.name}</span>
                   <ChevronRight
-                    size={12}
+                    size={14}
                     className={cn(
                       "transition-transform",
                       isOpen && "rotate-90",
@@ -136,14 +136,14 @@ function DropdownMenu({
                 href={item.href!}
                 onClick={onClose}
                 className={cn(
-                  "flex items-center gap-2 px-2 py-1.5 rounded-md",
-                  "transition-colors text-xs",
+                  "flex items-center gap-2 px-2.5 py-2 rounded-md",
+                  "transition-colors text-[13px]",
                   active
                     ? "bg-white/15 text-white"
                     : "text-white/60 hover:text-white hover:bg-white/10",
                 )}
               >
-                <Icon size={14} name={item.name} className="shrink-0" />
+                <Icon size={16} name={item.name} className="shrink-0" />
                 <span>{item.name}</span>
               </Link>
             )}
@@ -262,7 +262,7 @@ export function AdminNavbar({
                 setScopeOverride(scopeOverride === "root" ? null : "root")
               }
               className={cn(
-                "flex items-center justify-center w-6 h-6 rounded transition-colors opacity-50 hover:opacity-100",
+                "flex items-center justify-center w-6 h-8 rounded transition-colors opacity-50 hover:opacity-100",
                 scopeOverride === "root" && "opacity-100 bg-white/15",
               )}
             >
@@ -273,18 +273,18 @@ export function AdminNavbar({
             type="button"
             onClick={() => setShowLabels((v) => !v)}
             className={cn(
-              "flex items-center justify-center w-6 h-6 rounded transition-colors",
+              "flex items-center justify-center w-8 h-8 rounded transition-colors",
               showLabels
                 ? "bg-white/15 text-white"
                 : "text-white/40 hover:text-white/70",
             )}
           >
-            {showLabels ? <X size={13} /> : <AlignJustify size={13} />}
+            {showLabels ? <X size={16} /> : <AlignJustify size={16} />}
           </button>
-          <div className="w-px h-4 bg-white/10 mx-0.5" />
+          <div className="w-px h-5 bg-white/10 mx-1" />
         </div>
 
-        <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-none flex-1 min-w-0">
+        <div className="flex items-center gap-1 overflow-x-auto scrollbar-none flex-1 min-w-0">
           {(activeParent ? activeParent.sub! : items).map((item) => {
             const Icon = item.icon;
             const active = isActive(item, pathname);
@@ -293,9 +293,9 @@ export function AdminNavbar({
 
             const buttonContent = (
               <>
-                <Icon size={15} name={item.name} className="shrink-0" />
+                <Icon size={18} name={item.name} className="shrink-0" />
                 {showLabels && (
-                  <span className="text-[10px] whitespace-nowrap leading-none">
+                  <span className="text-[11px] whitespace-nowrap leading-none">
                     {item.name}
                   </span>
                 )}
@@ -303,7 +303,7 @@ export function AdminNavbar({
             );
 
             const buttonClass = cn(
-              "flex items-center gap-1 px-1.5 py-1 rounded transition-colors shrink-0",
+              "flex items-center gap-1.5 px-2.5 py-1.5 rounded transition-colors shrink-0",
               active || isOpen
                 ? "bg-white/15 text-white"
                 : "text-white/50 hover:text-white hover:bg-white/10",

@@ -6,6 +6,7 @@ import Avatar from "@/components/avatar";
 import SearchBox, { type Filters, type ParsedQuery } from "@/components/search";
 import { Button } from "@/components/ui/button";
 import { type characters, element } from "@/lib/db/schema";
+import { SimpleTooltip } from "@/components/tooltip";
 
 /** Filters and their value providers */
 const filters: Filters = {
@@ -46,11 +47,13 @@ export function CharManager({
           className="bg-input sticky top-2"
           onQueryChange={setQuery}
         />
-        <Button className="h-10 w-10" asChild>
-          <Link href="/admin/char/create">
-            <UserPlus />
-          </Link>
-        </Button>
+        <SimpleTooltip text="เพิ่มตัวละคร" side="right">
+          <Button className="h-10 w-10" asChild>
+            <Link href="/admin/char/create">
+              <UserPlus />
+            </Link>
+          </Button>
+        </SimpleTooltip>
       </div>
       <div className="flex flex-wrap gap-4 justify-center">
         {filteredChars.map((char) => (
