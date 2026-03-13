@@ -64,7 +64,7 @@ export default async function TierlistSelectionPage({
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center aspect-video w-60 border rounded-sm bg-[#1118] backdrop-blur-xl font-bold text-4xl">
+                  <div className="flex items-center justify-center aspect-video border rounded-sm bg-[#1118] backdrop-blur-xl font-bold text-5xl">
                     {e.name}
                   </div>
                 )}

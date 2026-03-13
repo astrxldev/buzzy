@@ -123,7 +123,7 @@ export function Draggable({
                 }}
               >
                 <div className="relative">
-                  <SimpleTooltip text={char.name} delayDuration={500}>
+                  <SimpleTooltip text={char.name} delayDuration={200}>
                     <Image
                       src={`/cdn/${char.image}`}
                       style={{

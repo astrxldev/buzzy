@@ -114,6 +114,20 @@ export default async function ArtifactFormPage({
             <div className="flex gap-1 flex-col items-center">
               <span className="font-bold text-3xl">คิวเต็มแล้ว</span>
               <span className="font-bold text-2xl">ต้องโดเนทลัดคิวแล้วล่ะ</span>
+              <SimpleTooltip text="โดเนทลัดคิว ขั้นต่ำ 10 บาท" side="bottom">
+                <Link
+                  href="https://tipme.in.th/536d969652666273c2fa85ad"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Button
+                    className="bg-emerald-600! border-white! animate-pulse"
+                    type="button"
+                  >
+                  <CircleDollarSign />
+                </Button>
+              </Link>
+            </SimpleTooltip>
             </div>
           </Blocker>
         ) : (
@@ -211,15 +225,7 @@ export default async function ArtifactFormPage({
                 target="_blank"
                 rel="noreferrer"
               >
-                <Button
-                  variant="outline"
-                  className={
-                    config.limit >= 0 && count >= config.limit
-                      ? "bg-emerald-600! border-white! animate-pulse"
-                      : ""
-                  }
-                  type="button"
-                >
+                <Button variant="outline" type="button">
                   <CircleDollarSign />
                 </Button>
               </Link>

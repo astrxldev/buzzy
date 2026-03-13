@@ -8,6 +8,7 @@ import Image from "@/components/image";
 import { ScrollBar } from "@/components/ui/scroll-area";
 import { db } from "@/lib/db";
 import { tierlistTypes, tierlistVersions } from "@/lib/db/schema";
+import { ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "จัดเทียร์ลิสต์",
@@ -50,8 +51,9 @@ export default async function TierlistSelectionPage() {
                 </span>
               </div>
               <SimpleTooltip text="ดูเทียร์ลิสต์ของคอนเทนต์นี้ทั้งหมด">
-                <span className="text-sm font-normal text-muted-foreground ml-2 hover:underline ">
+                <span className="absolute right-0 m-8 text-sm font-normal text-blue-400 ml-2 hover:underline ">
                   ดูทั้งหมด
+                  <ArrowRight className="inline-block size-4" />
                 </span>
               </SimpleTooltip>
             </div>

@@ -60,10 +60,10 @@ export function WelcomeScreening({
         </div>
       ) : (
         <div className="grid gap-2">
-          โปรดล็อคอินด้วย Discord เพื่อดำเนินการต่อ
+          โปรดล็อคอินผ่าน Discord เพื่อดำเนินการต่อ
           <Button onClick={loginDiscord}>
             <span className="flex justify-between w-full items-center">
-              Login ด้วย Discord
+              ล็อคอินผ่าน Discord
               <LogIn />
             </span>
           </Button>
