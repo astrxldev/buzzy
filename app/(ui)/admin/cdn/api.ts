@@ -17,7 +17,9 @@ export async function fetchToCdn(urls: string[]) {
       res.headers
         .get("Content-Disposition")
         ?.match(/^attachment;.*filename="([a-zA-Z0-9-_ .]+)"/)?.[1] ||
-        res.url.match(/\/([a-zA-Z0-9-_ .]+)$/)?.[1] ||
+        decodeURIComponent(new URL(res.url).pathname).match(
+          /\/([a-zA-Z0-9-_ .]+)$/,
+        )?.[1] ||
         `file.${res.headers.get("Content-Type")?.split("/")[1] || "dat"}`,
     );
   }
