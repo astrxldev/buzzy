@@ -35,9 +35,7 @@ export default async function TierlistManagerPage() {
               <span className="text-nowrap">{t.name}</span>
               <span className="flex items-center gap-1">
                 <Kbd>{t.id}</Kbd>
-                <span className="text-xs text-muted-foreground">
-                  {t.mode}
-                </span>
+                <span className="text-xs text-muted-foreground">{t.mode}</span>
               </span>
             </div>
             <div className="md:opacity-0 group-hover/type:opacity-100 transition-opacity flex gap-1">

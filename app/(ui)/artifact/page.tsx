@@ -119,10 +119,10 @@ export default async function ArtifactFormPage({
                     className="bg-emerald-600! border-white! animate-pulse"
                     type="button"
                   >
-                  <CircleDollarSign />
-                </Button>
-              </Link>
-            </SimpleTooltip>
+                    <CircleDollarSign />
+                  </Button>
+                </Link>
+              </SimpleTooltip>
             </div>
           </Blocker>
         ) : (
