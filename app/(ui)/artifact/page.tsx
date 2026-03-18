@@ -69,9 +69,11 @@ export default async function ArtifactFormPage({
 
   return (
     <div className="flex justify-around items-center h-svh">
+      {/*
       <div className="hidden md:block p-5">
         <div className="aspect-video w-110"></div>
       </div>
+      */}
       <Card className="w-full max-w-md">
         {editing ? (
           ""
@@ -270,6 +272,7 @@ export default async function ArtifactFormPage({
           </div>
         </CardFooter>
       </Card>
+      {/*
       <div className="hidden md:block bg-card p-5 rounded border border-border relative">
         <span className="absolute font-semibold text-7xl -translate-y-3/4 w-110 text-center text-shadow-lg/80">
           Guide
@@ -301,6 +304,7 @@ export default async function ArtifactFormPage({
           </video>
         </DialogContent>
       </Dialog>
+      */}
       {sid && !q && <ClearCookie />}
     </div>
   );

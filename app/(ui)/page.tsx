@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 export default function Home() {
   return (
     <div className="flex w-full justify-center">
-      <div className="max-w-4xl w-full mx-auto flex flex-col min-h-dvh">
+      <div className="max-w-6xl w-full mx-auto flex flex-col min-h-dvh">
         <section>
           <center>
             <Link href="https://www.youtube.com/@Genshinmaichaigamemurtur">
@@ -51,6 +51,12 @@ export default function Home() {
             desc="ระบบจัดเทียร์ลิสต์ตัวละครของคอนเทนต์ Abyss และ Stygian"
             href="/tl"
             logo={TierlistLogo}
+          />
+          <HomeLink
+            name="Guide"
+            desc="ไกด์ตัวละคร"
+            href="/guide"
+            logo={ArtifactLogo}
           />
         </div>
         <footer className="text-muted-foreground h-full flex flex-col justify-end pb-3 md:justify-center">

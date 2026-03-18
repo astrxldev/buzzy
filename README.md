@@ -3,6 +3,7 @@ This is a Next.js project running multiple events for a YouTuber, Buzz. It have 
 - Artifact: Versionly watcher-submitted ID review.
 - Rubgram: A paid event that basically lets Buzz play endgame content for you.
 - Tierlist: Versionly tierlist rating characters for Spiral Abyss & Stygian Onslaught.
+- Guide: Character build guide that will link you to Google Sheets.
 - `WIP` Admin: Admin panel where you can manage versions, characters, tierlists, external services, etc.
 
 ## Architecture

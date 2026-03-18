@@ -1,6 +1,6 @@
 "use client";
 
-import { Feather, Home, LoaderPinwheel, Table } from "lucide-react";
+import { Feather, Home, LoaderPinwheel, StickyNote, Table } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -24,7 +24,13 @@ export function Navbar() {
         name="รับกรรมแทนทางบ้าน"
         href="/rubgram"
       />
-      <Item icon={<Table size={16} />} name="จัดเทียร์ลิสต์" href="/tl" last />
+      <Item icon={<Table size={16} />} name="จัดเทียร์ลิสต์" href="/tl" />
+      <Item
+        icon={<StickyNote size={16} />}
+        name="ไกด์ตัวละคร"
+        href="/guide"
+        last
+      />
     </div>
   );
 }
