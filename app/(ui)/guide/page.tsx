@@ -11,3 +11,5 @@ export default async function GuidePage() {
   const initialData = await searchGuide("");
   return <GuideList initialList={initialData} />;
 }
+
+export const dynamic = "force-dynamic";

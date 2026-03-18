@@ -60,3 +60,5 @@ export default async function AdminGuidePage() {
     </div>
   );
 }
+
+export const dynamic = "force-dynamic";
