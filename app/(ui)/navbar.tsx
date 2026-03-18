@@ -4,15 +4,22 @@ import { Feather, Home, LoaderPinwheel, StickyNote, Table } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
   const pathname = usePathname();
+  const mobile = useIsMobile();
 
-  if (!/^\/(?:tl(?:\/[a-zA-Z0-9]+)?|rubgram|artifact)$/gm.test(pathname))
+  if (!/^\/(?:tl(?:\/[a-zA-Z0-9]+)?|rubgram|artifact|guide)$/gm.test(pathname))
     return "";
   return (
-    <div className="flex gap-2 p-2 rounded-lg absolute top-3 left-3 border bg-card">
+    <div
+      className={cn(
+        "flex gap-2 p-2 rounded-lg absolute border bg-card",
+        mobile && pathname === "/guide" ? "right-2 top-2" : "left-3 top-3",
+      )}
+    >
       <Item icon={<Home size={16} />} name="หน้าหลัก" href="/" divide />
       <Item
         icon={<Feather size={16} />}

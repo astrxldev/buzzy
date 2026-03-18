@@ -20,15 +20,15 @@ import {
 } from "@/components/ui/empty";
 import { db } from "@/lib/db";
 import { endgameArchive, endgameDiscord, endgameSlips } from "@/lib/db/schema";
-import { parseParamNumber } from "@/lib/utils";
+import { parseSearchNumber } from "@/lib/utils";
 import { DataViewer } from "./client";
 
 export default async function ({
   params,
 }: PageProps<"/rubgram/admin/slip/[round]/[queue]">) {
   const { round: r, queue: q } = await params;
-  const round = parseParamNumber(r) || 1;
-  const queue = parseParamNumber(q) || 1;
+  const round = parseSearchNumber(r) || 1;
+  const queue = parseSearchNumber(q) || 1;
   const { slip, ...slipColumns } = getTableColumns(endgameSlips);
   const [entry] = await db
     .select({

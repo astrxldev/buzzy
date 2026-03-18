@@ -6,6 +6,7 @@ import {
   BadgeDollarSign,
   ChevronRight,
   Columns3Cog,
+  Compass,
   ExternalLink,
   Form,
   GitGraph,
@@ -184,6 +185,7 @@ export function AdminNavbar({
         { name: "Layout", icon: Columns3Cog, href: "/admin/tl/layout" },
       ],
     },
+    { name: "Guide", icon: Compass, href: "/admin/guide" },
     {
       name: "Versions",
       icon: List,

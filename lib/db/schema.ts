@@ -326,6 +326,21 @@ export const tierlistStates = tierlist.table("states", {
 
 //#endregion
 
+//#region Guide
+export const guides = pgTable("guides", {
+  id: text().primaryKey().$defaultFn(uuidv7),
+  image: text().references(() => cdn.id, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
+  order: integer().notNull(),
+  link: text().notNull(),
+  hidden: boolean().notNull().default(false),
+  name: text().notNull(),
+});
+
+//#endregion
+
 //#region Better Auth
 export const user = pgTable("user", {
   id: text("id").primaryKey(),

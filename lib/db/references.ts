@@ -46,5 +46,6 @@ export const cdnReferences = pgView("cdn_references").as((qb) => {
     if (prev) return prev.unionAll(query);
     return query;
   }, null);
+  // console.dir(queries, { depth: 5 });
   return queries;
 });

@@ -5,6 +5,7 @@ import {
   BadgeDollarSign,
   BookUser,
   Columns3Cog,
+  Compass,
   Computer,
   Database,
   ExternalLink,
@@ -146,6 +147,19 @@ export default async function AdminLayout({
                   <SidebarLink href="/admin/tl/layout" disabled>
                     <Columns3Cog />
                     Layout
+                  </SidebarLink>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          <SidebarGroup>
+            <SidebarGroupLabel>Guide</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarLink href="/admin/guide">
+                    <Compass />
+                    Editor
                   </SidebarLink>
                 </SidebarMenuItem>
               </SidebarMenu>
