@@ -1,12 +1,14 @@
-import { Pencil, PlusIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, Pencil, PlusIcon } from "lucide-react";
 import Link from "next/link";
 import Image from "@/components/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { searchGuide } from "../../guide/api";
+import { hideGuide } from "./api";
 
 export default async function AdminGuidePage() {
-  const list = await searchGuide();
+  const list = await searchGuide("", true);
 
   return (
     <div className="grow-0 flex flex-col pt-5 gap-2 mx-4">
@@ -20,18 +22,25 @@ export default async function AdminGuidePage() {
         {list.map((card) => (
           <Card
             key={card.id}
-            className="bg-card/50 hover:bg-border backdrop-blur-sm transition-colors py-3 sm:py-6 rounded-sm sm:rounded-xl group relative"
+            className={cn(
+              "bg-card/50 hover:bg-border backdrop-blur-sm transition-colors py-3 sm:py-6 rounded-sm sm:rounded-xl group relative",
+              card.hidden && "opacity-70",
+            )}
           >
-            <Button
-              size="icon"
-              variant="outline"
-              className="absolute opacity-0 group-hover:opacity-100 transition-opacity top-0 right-0 m-2"
-              asChild
-            >
-              <Link href={`/admin/guide/${card.id}`}>
-                <Pencil />
-              </Link>
-            </Button>
+            <div className="flex gap-1 absolute opacity-0 group-hover:opacity-100 transition-opacity top-0 right-0 m-2">
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={hideGuide.bind(null, card.id)}
+              >
+                {card.hidden ? <EyeOffIcon /> : <EyeIcon />}
+              </Button>
+              <Button size="icon" variant="outline" asChild>
+                <Link href={`/admin/guide/${card.id}`}>
+                  <Pencil />
+                </Link>
+              </Button>
+            </div>
             <CardHeader className="px-3 sm:px-6">
               <CardTitle>{card.name}</CardTitle>
               <div className="relative w-full aspect-square mt-2 rounded-sm sm:rounded-lg border overflow-hidden">

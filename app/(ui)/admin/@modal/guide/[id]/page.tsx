@@ -23,6 +23,7 @@ import { guides } from "@/lib/db/schema";
 export default async function GuideEditPage({
   params,
 }: PageProps<"/admin/guide/[id]">) {
+  if (!(await adminCheck())) redirect("/login");
   const { id } = await params;
   const [guide] = await db.select().from(guides).where(eq(guides.id, id));
   if (!guide) notFound();

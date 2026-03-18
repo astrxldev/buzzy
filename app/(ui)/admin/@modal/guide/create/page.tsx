@@ -21,6 +21,7 @@ import { db } from "@/lib/db";
 import { guides } from "@/lib/db/schema";
 
 export default async function GuideCreatePage() {
+  if (!(await adminCheck())) redirect("/login");
   const [{ maxOrder }] = await db
     .select({
       maxOrder: sql<number>`
