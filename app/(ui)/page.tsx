@@ -5,6 +5,7 @@ import Banner from "#/banner_t.webp";
 import ArtifactLogo from "#/logos/artifact.webp";
 import RubgramLogo from "#/logos/rubgram.webp";
 import TierlistLogo from "#/logos/tierlist.webp";
+import GuideLogo from "#/logos/guide.webp";
 import Image from "@/components/image";
 import { SimpleTooltip } from "@/components/tooltip";
 import { cn } from "@/lib/utils";
@@ -54,9 +55,9 @@ export default function Home() {
           />
           <HomeLink
             name="Guide"
-            desc="ไกด์ตัวละคร"
+            desc="ไกด์ตัวละครใน Google Sheets"
             href="/guide"
-            logo={ArtifactLogo}
+            logo={GuideLogo}
           />
         </div>
         <footer className="text-muted-foreground h-full flex flex-col justify-end pb-3 md:justify-center">
