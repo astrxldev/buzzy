@@ -1,6 +1,6 @@
 "use client";
 
-import { Compass, Search } from "lucide-react";
+import { Compass, Search, SearchX } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useDebounce } from "react-use";
@@ -40,15 +40,14 @@ export function GuideList({
   return (
     <div className="flex justify-center h-svh">
       <div className="w-full xl:max-w-2/3 border flex flex-col">
-        <div className="border-b p-3 text-lg font-semibold leading-none flex items-center gap-2">
+        <div className="border-b p-3 font-semibold leading-none flex items-center gap-2">
           <Compass className="opacity-50" />
           ไกด์ตัวละคร
         </div>
         <div className="p-4 pb-2">
-          <InputGroup className="w-full h-12">
+          <InputGroup className="w-full h-10">
             <InputGroupInput
-              placeholder="Search..."
-              className="text-xl!"
+              placeholder="ค้นหา..."
               onChange={(ev) => setSearch(ev.target.value)}
             />
             <InputGroupAddon>
@@ -62,25 +61,33 @@ export function GuideList({
             loading === 1 && "opacity-50",
           )}
         >
-          {list.map((card) => (
-            <Link href={card.link} key={card.id} target="_blank">
-              <Card className="bg-card/50 hover:bg-border backdrop-blur-sm transition-colors py-3 sm:py-6 rounded-sm sm:rounded-xl">
-                <CardHeader className="px-3 sm:px-6">
-                  <CardTitle>{card.name}</CardTitle>
-                  <div className="relative w-full aspect-square mt-2 rounded-sm sm:rounded-lg border overflow-hidden">
-                    {card.image && (
-                      <Image
-                        src={`/cdn/${card.image}`}
-                        alt={card.name}
-                        fill
-                        className="object-cover"
-                      />
-                    )}
-                  </div>
-                </CardHeader>
-              </Card>
-            </Link>
-          ))}
+          {list.length === 0 && loading === 0 ? (
+            <div className="col-span-full flex flex-col items-center justify-center py-20 text-muted-foreground">
+              <SearchX className="w-16 h-16 mb-4 opacity-50" />
+              <p className="text-2xl font-semibold">ไม่พบตัวละครที่คุณหา</p>
+              <p className="text-lg ">ลองคำอื่นที่ความหมายใกล้เคียงกันดูนะ</p>
+            </div>
+          ) : (
+            list.map((card) => (
+              <Link href={card.link} key={card.id} target="_blank">
+                <Card className="bg-card/50 hover:bg-border backdrop-blur-sm transition-colors py-3 sm:py-6 rounded-sm sm:rounded-xl">
+                  <CardHeader className="px-3 sm:px-6">
+                    <CardTitle>{card.name}</CardTitle>
+                    <div className="relative w-full aspect-square mt-2 rounded-sm sm:rounded-lg border overflow-hidden">
+                      {card.image && (
+                        <Image
+                          src={`/cdn/${card.image}`}
+                          alt={card.name}
+                          fill
+                          className="object-cover"
+                        />
+                      )}
+                    </div>
+                  </CardHeader>
+                </Card>
+              </Link>
+            ))
+          )}
         </div>
       </div>
     </div>
