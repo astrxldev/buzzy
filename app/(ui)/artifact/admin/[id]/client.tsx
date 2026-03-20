@@ -15,6 +15,7 @@ import { SimpleTooltip } from "@/components/tooltip";
 import { Button } from "@/components/ui/button";
 import { getCardStatus } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import Enka from "#/enka_logo.png";
 
 export function EnkaBrowser({ sub, uid }: { sub: string; uid: string }) {
   const [ready, setReady] = useState(false);
@@ -35,12 +36,15 @@ export function EnkaBrowser({ sub, uid }: { sub: string; uid: string }) {
   return (
     <div className="h-full w-full relative">
       {!ready && !error && (isCached || useWeb) && (
-        <ScanSearch
+        <div
           className={cn(
-            "animate-pulse absolute left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 text-muted-foreground z-45",
+            "flex flex-col items-center gap-2 absolute left-1/2 -translate-x-1/2 -translate-y-1/2 z-40",
             useWeb ? "top-[calc(50%+80px)]" : "top-1/2",
           )}
-        />
+        >
+          <ScanSearch className="size-8 animate-pulse" />
+          <span>กำลังโหลดข้อมูล...</span>
+        </div>
       )}
       {error && (
         <div className="flex flex-col items-center gap-2 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40">
@@ -69,7 +73,7 @@ export function EnkaBrowser({ sub, uid }: { sub: string; uid: string }) {
         <Button
           variant="outline"
           className={cn(
-            "absolute left-1 z-45 bg-[#222a]! backdrop-blur-sm opacity-50 md:opacity-20 hover:opacity-100",
+            "absolute left-1 z-45 bg-[#222a]! backdrop-blur-sm opacity-70 md:opacity-50 hover:opacity-100",
             useWeb ? "-bottom-19" : "bottom-1",
           )}
           size="icon"
@@ -79,7 +83,11 @@ export function EnkaBrowser({ sub, uid }: { sub: string; uid: string }) {
             setUseWeb((x) => !x);
           }}
         >
-          {useWeb ? <ImageIcon /> : <Dock />}
+          {useWeb ? (
+            <ImageIcon />
+          ) : (
+            <Image src={Enka} alt="Enka" className="size-5" />
+          )}
         </Button>
       </SimpleTooltip>
       {useWeb ? (
