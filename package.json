@@ -6,7 +6,7 @@
     "nextdev": "bun --bun next dev --turbopack",
     "dev": "cd dev && docker compose up --watch --quiet-build",
     "ds": "cd dev && docker compose exec -it app bun",
-    "build": "bun --bun next build --turbopack && bun run sentry:sourcemaps || true",
+    "build": "bun --bun next build --turbopack && (bun run sentry:sourcemaps || true)",
     "analyze": "ANALYZE=true next build --webpack",
     "start": "bun --bun next start",
     "lint": "biome check --fix",
