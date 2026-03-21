@@ -41,7 +41,7 @@ export default async function ({
       and(eq(endgameArchive.round, round), eq(endgameArchive.queue, queue)),
     )
     .innerJoin(endgameDiscord, eq(endgameDiscord.uid, endgameArchive.user))
-    .innerJoin(endgameSlips, eq(endgameSlips.id, endgameArchive.slip))
+    .leftJoin(endgameSlips, eq(endgameSlips.id, endgameArchive.slip))
     .limit(1);
 
   const entryYaml = YAML.stringify(
@@ -68,7 +68,7 @@ export default async function ({
       <div className="flex flex-1 justify-center items-center p-5">
         <div className="relative rounded border border-dashed border-white">
           <Image
-            src={`/api/slip/${entry.slip.id}`}
+            src={`/api/slip/${entry.slip?.id}`}
             alt="Slip"
             className="object-contain"
             width={1000}
