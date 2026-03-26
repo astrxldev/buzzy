@@ -30,10 +30,24 @@ jobs:
             -u ${{ gitea.actor }} \
             --password-stdin
 
-      - name: Build Image
+      - name: Build & Push Images
         run: |
-          docker build -t 100.126.211.77:3002/${{ gitea.repository }}:latest .
+          TAG=${{ gitea.sha }}
 
-      - name: Push Image
-        run: |
-          docker push 100.126.211.77:3002/${{ gitea.repository }}:latest
+          # frontend
+          docker build \
+            -t 100.126.211.77:3002/${{ gitea.repository }}:frontend \
+            -t 100.126.211.77:3002/${{ gitea.repository }}:frontend-$TAG \
+            .
+
+          # backend
+          docker build \
+            -f backend.dockerfile \
+            -t 100.126.211.77:3002/${{ gitea.repository }}:backend \
+            -t 100.126.211.77:3002/${{ gitea.repository }}:backend-$TAG \
+            .
+
+          docker push 100.126.211.77:3002/${{ gitea.repository }}:backend
+          docker push 100.126.211.77:3002/${{ gitea.repository }}:backend-$TAG
+          docker push 100.126.211.77:3002/${{ gitea.repository }}:frontend
+          docker push 100.126.211.77:3002/${{ gitea.repository }}:frontend-$TAG
