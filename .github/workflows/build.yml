@@ -56,12 +56,9 @@ jobs:
         run: |
           TAG=${{ gitea.sha }}
 
-          ssh -vvv -o StrictHostKeyChecking=no dmgnr@astral.neko-piranha.ts.net << 'EOF'
-            docker service update \
-              --image git.dgnr.us/${{ gitea.repository }}:frontend-$TAG \
-              buzz_app
-
-            docker service update \
-              --image git.dgnr.us/${{ gitea.repository }}:backend-$TAG \
-              buzz_backend
-          EOF
+          docker service update \
+            --image git.dgnr.us/${{ gitea.repository }}:frontend-$TAG \
+            buzz_app
+          docker service update \
+            --image git.dgnr.us/${{ gitea.repository }}:backend-$TAG \
+            buzz_backend
