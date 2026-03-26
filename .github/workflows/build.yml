@@ -21,12 +21,9 @@ jobs:
             -u ${{ gitea.actor }} \
             --password-stdin
 
-      - name: Create .env file
+      - name: Restore .env
         run: |
-          cat <<EOF > .env
-          BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}
-          DATABASE_URL=${{ secrets.DATABASE_URL }}
-          EOF
+          echo "${{ secrets.ENV_FILE_B64 }}" | base64 -d > .env
 
       - name: Build Image
         run: |
