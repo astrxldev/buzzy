@@ -16,7 +16,7 @@ jobs:
 
       - name: Login to Gitea Registry
         run: |
-          echo "${{ secrets.GITEA_TOKEN }}" | docker login \
+          echo "${{ secrets.CI_TOKEN }}" | docker login \
             git.dgnr.us \
             -u ${{ gitea.actor }} \
             --password-stdin
