@@ -17,18 +17,19 @@ jobs:
       - name: Login to Gitea Registry
         run: |
           echo "${{ secrets.CI_TOKEN }}" | docker login \
-            git.dgnr.us \
+            pie.neko-piranha.ts.net:3002 \
             -u ${{ gitea.actor }} \
             --password-stdin
 
       - name: Restore .env
         run: |
           echo "${{ secrets.ENV_FILE_B64 }}" | base64 -d > .env
+          ls -l .env
 
       - name: Build Image
         run: |
-          docker build -t git.dgnr.us/${{ gitea.repository }}:latest .
+          docker build -t pie.neko-piranha.ts.net:3002/${{ gitea.repository }}:latest .
 
       - name: Push Image
         run: |
-          docker push git.dgnr.us/${{ gitea.repository }}:latest
+          docker push pie.neko-piranha.ts.net:3002/${{ gitea.repository }}:latest
