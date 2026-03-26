@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   app:
-    image: git.dgnr.us/${{ gitea.repository }}:frontend
+    image: git.dgnr.us/astral/buzz:frontend
     deploy:
       replicas: 4
       resources:
@@ -24,7 +24,7 @@ services:
       - buzz
 
   backend:
-    image: git.dgnr.us/${{ gitea.repository }}:backend
+    image: git.dgnr.us/astral/buzz:backend
     deploy:
       resources:
         limits:
