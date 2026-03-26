@@ -21,14 +21,14 @@ jobs:
           install: true
           network: host
           buildkitd-config-inline: |
-            [registry."pie.neko-piranha.ts.net:3002"]
+            [registry."100.126.211.77:3002"]
               http = true
               insecure = true
 
       - name: Login to Gitea Registry
         run: |
           echo "${{ secrets.CI_TOKEN }}" | docker login \
-            pie.neko-piranha.ts.net:3002 \
+            100.126.211.77:3002 \
             -u ${{ gitea.actor }} \
             --password-stdin
 
@@ -39,8 +39,8 @@ jobs:
 
       - name: Build Image
         run: |
-          docker build -t pie.neko-piranha.ts.net:3002/${{ gitea.repository }}:latest .
+          docker build -t 100.126.211.77:3002/${{ gitea.repository }}:latest .
 
       - name: Push Image
         run: |
-          docker push pie.neko-piranha.ts.net:3002/${{ gitea.repository }}:latest
+          docker push 100.126.211.77:3002/${{ gitea.repository }}:latest
