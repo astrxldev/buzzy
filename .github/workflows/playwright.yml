@@ -21,10 +21,14 @@ jobs:
             -u ${{ gitea.actor }} \
             --password-stdin
 
+      - name: Create .env file
+        run: |
+          cat <<EOF > .env
+          BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          EOF
+
       - name: Build Image
-        env:
-          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           docker build -t git.dgnr.us/${{ gitea.repository }}:latest .
 
