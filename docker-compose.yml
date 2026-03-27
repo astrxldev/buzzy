@@ -21,7 +21,7 @@ services:
       retries: 3
       start_period: 5s
     ports:
-      - "8093:3000"
+      - "8604:3000"
     networks:
       - buzz
 
