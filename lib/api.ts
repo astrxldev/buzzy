@@ -117,6 +117,8 @@ export async function submitArtifact(
         editToken: randomUUIDv7(),
       })
       .returning({ queue: submissions.queue, id: submissions.id });
+    // clear card cache
+    await db.delete(cards).where(eq(cards.submission, queue.id));
     revalidatePath("/artifact/admin");
     ps.publish({ type: "submit" }, { topic: "artifact", event: "update" });
     return queue;
