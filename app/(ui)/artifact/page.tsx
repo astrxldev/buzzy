@@ -254,9 +254,10 @@ export default async function ArtifactFormPage({
                 type="submit"
                 form="mainform"
                 disabled={
-                  (!!q && !editing) ||
-                  config.locked ||
-                  (config.limit >= 0 && count >= config.limit)
+                  (!!q ||
+                    config.locked ||
+                    (config.limit >= 0 && count >= config.limit)) &&
+                  !editing
                 }
               >
                 {editing ? <PencilIcon /> : <SendHorizonal />}
