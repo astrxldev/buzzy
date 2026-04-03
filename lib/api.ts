@@ -210,9 +210,9 @@ export async function wipe() {
   await db.execute(
     sql`ALTER SEQUENCE artifact.submissions_queue_seq RESTART WITH 1`,
   );
-  revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
+  ps.publish({ type: "wipe" }, { topic: "artifact", event: "update" });
   await actionLog(`Deleted artifact submissions`);
   redirect("/artifact/admin");
 }

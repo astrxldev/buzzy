@@ -280,7 +280,7 @@ const redisSubscribers: Record<
     type RubgramEvent = { type: "submit" | "paid" | "cancel"; sub: string };
     if (event !== "update") return;
     const { type, sub } = data as RubgramEvent;
-    if (type === "cancel") return;
+    if (!(type === "submit" || type === "paid")) return;
     if (!process.env.WEBHOOK_RUBGRAM_SUBMIT) return;
     const body = rubgramWebhookTemplate(
       type,
