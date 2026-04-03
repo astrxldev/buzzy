@@ -216,7 +216,7 @@ export function MultiSelectValue({
           <Badge
             variant="outline"
             data-selected-item
-            className="group flex items-center gap-1"
+            className="group flex items-center gap-0.5 py-1"
             key={value}
             onClick={
               clickToRemove
