@@ -297,7 +297,7 @@ export default async function EndgamePage() {
           <div className="flex gap-2 items-center">
             {!q && <PriceEstimation />}
             <Kbd>
-              {count} / {config.limit < 0 ? "∞" : config.limit}
+              {count} / {config.limit < 0 ? "∞" : config.limit} คิว
             </Kbd>
             <SimpleTooltip text="ถัดไป">
               <Button

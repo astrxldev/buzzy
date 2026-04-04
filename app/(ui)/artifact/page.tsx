@@ -34,6 +34,7 @@ import { CharacterChooser, ClearCookie, Disclaimer } from "./client";
 import { ArtifactFormWrapper } from "./form";
 import { LiveButton } from "./live";
 import { RulesDialog } from "./rules";
+import { Kbd } from "@/components/ui/kbd";
 
 export const metadata: Metadata = {
   title: "เสือกไอดีชาวบ้าน",
@@ -246,9 +247,9 @@ export default async function ArtifactFormPage({
             )}
           </div>
           <div className="flex gap-2 items-center">
-            <span className="p-1">
-              {count} / {config.limit < 0 ? "∞" : config.limit}
-            </span>
+            <Kbd>
+              {count} / {config.limit < 0 ? "∞" : config.limit} คิว
+            </Kbd>
             <SimpleTooltip text="ส่งเลยจัฟลูกพี่">
               <Button
                 type="submit"

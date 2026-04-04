@@ -23,7 +23,7 @@ import {
   calcPrice,
   cancel,
   type getDiscordSession,
-  type getEndgameConfig,
+  getEndgameConfig,
   loginDiscord,
 } from "./api";
 import { RulesDialog } from "./rules";
@@ -76,6 +76,8 @@ export function WelcomeScreening({
 export function ServiceSelector({
   types,
   allDiscount,
+  free,
+  count,
 }: Awaited<ReturnType<typeof getEndgameConfig>>) {
   const [selected, setSelected] = shared.state("rubgram.services");
 
@@ -94,7 +96,20 @@ export function ServiceSelector({
           <MultiSelectGroup>
             {types.map((t) => (
               <MultiSelectItem value={t.id} key={t.id}>
-                {t.display} <Kbd>{t.price} บาท</Kbd>
+                {t.display}{" "}
+                <Kbd>
+                  {free > 0 && count < free ? (
+                    <>
+                      <span className="line-through opacity-50">{t.price}</span>{" "}
+                      <span className="text-emerald-500">ฟรี</span>
+                    </>
+                  ) : (
+                    <>
+                      {t.price} {" "}
+                      <span className="opacity-50">บาท</span>
+                    </>
+                  )}
+                </Kbd>
               </MultiSelectItem>
             ))}
           </MultiSelectGroup>
