@@ -1,15 +1,18 @@
 import { desc, not } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
+import TierlistLogo from "#/logos/tierlist.webp";
+import { HorizontalDiv } from "@/components/horizontal";
+import { SimpleTooltip } from "@/components/tooltip";
 import Image from "@/components/image";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollBar } from "@/components/ui/scroll-area";
 import { db } from "@/lib/db";
 import { tierlistTypes, tierlistVersions } from "@/lib/db/schema";
-import TierlistLogo from "#/logos/tierlist.webp";
+import { ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "จัดเทียร์ลิสต์",
-  description: "ระบบจัดเทียร์ลิสต์ตัวละครของคอนเท้นเอนเกม",
+  description: "ระบบจัดเทียร์ลิสต์ตัวละครของคอนเทนต์เอนเกม",
 };
 
 export default async function TierlistSelectionPage() {
@@ -25,26 +28,37 @@ export default async function TierlistSelectionPage() {
   }));
   return (
     <div className="max-w-full min-h-full flex flex-col justify-center gap-2 mx-2">
-      <center className="text-6xl font-bold mb-2">
-            <Link href="/">
-              <Image
-                src={TierlistLogo}
-                alt="Tierlist"
-                className="rounded-t-x w-3/4 sm:w-96"
-                width={500}
-                height={100}
-                fetchPriority="high"
-              />
-            </Link>
+      <center className="mb-2">
+        <Link href="/">
+          <Image
+            src={TierlistLogo}
+            alt="Tierlist"
+            className="w-1/2 sm:w-96"
+            width={200}
+            height={100}
+            fetchPriority="high"
+          />
+        </Link>
       </center>
       {vers.map((t) => (
         <div className="flex flex-col gap-1" key={t.id}>
-          <div className="font-bold text-4xl">
-            <div className="px-2 py-1 border w-min rounded-md bg-[#2228]">
-              {t.name}
+          <Link href={`/tl/${t.id}`} className="font-bold text-4xl w-fit">
+            <div className="flex items-center gap-2">
+              <div className="px-2 py-1 border rounded-md bg-[#2228]">
+                {t.name}
+                <span className="text-sm text-muted-foreground ml-2">
+                  {t.mode}
+                </span>
+              </div>
+              <SimpleTooltip text="ดูเทียร์ลิสต์ของคอนเทนต์นี้ทั้งหมด">
+                <span className="absolute right-0 m-8 text-sm font-normal text-blue-400 ml-2 hover:underline ">
+                  ดูทั้งหมด
+                  <ArrowRight className="inline-block size-4" />
+                </span>
+              </SimpleTooltip>
             </div>
-          </div>
-          <ScrollArea>
+          </Link>
+          <HorizontalDiv>
             <div className="flex gap-2 max-w-full">
               {t.versions.map((e) => (
                 <Link href={`/tl/${t.id}/${e.id}`} key={e.id}>
@@ -69,7 +83,7 @@ export default async function TierlistSelectionPage() {
               ))}
             </div>
             <ScrollBar orientation="horizontal" />
-          </ScrollArea>
+          </HorizontalDiv>
         </div>
       ))}
     </div>

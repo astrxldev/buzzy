@@ -7,7 +7,7 @@ import { CdnChooser } from "@/components/chooser";
 import { FormAction, FormInput, FormProvider } from "@/components/form";
 import { ModalBase } from "@/components/modal";
 import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
+import { DialogClose, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { actionLog } from "@/lib/api";
@@ -27,12 +27,13 @@ export default async function TlTypeCreatePage() {
       id: string;
       order: string;
       image: string;
+      mode: string;
     }>,
   ) {
     "use server";
     if (!(await adminCheck())) redirect("/login");
 
-    for (const field of ["name", "id", "order"] as const) {
+    for (const field of ["name", "id", "order", "mode"] as const) {
       if (!form.get(field)) {
         return { error: `Field "${field}" is required.` };
       }
@@ -45,6 +46,7 @@ export default async function TlTypeCreatePage() {
         id: form.get("id")!,
         name: form.get("name")!,
         image: form.get("image")!,
+        mode: form.get("mode")!,
         order: parseInt(form.get("order")!, 10),
       };
       await db.insert(tierlistTypes).values(data);
@@ -81,13 +83,16 @@ export default async function TlTypeCreatePage() {
         <FormInput name="order" label="Order">
           <Input placeholder="1" defaultValue={maxOrder + 10} />
         </FormInput>
+        <FormInput name="mode" label="Mode">
+          <Input placeholder="ชั้น 12" />
+        </FormInput>
         <FormInput name="image" label="Image" subLabel="optional">
           <CdnChooser />
         </FormInput>
         <DialogFooter>
-          <FormAction type="clear" asChild>
-            <Button variant="outline">Clear</Button>
-          </FormAction>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
           <Button asChild>
             <FormAction
               type="submit"

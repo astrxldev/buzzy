@@ -1,4 +1,4 @@
-import { Dice3, Trash2 } from "lucide-react";
+import { Dice5, Trash2 } from "lucide-react";
 import { redirect } from "next/navigation";
 import {
   AlertDialog,
@@ -60,7 +60,7 @@ export default async function AdminLayout({
                 className="size-8"
                 onClick={random}
               >
-                <Dice3 size={24} className="size-6" />
+                <Dice5 size={24} className="size-6" />
               </Button>
               <SlipButton />
               <AlertDialog>

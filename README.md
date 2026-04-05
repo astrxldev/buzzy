@@ -1,8 +1,9 @@
 # Buzz Events
 This is a Next.js project running multiple events for a YouTuber, Buzz. It have been branched into 5 different parts:
-- Artifact: Monthly watcher-submitted ID review
-- Tierlist: Versionly tierlist for best characters for Abyss & Stygian
-- Rubgram: A paid event that basically lets Buzz play Abyss/Imaginarium Theater/Stygian for you.
+- Artifact: Versionly watcher-submitted ID review.
+- Rubgram: A paid event that basically lets Buzz play endgame content for you.
+- Tierlist: Versionly tierlist rating characters for Spiral Abyss & Stygian Onslaught.
+- Guide: Character build guide that will link you to Google Sheets.
 - `WIP` Admin: Admin panel where you can manage versions, characters, tierlists, external services, etc.
 
 ## Architecture
@@ -16,6 +17,10 @@ This is a Next.js project running multiple events for a YouTuber, Buzz. It have 
   - Payment verification: `SlipOK`
   - Authentication: DIscord OAuth2
 - Client side cross components communication with debug menu
+
+## External APIs
+- Character&Version data: [Project Amber](https://gi.yatta.moe/en)
+- Character Card: [Enka.network](https://enka.network/)
 
 ## Developers
 Lead Developer: `@dmgnr`

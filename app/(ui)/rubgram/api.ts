@@ -51,6 +51,8 @@ export async function wipe() {
   revalidatePath("/rubgram/admin");
   revalidatePath("/rubgram");
 
+  ps.publish({ type: "wipe" }, { topic: "rubgram", event: "update" });
+
   await actionLog(`Deleted rubgram submissions`);
   redirect("/rubgram/admin");
 }
@@ -78,6 +80,8 @@ export async function toggleCheck(submissionId: string) {
   revalidatePath("/rubgram/admin");
   revalidatePath("/rubgram");
 
+  ps.publish({ type: "toggleCheck" }, { topic: "rubgram", event: "update" });
+
   await actionLog(`Toggled an rubgram submission check mark`);
 }
 
@@ -93,6 +97,8 @@ export async function toggleLock() {
     await db.insert(endgameSettings).values({ locked: true });
   revalidatePath("/rubgram/admin");
   revalidatePath("/rubgram");
+
+  ps.publish({ type: "toggleLock" }, { topic: "rubgram", event: "update" });
 
   await actionLog(
     `${(existing.length ? existing[0].locked : true) ? "Locked" : "Unlocked"} rubgram submission`,
@@ -116,6 +122,8 @@ export async function setLimit(limit: number) {
   revalidatePath("/rubgram/admin");
   revalidatePath("/rubgram");
 
+  ps.publish({ type: "setLimit" }, { topic: "rubgram", event: "update" });
+
   await actionLog(
     `Set rubgram submit limit to ${limit < 0 ? "unlimited" : limit}`,
   );
@@ -137,6 +145,8 @@ export async function setFree(free: number) {
     await db.insert(endgameSettings).values({ free });
   revalidatePath("/rubgram/admin");
   revalidatePath("/rubgram");
+
+  ps.publish({ type: "setFree" }, { topic: "rubgram", event: "update" });
 
   await actionLog(`Set rubgram submit limit to ${free}`);
 }
@@ -457,7 +467,7 @@ export async function debugUploadSlip(sid: string, image: File) {
       .where(eq(endgameSubmissions.id, sid));
   });
 
-  ps.publish({}, { topic: "rubgram", event: "update" });
+  ps.publish({ type: "uploadSlip" }, { topic: "rubgram", event: "update" });
 
   revalidatePath("/rubgram/admin");
 }

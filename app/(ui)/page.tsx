@@ -5,6 +5,7 @@ import Banner from "#/banner_t.webp";
 import ArtifactLogo from "#/logos/artifact.webp";
 import RubgramLogo from "#/logos/rubgram.webp";
 import TierlistLogo from "#/logos/tierlist.webp";
+import GuideLogo from "#/logos/guide.webp";
 import Image from "@/components/image";
 import { SimpleTooltip } from "@/components/tooltip";
 import { cn } from "@/lib/utils";
@@ -12,7 +13,7 @@ import { cn } from "@/lib/utils";
 export default function Home() {
   return (
     <div className="flex w-full justify-center">
-      <div className="max-w-4xl w-full mx-auto flex flex-col min-h-dvh">
+      <div className="max-w-6xl w-full mx-auto flex flex-col min-h-dvh">
         <section>
           <center>
             <Link href="https://www.youtube.com/@Genshinmaichaigamemurtur">
@@ -39,7 +40,7 @@ export default function Home() {
             name="รับกรรมแทนคนดู"
             desc={
               <>
-                รับเล่นคอนเท้น Endgame แทนคนดู{" "}
+                รับเล่นคอนเทนต์เอนเกมแทนคนดู{" "}
                 <span className="text-red-500">ไม่ฟรีนะคับ</span>
               </>
             }
@@ -48,9 +49,15 @@ export default function Home() {
           />
           <HomeLink
             name="จัดเทียร์ลิสต์อบิส"
-            desc="ระบบจัดเทียร์ลิสต์ตัวละครของคอนเท้น Abyss และ Stygain"
+            desc="ระบบจัดเทียร์ลิสต์ตัวละครของคอนเทนต์ Abyss และ Stygian"
             href="/tl"
             logo={TierlistLogo}
+          />
+          <HomeLink
+            name="Guide"
+            desc="ไกด์ตัวละครใน Google Sheets"
+            href="/guide"
+            logo={GuideLogo}
           />
         </div>
         <footer className="text-muted-foreground h-full flex flex-col justify-end pb-3 md:justify-center">
@@ -93,23 +100,6 @@ export default function Home() {
                 </svg>
                 Discord
               </Link>
-              <div className="flex flex-col text-xs justify-around mb-1.5">
-                <span>Made with:</span>
-                <div className="flex gap-1 justify-evenly">
-                  <Link href="https://nextjs.org" target="_blank">
-                    <svg
-                      role="img"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="fill-white w-5"
-                    >
-                      <title>Next.js</title>
-                      <path d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z" />
-                    </svg>
-                  </Link>
-
-                </div>
-              </div>
             </div>
           </div>
         </footer>

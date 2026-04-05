@@ -1,10 +1,11 @@
-import { eq, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import {
   ArrowLeftRight,
   Badge,
   BadgeDollarSign,
   BookUser,
   Columns3Cog,
+  Compass,
   Computer,
   Database,
   ExternalLink,
@@ -61,6 +62,7 @@ import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { tierlistTypes, tierlistVersions, versions } from "@/lib/db/schema";
 import { SidebarLink, VersionCreateDialogForm } from "./client";
+import { AdminNavbar } from "./navbar";
 
 export default async function AdminLayout({
   children,
@@ -71,10 +73,23 @@ export default async function AdminLayout({
 }) {
   if (!(await adminCheck())) redirect("/login");
 
-  const vers = await db
+  const vers = db
     .select()
     .from(versions)
+    .orderBy(desc(versions.id))
     .catch(() => [{ id: "..", name: "Error Fetching List." }]);
+
+  const tlVersions = db
+    .select({
+      name: sql<string>`${tierlistTypes.name} || ' ' || ${tierlistVersions.name}`.as(
+        "name",
+      ),
+      url: sql<string>`${tierlistVersions.type} || '/' || ${tierlistVersions.id}`,
+    })
+    .from(tierlistVersions)
+    .orderBy(tierlistTypes.order, tierlistVersions.order)
+    .innerJoin(tierlistTypes, eq(tierlistTypes.id, tierlistVersions.type))
+    .catch(() => []);
 
   return (
     <SidebarProvider>
@@ -138,6 +153,19 @@ export default async function AdminLayout({
             </SidebarGroupContent>
           </SidebarGroup>
           <SidebarGroup>
+            <SidebarGroupLabel>Guide</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarLink href="/admin/guide">
+                    <Compass />
+                    Editor
+                  </SidebarLink>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          <SidebarGroup>
             <SidebarGroupLabel>Versions [WIP]</SidebarGroupLabel>
             <Dialog>
               <DropdownMenu>
@@ -168,13 +196,9 @@ export default async function AdminLayout({
             </Dialog>
             <SidebarGroupContent>
               <SidebarMenu>
-                {vers.map((v) => (
-                  <SidebarMenuItem key={v.id}>
-                    <SidebarLink href={`/admin/ver/${v.id}`} disabled>
-                      {v.name}
-                    </SidebarLink>
-                  </SidebarMenuItem>
-                ))}
+                <Suspense>
+                  <VersionsList versions={vers} />
+                </Suspense>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -196,7 +220,7 @@ export default async function AdminLayout({
                     </SidebarMenu>
                   }
                 >
-                  <AdminShortcuts />
+                  <AdminShortcuts versions={tlVersions} />
                 </Suspense>
                 <SidebarMenuItem>
                   <SidebarLink href="/admin/char">
@@ -229,6 +253,12 @@ export default async function AdminLayout({
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="bg-transparent">
+        <Suspense>
+          <AdminNavbarLoader
+            adminShortcuts={tlVersions}
+            tierlistVersions={vers}
+          />
+        </Suspense>
         {modal}
         {children}
       </SidebarInset>
@@ -289,18 +319,62 @@ async function HealthStatus() {
   );
 }
 
-async function AdminShortcuts() {
-  const versions = await db
-    .select({
-      name: sql<string>`${tierlistTypes.name} || ' ' || ${tierlistVersions.name}`.as(
-        "name",
-      ),
-      url: sql<string>`${tierlistVersions.type} || '/' || ${tierlistVersions.id}`,
-    })
-    .from(tierlistVersions)
-    .orderBy(tierlistTypes.order, tierlistVersions.order)
-    .innerJoin(tierlistTypes, eq(tierlistTypes.id, tierlistVersions.type))
-    .catch(() => []);
+async function AdminNavbarLoader({
+  adminShortcuts,
+  tierlistVersions,
+}: {
+  adminShortcuts: Promise<
+    {
+      name: string;
+      url: string;
+    }[]
+  >;
+  tierlistVersions: Promise<
+    {
+      id: string;
+      name: string;
+    }[]
+  >;
+}) {
+  return (
+    <AdminNavbar
+      adminShortcuts={await adminShortcuts}
+      tierlistVersions={await tierlistVersions}
+    />
+  );
+}
+
+async function VersionsList({
+  versions: prom,
+}: {
+  versions: Promise<
+    {
+      id: string;
+      name: string;
+    }[]
+  >;
+}) {
+  const vers = await prom;
+  return (
+    <>
+      {vers.map((v) => (
+        <SidebarMenuItem key={v.id}>
+          <SidebarLink href={`/admin/ver/${v.id}`} disabled>
+            {v.name}
+          </SidebarLink>
+        </SidebarMenuItem>
+      ))}
+    </>
+  );
+}
+
+async function AdminShortcuts({
+  versions: prom,
+}: {
+  versions: Promise<{ name: string; url: string }[]>;
+}) {
+  const versions = await prom;
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>

@@ -18,6 +18,9 @@ const nextConfig: NextConfig = withBundleAnalyzer({
         hostname: "cdn.dgnr.us",
       },
       {
+        hostname: "cdn.gunshiz.top",
+      },
+      {
         hostname: "i.ytimg.com",
       },
       {
@@ -36,7 +39,7 @@ const nextConfig: NextConfig = withBundleAnalyzer({
   },
   deploymentId: process.env.NEXT_DEPLOYMENT_ID,
   // reactCompiler: true,
-  allowedDevOrigins: ["astral:3000", "dev3000.dgnr.us"],
+  allowedDevOrigins: ["astral:3000", "dev3000.astrxl.dev"],
   // basePath: "/beta"
 });
 

@@ -20,15 +20,15 @@ import {
 } from "@/components/ui/empty";
 import { db } from "@/lib/db";
 import { endgameArchive, endgameDiscord, endgameSlips } from "@/lib/db/schema";
-import { parseParamNumber } from "@/lib/utils";
+import { parseSearchNumber } from "@/lib/utils";
 import { DataViewer } from "./client";
 
 export default async function ({
   params,
 }: PageProps<"/rubgram/admin/slip/[round]/[queue]">) {
   const { round: r, queue: q } = await params;
-  const round = parseParamNumber(r) || 1;
-  const queue = parseParamNumber(q) || 1;
+  const round = parseSearchNumber(r) || 1;
+  const queue = parseSearchNumber(q) || 1;
   const { slip, ...slipColumns } = getTableColumns(endgameSlips);
   const [entry] = await db
     .select({
@@ -41,7 +41,7 @@ export default async function ({
       and(eq(endgameArchive.round, round), eq(endgameArchive.queue, queue)),
     )
     .innerJoin(endgameDiscord, eq(endgameDiscord.uid, endgameArchive.user))
-    .innerJoin(endgameSlips, eq(endgameSlips.id, endgameArchive.slip))
+    .leftJoin(endgameSlips, eq(endgameSlips.id, endgameArchive.slip))
     .limit(1);
 
   const entryYaml = YAML.stringify(
@@ -68,7 +68,7 @@ export default async function ({
       <div className="flex flex-1 justify-center items-center p-5">
         <div className="relative rounded border border-dashed border-white">
           <Image
-            src={`/api/slip/${entry.slip.id}`}
+            src={`/api/slip/${entry.slip?.id}`}
             alt="Slip"
             className="object-contain"
             width={1000}

@@ -94,6 +94,8 @@ export const submissions = artifact.table("submissions", {
       onUpdate: "cascade",
     }),
   queue: serial(),
+  editToken: text().notNull().$defaultFn(uuidv7),
+  edits: integer().notNull().default(0),
   checked: boolean().notNull().default(false),
 });
 
@@ -104,6 +106,7 @@ export const cards = artifact.table("cards", {
     .notNull()
     .unique(),
   tries: integer().notNull().default(0),
+  error: text(),
   image: bytea(),
 });
 
@@ -224,6 +227,7 @@ export const tierlistTypes = tierlist.table("types", {
     onUpdate: "cascade",
   }),
   order: integer().notNull(),
+  mode: text().notNull(),
 });
 
 export const tierlistTiers = tierlist.table("tiers", {
@@ -303,6 +307,7 @@ export const tierlistStates = tierlist.table("states", {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
+  ref: text().notNull(), // for manually created tiles, the id would be char#Date.now() instead
   list: text()
     .notNull()
     .references(() => tierlistVersions.id, {
@@ -317,6 +322,21 @@ export const tierlistStates = tierlist.table("states", {
     })
     .array(4)
     .default([]),
+});
+
+//#endregion
+
+//#region Guide
+export const guides = pgTable("guides", {
+  id: text().primaryKey().$defaultFn(uuidv7),
+  image: text().references(() => cdn.id, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
+  order: integer().notNull(),
+  link: text().notNull(),
+  hidden: boolean().notNull().default(false),
+  name: text().notNull(),
 });
 
 //#endregion

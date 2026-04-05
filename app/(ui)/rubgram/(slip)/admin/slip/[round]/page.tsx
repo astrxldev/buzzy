@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/empty";
 import { db } from "@/lib/db";
 import { endgameArchive } from "@/lib/db/schema";
-import { parseParamNumber } from "@/lib/utils";
+import { parseSearchNumber } from "@/lib/utils";
 
 export default async function ({
   params,
@@ -17,7 +17,7 @@ export default async function ({
   params: Promise<{ round: string }>;
 }) {
   const { round: r } = await params;
-  const round = parseParamNumber(r) || 1;
+  const round = parseSearchNumber(r) || 1;
   const [first] = await db
     .select({ queue: endgameArchive.queue })
     .from(endgameArchive)

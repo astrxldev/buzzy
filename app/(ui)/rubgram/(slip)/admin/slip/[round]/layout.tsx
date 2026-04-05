@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/sidebar";
 import { db } from "@/lib/db";
 import { endgameArchive } from "@/lib/db/schema";
-import { parseParamNumber } from "@/lib/utils";
+import { parseSearchNumber } from "@/lib/utils";
 import { Watcher } from "../../../../admin/client";
 
 export default async function ({
@@ -40,7 +40,7 @@ export default async function ({
   children: React.ReactNode;
 }) {
   const { round: r } = await params;
-  const round = parseParamNumber(r);
+  const round = parseSearchNumber(r);
   return (
     <SidebarProvider>
       <Suspense fallback={<Sidebar />}>

@@ -61,7 +61,7 @@ export function VersionCheck({ headless = false }: { headless?: boolean }) {
         if (headless) window.location.reload();
         else
           toast("มีอัปเดตใหม่พร้อมใช้งาน", {
-            description: "กดรีโหลดเพื่ออัปเดตเวอร์ชันล่าสุด",
+            description: "รีโหลดเพื่ออัปเดตเป็นเวอร์ชันล่าสุด",
             action: {
               label: "รีโหลด",
               // Do a full reload
@@ -80,7 +80,7 @@ export function VersionCheck({ headless = false }: { headless?: boolean }) {
         }),
         {
           loading: "กำลังพยายามเชื่อมต่อใหม่...",
-          success: () => "เชื่อมต่อแล้ว",
+          success: () => "เชื่อมต่อสำเร็จ",
           duration: 500,
         },
       );

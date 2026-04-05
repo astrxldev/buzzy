@@ -22,6 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import {
   SidebarMenu,
@@ -143,9 +144,10 @@ export function LimitManager({
                 </DialogHeader>
                 <form
                   id="limit-form"
-                  action={async (data: FormData) =>
-                    setLimit(Number(data.get("limit")) || -1)
-                  }
+                  action={async (data: FormData) => {
+                    await setLimit(Number(data.get("limit")) || -1);
+                    toast.success("บันทึกการเปลี่ยนแปลงแล้ว");
+                  }}
                 >
                   <Input
                     id="limit"
@@ -166,7 +168,12 @@ export function LimitManager({
                   </DialogClose>
                 </DialogFooter>
               </DialogContent>
-              <DropdownMenuItem onClick={toggleLock}>
+              <DropdownMenuItem
+                onClick={async () => {
+                  await toggleLock();
+                  toast.success("บันทึกการเปลี่ยนแปลงแล้ว");
+                }}
+              >
                 <span>{config.locked && "เ"}ปิดรับ</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -190,7 +197,7 @@ export function SubmissionList({
   return (
     <>
       <Input
-        placeholder="Search..."
+        placeholder="ค้นหา..."
         type="search"
         onChange={(ev) => setQuery(ev.target.value.toLowerCase())}
       />

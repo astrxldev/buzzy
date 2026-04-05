@@ -7,58 +7,89 @@ import {
   ImageIcon,
   OctagonAlert,
   ScanSearch,
+  SquircleDashed,
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { SimpleTooltip } from "@/components/tooltip";
 import { Button } from "@/components/ui/button";
+import { getCardStatus } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import Enka from "#/enka_logo.png";
 
 export function EnkaBrowser({ sub, uid }: { sub: string; uid: string }) {
   const [ready, setReady] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [useWeb, setUseWeb] = useState(false);
+  const [isCached, setIsCached] = useState(true);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: for update
   useEffect(() => {
     setReady(false);
-    setError(false);
+    setError(null);
+    setIsCached(true);
+    getCardStatus(sub).then((s) => {
+      setIsCached(s.cached);
+      if (!s.cached) setError(s.error);
+    });
   }, [sub, uid]);
   return (
     <div className="h-full w-full relative">
-      {!ready && !error && (
-        <ScanSearch
+      {!ready && !error && (isCached || useWeb) && (
+        <div
           className={cn(
-            "animate-pulse absolute left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 text-muted-foreground z-45",
+            "flex flex-col items-center gap-2 absolute left-1/2 -translate-x-1/2 -translate-y-1/2 z-40",
             useWeb ? "top-[calc(50%+80px)]" : "top-1/2",
           )}
-        />
+        >
+          <ScanSearch className="size-8 animate-pulse" />
+          <span>กำลังโหลดข้อมูล...</span>
+        </div>
       )}
       {error && (
         <div className="flex flex-col items-center gap-2 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40">
-          <OctagonAlert className="size-8 text-red-500" />
-          <span>ไม่สามารถโหลดข้อมูลตัวละคร</span>
+          {error.includes("ใหม่") ? (
+            <SquircleDashed className="size-8 text-orange-500" />
+          ) : (
+            <OctagonAlert className="size-8 text-red-500" />
+          )}
+          <span>{error}</span>
         </div>
       )}
-      {(ready || error) && (
-        <SimpleTooltip text={useWeb ? "สลับเป็นรูปภาพ" : "สลับเป็น Enka"}>
-          <Button
-            variant="outline"
-            className={cn(
-              "absolute left-1 z-45 bg-[#222a]! backdrop-blur-sm opacity-50 md:opacity-20 hover:opacity-100",
-              useWeb ? "-bottom-19" : "bottom-1",
-            )}
-            size="icon"
-            onClick={() => {
-              setReady(false);
-              setError(false);
-              setUseWeb((x) => !x);
-            }}
-          >
-            {useWeb ? <ImageIcon /> : <Dock />}
-          </Button>
-        </SimpleTooltip>
+
+      {!error && !ready && !isCached && !useWeb && (
+        <div
+          className={cn(
+            "flex flex-col items-center gap-2 absolute left-1/2 -translate-x-1/2 -translate-y-1/2 z-40",
+            useWeb ? "top-[calc(50%+80px)]" : "top-1/2",
+          )}
+        >
+          <ScanSearch className="size-8 animate-pulse" />
+          <span>ยังไม่ได้เตรียมการ์ดไว้ล่วงหน้า จะใช้เวลาสักพัก</span>
+        </div>
       )}
+
+      <SimpleTooltip text={useWeb ? "สลับเป็นรูปภาพ" : "สลับเป็น Enka"}>
+        <Button
+          variant="outline"
+          className={cn(
+            "absolute left-1 z-45 bg-[#222a]! backdrop-blur-sm opacity-70 md:opacity-50 hover:opacity-100",
+            useWeb ? "-bottom-19" : "bottom-1",
+          )}
+          size="icon"
+          onClick={() => {
+            setReady(false);
+            setError(null);
+            setUseWeb((x) => !x);
+          }}
+        >
+          {useWeb ? (
+            <ImageIcon />
+          ) : (
+            <Image src={Enka} alt="Enka" className="size-5" />
+          )}
+        </Button>
+      </SimpleTooltip>
       {useWeb ? (
         <iframe
           src={`https://enka.network/u/${uid}`}
@@ -85,9 +116,9 @@ export function EnkaBrowser({ sub, uid }: { sub: string; uid: string }) {
             title="Enka Network"
             onLoad={() => {
               setReady(true);
-              setError(false);
+              setError(null);
             }}
-            onError={() => setError(true)}
+            onError={() => error || setError("ไม่สามารถโหลดข้อมูลตัวละคร")}
           />
         </div>
       )}
