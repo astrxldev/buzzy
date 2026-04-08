@@ -1,6 +1,8 @@
 import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { redis } from "@/lib/db/redis";
+import { redis as redisShared } from "@/lib/db/redis";
+
+const redis = redisShared!;
 
 export const revalidate = 60;
 
