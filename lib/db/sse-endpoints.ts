@@ -1,7 +1,7 @@
 import z from "zod/v4";
+import type { YoutubeLiveInfo } from "@/app/api/live/route";
 import { sseEndpoint, sseEndpointMap } from "./redis";
 import type { auditLog, tierlistStates } from "./schema";
-import { YoutubeLiveInfo } from "@/app/api/live/route";
 
 export const sse = sseEndpointMap({
   // Artifact Admin Listener

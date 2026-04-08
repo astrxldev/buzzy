@@ -3,7 +3,6 @@
 import {
   Copy,
   CopyCheck,
-  Dock,
   ImageIcon,
   OctagonAlert,
   ScanSearch,
@@ -11,11 +10,11 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import Enka from "#/enka_logo.png";
 import { SimpleTooltip } from "@/components/tooltip";
 import { Button } from "@/components/ui/button";
 import { getCardStatus } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import Enka from "#/enka_logo.png";
 
 export function EnkaBrowser({ sub, uid }: { sub: string; uid: string }) {
   const [ready, setReady] = useState(false);

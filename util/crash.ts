@@ -19,7 +19,8 @@ async function run(i: number) {
     const res = await fetch(
       url.replace(
         /%r(\d*)/g,
-        (_, s) => `${randomBytes(parseInt(s || "10", 10)).toString("base64url")}`,
+        (_, s) =>
+          `${randomBytes(parseInt(s || "10", 10)).toString("base64url")}`,
       ),
       {
         redirect: "manual",
