@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ps } from "@/lib/db/redis";
+import { sse } from "@/lib/db/sse-endpoints";
 
 export const revalidate = 900;
 
@@ -84,6 +84,6 @@ export async function GET() {
     title: live.snippet.title,
   };
 
-  await ps.publish(res, { event: "live", topic: "active" });
+  sse.active.pub("live", res);
   return NextResponse.json<YoutubeLiveInfo>(res);
 }

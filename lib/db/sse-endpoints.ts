@@ -1,6 +1,7 @@
 import z from "zod/v4";
 import { sseEndpoint, sseEndpointMap } from "./redis";
 import type { auditLog, tierlistStates } from "./schema";
+import { YoutubeLiveInfo } from "@/app/api/live/route";
 
 export const sse = sseEndpointMap({
   // Artifact Admin Listener
@@ -33,6 +34,7 @@ export const sse = sseEndpointMap({
   // Passive Update Checker
   active: {
     version: z.string(),
+    live: z.custom<YoutubeLiveInfo>(),
   },
   // Admin Live Log
   log: {
