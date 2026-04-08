@@ -79,6 +79,7 @@ import { cn } from "@/lib/utils";
 import { TierListCell } from "./cell";
 import { Draggable } from "./character";
 import { TierListContext } from "./context";
+import { tlSse } from "@/lib/db/sse-endpoints";
 
 function Untiered({
   children,
@@ -179,14 +180,16 @@ export function TierList({
 
   useEffect(() => {
     setEvStatus((x) => ({ ...x, ev: "connecting" }));
-    const es = new EventSource(`/api/tl/${version.id}/ev`);
-    es.onopen = () => setEvStatus((x) => ({ ...x, ev: "ready" }));
-    es.addEventListener("update_states", (d) => setStates(JSON.parse(d.data)));
-    es.addEventListener("update_placements", (d) =>
-      setPlacements(JSON.parse(d.data)),
-    );
-    es.onerror = () => setEvStatus((x) => ({ ...x, ev: "unknown" }));
-    return () => es.close();
+    return tlSse(version.id).subMany(
+      {
+        update_states: setStates,
+        update_placements: setPlacements,
+      },
+      {
+        onopen: () => setEvStatus((x) => ({ ...x, ev: "ready" })),
+        onerror: () => setEvStatus((x) => ({ ...x, ev: "unknown" })),
+      },
+    ).clean;
   }, [version.id]);
   //#endregion
 

@@ -8,7 +8,6 @@ import { redirect } from "next/navigation";
 import { actionLog } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { ps } from "@/lib/db/redis";
 import {
   endgameArchive,
   endgameDiscord,
@@ -19,6 +18,7 @@ import {
   endgameTypes,
   settings,
 } from "@/lib/db/schema";
+import { sse } from "@/lib/db/sse-endpoints";
 import type { TypedFormData } from "./type";
 
 const {
@@ -51,7 +51,7 @@ export async function wipe() {
   revalidatePath("/rubgram/admin");
   revalidatePath("/rubgram");
 
-  ps.publish({ type: "wipe" }, { topic: "rubgram", event: "update" });
+  sse.rubgram.pub("update", { type: "wipe" });
 
   await actionLog(`Deleted rubgram submissions`);
   redirect("/rubgram/admin");
@@ -80,7 +80,7 @@ export async function toggleCheck(submissionId: string) {
   revalidatePath("/rubgram/admin");
   revalidatePath("/rubgram");
 
-  ps.publish({ type: "toggleCheck" }, { topic: "rubgram", event: "update" });
+  sse.rubgram.pub("update", { type: "toggleCheck" });
 
   await actionLog(`Toggled an rubgram submission check mark`);
 }
@@ -98,7 +98,7 @@ export async function toggleLock() {
   revalidatePath("/rubgram/admin");
   revalidatePath("/rubgram");
 
-  ps.publish({ type: "toggleLock" }, { topic: "rubgram", event: "update" });
+  sse.rubgram.pub("update", { type: "toggleLock" });
 
   await actionLog(
     `${(existing.length ? existing[0].locked : true) ? "Locked" : "Unlocked"} rubgram submission`,
@@ -122,7 +122,7 @@ export async function setLimit(limit: number) {
   revalidatePath("/rubgram/admin");
   revalidatePath("/rubgram");
 
-  ps.publish({ type: "setLimit" }, { topic: "rubgram", event: "update" });
+  sse.rubgram.pub("update", { type: "setLimit" });
 
   await actionLog(
     `Set rubgram submit limit to ${limit < 0 ? "unlimited" : limit}`,
@@ -146,7 +146,7 @@ export async function setFree(free: number) {
   revalidatePath("/rubgram/admin");
   revalidatePath("/rubgram");
 
-  ps.publish({ type: "setFree" }, { topic: "rubgram", event: "update" });
+  sse.rubgram.pub("update", { type: "setFree" });
 
   await actionLog(`Set rubgram submit limit to ${free}`);
 }
@@ -226,10 +226,7 @@ export async function submitEndgame(formData: EndgameFormData) {
     })
     .returning({ queue: endgameSubmissions.queue, id: endgameSubmissions.id });
   revalidatePath("/rubgram/admin");
-  ps.publish(
-    { type: "submit", sub: queue.id },
-    { topic: "rubgram", event: "update" },
-  );
+  sse.rubgram.pub("update", { type: "submit", sub: queue.id });
   return queue;
 }
 
@@ -300,10 +297,7 @@ export async function submitEndgamePayment(formData: EndgamePaymentFormData) {
   });
   revalidatePath("/rubgram/admin");
   if (Array.isArray(queue))
-    ps.publish(
-      { type: "paid", sub: queue[0].id },
-      { topic: "rubgram", event: "update" },
-    );
+    sse.rubgram.pub("update", { type: "paid", sub: queue[0].id });
   return Array.isArray(queue) ? queue[0] : queue;
 }
 
@@ -418,7 +412,7 @@ export async function cancel(sid: string) {
 
   await removeExpiredSubmissions();
 
-  ps.publish({ type: "cancel" }, { topic: "rubgram", event: "update" });
+  sse.rubgram.pub("update", { type: "cancel" });
 
   revalidatePath("/rubgram");
 }
@@ -467,7 +461,7 @@ export async function debugUploadSlip(sid: string, image: File) {
       .where(eq(endgameSubmissions.id, sid));
   });
 
-  ps.publish({ type: "uploadSlip" }, { topic: "rubgram", event: "update" });
+  sse.rubgram.pub("update", { type: "uploadSlip" });
 
   revalidatePath("/rubgram/admin");
 }

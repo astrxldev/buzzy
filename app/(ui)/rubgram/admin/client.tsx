@@ -5,6 +5,7 @@ import { Lock, Logs, Unlock } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -22,7 +23,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import {
   SidebarMenu,
@@ -38,6 +38,7 @@ import {
 import { shared } from "@/lib/comms";
 import { cn } from "@/lib/utils";
 import { setFree, setLimit, toggleCheck, toggleLock } from "../api";
+import { sse } from "@/lib/db/sse-endpoints";
 
 export function SidebarLink({
   submission,
@@ -287,8 +288,7 @@ export function Watcher() {
   shared.signal("sync", () => router.refresh());
 
   useEffect(() => {
-    const es = new EventSource(`/api/rubgram/ev`);
-    es.addEventListener("update", () => router.refresh());
+    const { clean } = sse.rubgram.sub("update", () => router.refresh());
     const interval = setInterval(() => {
       fetch("/api/rubgram/count")
         .then((r) => r.json())
@@ -300,7 +300,7 @@ export function Watcher() {
         .catch((e) => console.error("Fetching rubgram count failed", e));
     }, 60000);
     return () => {
-      es.close();
+      clean();
       clearInterval(interval);
     };
   }, [router]);

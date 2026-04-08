@@ -5,6 +5,7 @@ import { Lock, Unlock } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -22,7 +23,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import {
   SidebarMenu,
@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/tooltip";
 import { setLimit, toggleCheck, toggleLock } from "@/lib/api";
 import { shared } from "@/lib/comms";
+import { sse } from "@/lib/db/sse-endpoints";
 import { cn } from "@/lib/utils";
 
 export function SidebarLink({
@@ -219,8 +220,7 @@ export function Watcher() {
   shared.signal("sync", () => router.refresh());
 
   useEffect(() => {
-    const es = new EventSource(`/api/artifact/ev`);
-    es.addEventListener("update", () => router.refresh());
+    const { clean } = sse.artifact.sub("update", () => router.refresh());
     const interval = setInterval(() => {
       fetch("/api/artifact/count")
         .then((r) => r.json())
@@ -232,7 +232,7 @@ export function Watcher() {
         .catch((e) => console.error("Fetching artifact count failed", e));
     }, 120000);
     return () => {
-      es.close();
+      clean();
       clearInterval(interval);
     };
   }, [router]);

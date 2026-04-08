@@ -9,7 +9,6 @@ import z from "zod";
 import { adminCheck } from "./auth";
 import { uidRegex } from "./const";
 import { db } from "./db";
-import { ps } from "./db/redis";
 import { cdnReferences } from "./db/references";
 import {
   artifactSettings,
@@ -22,6 +21,7 @@ import {
   tierlistStates,
   tierlistVersions,
 } from "./db/schema";
+import { sse, tlSse } from "./db/sse-endpoints";
 import { b2s } from "./utils";
 
 export async function getCharacters(chars: string[]) {
@@ -120,7 +120,7 @@ export async function submitArtifact(
     // clear card cache
     await db.delete(cards).where(eq(cards.submission, queue.id));
     revalidatePath("/artifact/admin");
-    ps.publish({ type: "submit" }, { topic: "artifact", event: "update" });
+    sse.artifact.pub("update", { type: "submit" });
     return queue;
   }
   const [queue] = await db
@@ -131,7 +131,7 @@ export async function submitArtifact(
     })
     .returning({ queue: submissions.queue, id: submissions.id });
   revalidatePath("/artifact/admin");
-  ps.publish({ type: "submit" }, { topic: "artifact", event: "update" });
+  sse.artifact.pub("update", { type: "submit" });
   return queue;
 }
 
@@ -158,7 +158,7 @@ export async function toggleCheck(submissionId: string) {
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
-  ps.publish({ type: "toggleCheck" }, { topic: "artifact", event: "update" });
+  sse.artifact.pub("update", { type: "toggleCheck" });
   await actionLog(`Toggled an artifact submission check mark`);
 }
 
@@ -175,7 +175,7 @@ export async function toggleLock() {
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
-  ps.publish({ type: "toggleLock" }, { topic: "artifact", event: "update" });
+  sse.artifact.pub("update", { type: "toggleLock" });
   await actionLog(
     `${(existing.length ? existing[0].locked : true) ? "Locked" : "Unlocked"} artifact submission`,
   );
@@ -198,7 +198,7 @@ export async function setLimit(limit: number) {
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
-  ps.publish({ type: "setLimit" }, { topic: "artifact", event: "update" });
+  sse.artifact.pub("update", { type: "setLimit" });
   await actionLog(
     `Set artifact submit limit to ${limit < 0 ? "unlimited" : limit}`,
   );
@@ -212,7 +212,7 @@ export async function wipe() {
   );
   revalidatePath("/artifact");
 
-  ps.publish({ type: "wipe" }, { topic: "artifact", event: "update" });
+  sse.artifact.pub("update", { type: "wipe" });
   await actionLog(`Deleted artifact submissions`);
   redirect("/artifact/admin");
 }
@@ -263,7 +263,7 @@ export async function tlState(
   revalidatePath(`/api/tl/${list}/states`);
 
   await actionLog(`Updated a state in tierlist ${list}`, data);
-  ps.publish(states, { topic: `tl.${list}`, event: "update_states" });
+  tlSse(list).pub("update_states", states);
 }
 
 export async function tlPlacements(
@@ -284,7 +284,7 @@ export async function tlPlacements(
   revalidatePath(`/api/tl/${list}`);
 
   await actionLog(`Updated a placement in tierlist ${list}`);
-  ps.publish(placements, { topic: `tl.${list}`, event: "update_placements" });
+  tlSse(list).pub("update_placements", placements);
 }
 
 export async function cdnDelete(ids: string[], force = false) {
@@ -376,5 +376,5 @@ export async function actionLog(text: string, details?: unknown) {
     revalidatePath("/admin/log");
   } catch {}
 
-  if (res) ps.publish(res, { topic: "log" });
+  if (res) sse.log.pub("update", res);
 }

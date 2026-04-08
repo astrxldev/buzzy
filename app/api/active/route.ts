@@ -1,10 +1,10 @@
-import { ps } from "@/lib/db/redis";
+import { sse } from "@/lib/db/sse-endpoints";
 
 const version = Bun.file(".version");
 
 export async function GET(req: Request) {
   if (process.env.ENVIRONMENT === "development")
-    return ps.new("active", {
+    return sse.active.stream({
       motd: {
         data: "DEV",
         event: "version",
@@ -17,7 +17,7 @@ export async function GET(req: Request) {
     ver = crypto.randomUUID();
     await version.write(crypto.randomUUID());
   }
-  return ps.new("active", {
+  return sse.active.stream({
     motd: {
       data: ver,
       event: "version",

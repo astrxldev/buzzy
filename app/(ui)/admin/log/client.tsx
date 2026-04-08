@@ -7,6 +7,7 @@ import SearchBox, { type Filters, type ParsedQuery } from "@/components/search";
 import { SimpleTooltip } from "@/components/tooltip";
 import { Button } from "@/components/ui/button";
 import type { auditLog } from "@/lib/db/schema";
+import { sse } from "@/lib/db/sse-endpoints";
 
 type AuditLog = typeof auditLog.$inferSelect;
 
@@ -22,10 +23,9 @@ export default function AuditLogViewer({
   const entryRefs = useRef(new Map<string, HTMLDivElement>());
 
   useEffect(() => {
-    const es = new EventSource("/api/ev/log");
-    es.onmessage = (res) =>
-      updateLogs((x) => [...x.slice(-999), JSON.parse(res.data)]);
-    return () => es.close();
+    return sse.log.sub("update", (res) =>
+      updateLogs((x) => [...x.slice(-999), res]),
+    ).clean;
   }, []);
 
   const filters: Filters = {

@@ -1,37 +1,22 @@
-export const redis = Bun.redis;
+import ReconnectingEventSource from "reconnecting-eventsource";
+import type z from "zod";
 
-type PubMOTD = { event?: string; data: string };
+export const redis = typeof Bun !== "undefined" ? Bun.redis : null;
 
-export function optionalStringify(data: unknown | string) {
-  try {
-    if (typeof data !== "string") throw "";
-    JSON.parse(data);
-    return data;
-  } catch {
-    return JSON.stringify(data);
-  }
-}
-
-export function optionalParse(data: unknown | string) {
-  if (typeof data === "string") {
-    try {
-      return { parsed: true, data: JSON.parse(data) };
-    } catch {}
-  }
-  return { parsed: false, data };
-}
+type PubPayload = { event?: string; data: unknown };
 
 export class PubSubManager {
   private pub;
   private sub;
   private readonly prefix = "sse:";
   constructor() {
+    if (!redis) throw new Error("Redis is not available in this environment.");
     this.pub = redis.duplicate();
     this.sub = redis.duplicate();
   }
 
-  private constructMessage(data: string, event?: string) {
-    return `${event ? `event: ${event}\n` : ""}data: ${optionalStringify(data)}\n\n`;
+  private constructMessage(data: unknown, event?: string) {
+    return `${event ? `event: ${event}\n` : ""}data: ${JSON.stringify(data)}\n\n`;
   }
 
   async publish(
@@ -43,7 +28,7 @@ export class PubSubManager {
     const pub = await this.pub;
     return pub.publish(
       `${this.prefix}${topic}`,
-      JSON.stringify({ data, event }),
+      JSON.stringify({ data, event } satisfies PubPayload),
     );
   }
 
@@ -54,7 +39,7 @@ export class PubSubManager {
       motd,
     }: {
       signal?: AbortSignal;
-      motd?: PubMOTD | PubMOTD[];
+      motd?: PubPayload | PubPayload[];
     } = {},
   ) {
     console.log(` SUB ${topic}`);
@@ -71,15 +56,9 @@ export class PubSubManager {
         ping();
       }, 90000); // cloudflare timeout = 100s
     }
-    const write: (payload: {
-      data: string;
-      event?: string;
-    }) => void | ((data: string, event?: string) => void) = (
-      p: { data: string; event?: string } | string,
-      event?: string,
-    ) => {
-      if (typeof p === "string") writer.write(this.constructMessage(p, event));
-      else writer.write(this.constructMessage(p.data, p.event));
+
+    const write = (payload: PubPayload) => {
+      writer.write(this.constructMessage(payload.data, payload.event));
       ping();
     };
 
@@ -91,7 +70,7 @@ export class PubSubManager {
       timeout = setTimeout(() => close(), 1.8e6); // 30 minutes
     };
     const handler = (payload: string) => {
-      const p = JSON.parse(payload);
+      const p: PubPayload = JSON.parse(payload);
       write(p);
       resetTimer();
     };
@@ -121,4 +100,95 @@ export class PubSubManager {
   }
 }
 
-export const ps = new PubSubManager();
+export type EventSourceEventMap = Record<string, z.ZodTypeAny>;
+export type SubOption = {
+  endpoint?: URL | string;
+  onerror?: () => void;
+  onopen?: () => void;
+};
+
+export class EventSourceEndpoint<T extends EventSourceEventMap> {
+  private manager = ps;
+  private readonly defaultEndpointUrl = new URL(
+    `/sse/${this.endpoint}`,
+    typeof location === "undefined" ? process.env.BASE_URL : location.href,
+  );
+
+  constructor(
+    private endpoint: string,
+    private eventMap: T,
+  ) {}
+
+  pub<K extends keyof T>(event: K, data: z.infer<T[K]>) {
+    if (!this.manager)
+      throw new Error(
+        "EventSourceEndpoint.pub(...) can only be called on the server.",
+      );
+    return this.manager.publish(this.eventMap[event].parse(data), {
+      topic: this.endpoint,
+      event: String(event),
+    });
+  }
+
+  subMany(
+    events: Partial<{ [K in keyof T]: (data: z.infer<T[K]>) => void }>,
+    {
+      endpoint = this.defaultEndpointUrl,
+      onerror = () => {},
+      onopen = () => {},
+    }: SubOption = {},
+  ) {
+    const es = new ReconnectingEventSource(endpoint);
+    for (const [event, callback] of Object.entries(events)) {
+      const listener = (e: MessageEvent<string>) =>
+        callback?.(JSON.parse(e.data));
+      es.addEventListener(event, listener);
+    }
+    es.onerror = onerror;
+    es.onopen = onopen;
+    return { clean: () => es.close(), es };
+  }
+
+  sub<K extends keyof T>(
+    event: K,
+    callback: (data: z.infer<T[K]>) => void,
+    {
+      endpoint = this.defaultEndpointUrl,
+      onerror = () => {},
+      onopen = () => {},
+    }: SubOption = {},
+  ) {
+    const listener = (e: MessageEvent<string>) => callback(JSON.parse(e.data));
+    const es = new ReconnectingEventSource(endpoint);
+    es.addEventListener(String(event), listener);
+    es.onerror = onerror;
+    es.onopen = onopen;
+    return { clean: () => es.close(), es };
+  }
+
+  stream(opt?: {
+    signal?: AbortSignal | undefined;
+    motd?: PubPayload | PubPayload[] | undefined;
+  }) {
+    return this.manager?.new(this.endpoint, opt);
+  }
+}
+
+export function sseEndpoint<M extends EventSourceEventMap>(
+  endpoint: string,
+  eventMap: M,
+): EventSourceEndpoint<M> {
+  return new EventSourceEndpoint(endpoint, eventMap);
+}
+
+export function sseEndpointMap<M extends Record<string, EventSourceEventMap>>(
+  map: M,
+): { [K in keyof M]: EventSourceEndpoint<M[K]> } {
+  const endpoints = {} as { [K in keyof M]: EventSourceEndpoint<M[K]> };
+  for (const key in map) {
+    endpoints[key] = new EventSourceEndpoint(key, map[key]);
+  }
+  return endpoints;
+}
+
+export const ps = redis === null ? null : new PubSubManager();

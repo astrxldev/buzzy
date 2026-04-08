@@ -23,7 +23,7 @@ import {
   calcPrice,
   cancel,
   type getDiscordSession,
-  getEndgameConfig,
+  type getEndgameConfig,
   loginDiscord,
 } from "./api";
 import { RulesDialog } from "./rules";
@@ -105,8 +105,7 @@ export function ServiceSelector({
                     </>
                   ) : (
                     <>
-                      {t.price} {" "}
-                      <span className="opacity-50">บาท</span>
+                      {t.price} <span className="opacity-50">บาท</span>
                     </>
                   )}
                 </Kbd>
