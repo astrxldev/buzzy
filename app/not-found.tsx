@@ -34,7 +34,7 @@ export default function ErrorPage() {
         className="z-[-1] opacity-20 object-cover fixed top-0 left-0 w-full h-full"
       />
       <div className="h-full w-full bg-[#2225] backdrop-grayscale backdrop-blur-md flex flex-col gap-2 justify-center items-center">
-        <div className="p-4 pb-12 bg-white shadow-lg rounded-sm rotate-1 max-sm:landscape:hidden">
+        <div className="p-4 pb-12 bg-white shadow-lg rounded-sm max-sm:landscape:hidden">
           <Image
             src={Dottore}
             alt="Dottore"
