@@ -239,11 +239,11 @@ async function cacheCards() {
     log(`Wasn't okay, queueing for retry.`);
     let text = await res.text();
     error(text.includes("502") ? "502" : text);
-    if (text.includes("findIndex") || text === "Showcase is not public")
+    if (text === "The showcase for this UID is private")
       text = "ผู้เล่นนี้ไม่มีโชว์เคส มองไม่เห็นตัวละครใดๆ";
-    else if (text === "Invalid character provided")
+    else if (text === "Character not found in showcase")
       text = "ตัวละครที่ผู้เล่นเลือก ไม่ได้อยู่ในโชว์เคส";
-    else if (text === "Failed to find card." || text === "Invalid UID Provided")
+    else if (text === "Invalid UID Provided")
       text = "ผู้เล่นนี้ไม่มีอยู่จริง โดนแบนไปแล้วรีเปล่า";
     else if (text.length > 2000 || res.status === 502)
       text = "ไม่สามารถสร้างการ์ดได้ กำลังพยายามลองใหม่";
