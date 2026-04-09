@@ -1,4 +1,5 @@
-import { sse, tlSse } from "@/lib/db/sse-endpoints";
+import { adminCheck } from "@/lib/auth";
+import { adminSseList, sse, tlSse } from "@/lib/db/sse-endpoints";
 
 function isValidKey<T extends { [x: string]: unknown }>(
   map: T,
@@ -17,5 +18,7 @@ export async function GET(
   if (tlRegex.test(topic)) return tlSse(topic.match(tlRegex)![1]).stream();
   if (!isValidKey(sse, topic))
     return new Response("Invalid SSE Endpoint", { status: 404 });
+  if (adminSseList.includes(topic) && !(await adminCheck()))
+    return new Response("Unauthorized", { status: 401 });
   return sse[topic].stream();
 }

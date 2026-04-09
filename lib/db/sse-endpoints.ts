@@ -41,6 +41,7 @@ export const sse = sseEndpointMap({
     update: z.custom<typeof auditLog.$inferSelect>(),
   },
 });
+export const adminSseList: (keyof typeof sse)[] = ["log"];
 export function tlSse<T extends string>(list: T) {
   return sseEndpoint(`tl.${list}`, {
     update_states: z.custom<(typeof tierlistStates.$inferSelect)[]>(),
