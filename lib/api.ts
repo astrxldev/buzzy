@@ -229,6 +229,12 @@ export async function random() {
   else throw "ไม่พบผู้ลงทะเบียนที่ยังไม่ตรวจสอบ";
 }
 
+export async function revalidateCard(sub: string) {
+  if (!(await adminCheck())) throw "Unauthorized";
+  await db.delete(cards).where(eq(cards.submission, sub));
+  revalidatePath(`/api/card/${sub}`);
+}
+
 export async function tlState(
   data: Partial<typeof tierlistStates.$inferInsert>,
 ) {

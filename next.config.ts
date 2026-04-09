@@ -27,6 +27,12 @@ const nextConfig: NextConfig = withBundleAnalyzer({
         hostname: "cards.enka.network",
       },
     ],
+    localPatterns: [
+      { pathname: "/api/card/*" },
+      {
+        pathname: "/cdn/*",
+      },
+    ],
     minimumCacheTTL: 86400,
   },
   experimental: {
