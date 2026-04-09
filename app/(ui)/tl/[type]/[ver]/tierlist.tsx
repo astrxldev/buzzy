@@ -15,11 +15,11 @@ import {
   CopyPlus,
   FileQuestionMark,
   Home,
-  TriangleAlert,
   Pencil,
   Settings,
   Settings2,
   Trash2,
+  TriangleAlert,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -64,6 +64,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { tlPlacements, tlState } from "@/lib/api";
+import { authClient } from "@/lib/auth-client";
 import { shared } from "@/lib/comms";
 import type {
   characters,
@@ -74,12 +75,11 @@ import type {
   tierlistTypes,
   tierlistVersions,
 } from "@/lib/db/schema";
-import { authClient } from "@/lib/auth-client";
+import { tlSse } from "@/lib/db/sse-endpoints";
 import { cn } from "@/lib/utils";
 import { TierListCell } from "./cell";
 import { Draggable } from "./character";
 import { TierListContext } from "./context";
-import { tlSse } from "@/lib/db/sse-endpoints";
 
 function Untiered({
   children,

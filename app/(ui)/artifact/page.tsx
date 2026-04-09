@@ -24,6 +24,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Kbd } from "@/components/ui/kbd";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
@@ -34,7 +35,6 @@ import { CharacterChooser, ClearCookie, Disclaimer } from "./client";
 import { ArtifactFormWrapper } from "./form";
 import { LiveButton } from "./live";
 import { RulesDialog } from "./rules";
-import { Kbd } from "@/components/ui/kbd";
 
 export const metadata: Metadata = {
   title: "เสือกไอดีชาวบ้าน",

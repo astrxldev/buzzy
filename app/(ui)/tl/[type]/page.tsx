@@ -1,10 +1,10 @@
-import { desc, eq, not } from "drizzle-orm";
+import { and, eq, getTableColumns, not, sql } from "drizzle-orm";
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "@/components/image";
 import { db } from "@/lib/db";
 import { tierlistTypes, tierlistVersions } from "@/lib/db/schema";
-import { ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "จัดเทียร์ลิสต์",
@@ -17,19 +17,34 @@ export default async function TierlistSelectionPage({
   params: Promise<{ type: string }>;
 }) {
   const { type: typeId } = await params;
-  const types = await db
-    .select()
+  const vers = await db
+    .select({
+      ...getTableColumns(tierlistTypes),
+      versions: sql<(typeof tierlistVersions.$inferSelect)[]>`
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'id', ${tierlistVersions.id},
+              'name', ${tierlistVersions.name},
+              'image', ${tierlistVersions.image}
+            ) ORDER BY ${tierlistVersions.order} DESC)
+          FILTER (WHERE ${tierlistVersions.id} IS NOT NULL),
+          '[]'
+        )
+      `.as("versions"),
+    })
     .from(tierlistTypes)
+    .leftJoin(
+      tierlistVersions,
+      and(
+        eq(tierlistVersions.type, tierlistTypes.id),
+        not(tierlistVersions.hidden),
+      ),
+    )
+    .groupBy(tierlistTypes.id)
+    .orderBy(tierlistTypes.id)
     .where(eq(tierlistTypes.id, typeId));
-  const versionsList = await db
-    .select()
-    .from(tierlistVersions)
-    .orderBy(desc(tierlistVersions.order))
-    .where(not(tierlistVersions.hidden));
-  const vers = types.map((t) => ({
-    ...t,
-    versions: versionsList.filter((v) => v.type === t.id),
-  }));
+
   return (
     <div className="max-w-7xl min-h-full flex flex-col gap-6 mx-auto py-8 px-4">
       {vers.map((t) => (

@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import Avatar from "@/components/avatar";
 import SearchBox, { type Filters, type ParsedQuery } from "@/components/search";
+import { SimpleTooltip } from "@/components/tooltip";
 import { Button } from "@/components/ui/button";
 import { type characters, element } from "@/lib/db/schema";
-import { SimpleTooltip } from "@/components/tooltip";
 
 /** Filters and their value providers */
 const filters: Filters = {

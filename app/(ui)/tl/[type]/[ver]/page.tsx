@@ -84,21 +84,20 @@ export default async function TierlistPage({
         : ([] as (typeof characters.$inferSelect)[]);
 
     // fetch rows, columns, badges data...
-    const tiers = await tx
-      .select()
-      .from(tierlistTiers)
-      .orderBy(tierlistTiers.order);
-    const columns = await tx
-      .select()
-      .from(tierlistColumns)
-      .orderBy(tierlistColumns.order);
-    const badgesList = await tx
-      .select()
-      .from(tierlistBadges)
-      .orderBy(tierlistBadges.order)
-      .where(
-        or(isNull(tierlistBadges.type), eq(tierlistBadges.type, version.type)),
-      );
+    const [tiers, columns, badgesList] = await Promise.all([
+      tx.select().from(tierlistTiers).orderBy(tierlistTiers.order),
+      tx.select().from(tierlistColumns).orderBy(tierlistColumns.order),
+      tx
+        .select()
+        .from(tierlistBadges)
+        .orderBy(tierlistBadges.order)
+        .where(
+          or(
+            isNull(tierlistBadges.type),
+            eq(tierlistBadges.type, version.type),
+          ),
+        ),
+    ]);
     const badges = badgesList.map((b) => ({
       ...b,
       tier: tiers.filter((t) => t.badges?.includes(b.id)).map((t) => t.id),

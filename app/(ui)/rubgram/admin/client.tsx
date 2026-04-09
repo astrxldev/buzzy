@@ -36,9 +36,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { shared } from "@/lib/comms";
+import { sse } from "@/lib/db/sse-endpoints";
 import { cn } from "@/lib/utils";
 import { setFree, setLimit, toggleCheck, toggleLock } from "../api";
-import { sse } from "@/lib/db/sse-endpoints";
 
 export function SidebarLink({
   submission,

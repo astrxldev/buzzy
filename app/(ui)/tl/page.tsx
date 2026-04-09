@@ -1,14 +1,14 @@
-import { desc, not } from "drizzle-orm";
+import { and, eq, getTableColumns, not, sql } from "drizzle-orm";
+import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import TierlistLogo from "#/logos/tierlist.webp";
 import { HorizontalDiv } from "@/components/horizontal";
-import { SimpleTooltip } from "@/components/tooltip";
 import Image from "@/components/image";
+import { SimpleTooltip } from "@/components/tooltip";
 import { ScrollBar } from "@/components/ui/scroll-area";
 import { db } from "@/lib/db";
 import { tierlistTypes, tierlistVersions } from "@/lib/db/schema";
-import { ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "จัดเทียร์ลิสต์",
@@ -16,16 +16,33 @@ export const metadata: Metadata = {
 };
 
 export default async function TierlistSelectionPage() {
-  const types = await db.select().from(tierlistTypes).orderBy(tierlistTypes.id);
-  const versionsList = await db
-    .select()
-    .from(tierlistVersions)
-    .orderBy(desc(tierlistVersions.order))
-    .where(not(tierlistVersions.hidden));
-  const vers = types.map((t) => ({
-    ...t,
-    versions: versionsList.filter((v) => v.type === t.id),
-  }));
+  const vers = await db
+    .select({
+      ...getTableColumns(tierlistTypes),
+      versions: sql<(typeof tierlistVersions.$inferSelect)[]>`
+      COALESCE(
+        json_agg(
+          json_build_object(
+            'id', ${tierlistVersions.id},
+            'name', ${tierlistVersions.name},
+            'image', ${tierlistVersions.image}
+          ) ORDER BY ${tierlistVersions.order} DESC)
+        FILTER (WHERE ${tierlistVersions.id} IS NOT NULL),
+        '[]'
+      )
+    `.as("versions"),
+    })
+    .from(tierlistTypes)
+    .leftJoin(
+      tierlistVersions,
+      and(
+        eq(tierlistVersions.type, tierlistTypes.id),
+        not(tierlistVersions.hidden),
+      ),
+    )
+    .groupBy(tierlistTypes.id)
+    .orderBy(tierlistTypes.id);
+
   return (
     <div className="max-w-full min-h-full flex flex-col justify-center gap-2 mx-2">
       <center className="mb-2">
