@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   app:
-    image: git.dgnr.us/astral/buzz:frontend
+    image: mts.dgnr.us:5000/astral/buzz:frontend
     deploy:
       replicas: 2
       resources:
@@ -26,7 +26,7 @@ services:
       - buzz
 
   backend:
-    image: git.dgnr.us/astral/buzz:backend
+    image: mts.dgnr.us:5000/astral/buzz:backend
     deploy:
       resources:
         limits:

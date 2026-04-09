@@ -23,42 +23,37 @@ jobs:
           echo "${{ secrets.ENV_B64 }}" | base64 -d > .env
           ls -l .env
 
-      - name: Login to Gitea Registry
-        run: |
-          echo "${{ secrets.CI_TOKEN }}" | docker login \
-            100.126.211.77:3002 \
-            -u ${{ gitea.actor }} \
-            --password-stdin
-
       - name: Build & Push Images
         run: |
           TAG=${{ gitea.sha }}
 
           # frontend
           docker build \
-            -t 100.126.211.77:3002/${{ gitea.repository }}:frontend \
-            -t 100.126.211.77:3002/${{ gitea.repository }}:frontend-$TAG \
-            .
+            -t mts.dgnr.us:5000/${{ gitea.repository }}:frontend \
+            -t mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG \
+            . &
 
           # backend
           docker build \
             -f backend.dockerfile \
-            -t 100.126.211.77:3002/${{ gitea.repository }}:backend \
-            -t 100.126.211.77:3002/${{ gitea.repository }}:backend-$TAG \
-            .
+            -t mts.dgnr.us:5000/${{ gitea.repository }}:backend \
+            -t mts.dgnr.us:5000/${{ gitea.repository }}:backend-$TAG \
+            . &
+          wait
 
-          docker push 100.126.211.77:3002/${{ gitea.repository }}:backend
-          docker push 100.126.211.77:3002/${{ gitea.repository }}:backend-$TAG
-          docker push 100.126.211.77:3002/${{ gitea.repository }}:frontend
-          docker push 100.126.211.77:3002/${{ gitea.repository }}:frontend-$TAG
+          docker push mts.dgnr.us:5000/${{ gitea.repository }}:backend &
+          docker push mts.dgnr.us:5000/${{ gitea.repository }}:backend-$TAG &
+          docker push mts.dgnr.us:5000/${{ gitea.repository }}:frontend &
+          docker push mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG &
+          wait
 
       - name: Deploy to production
         run: |
           TAG=${{ gitea.sha }}
 
           docker service update \
-            --image git.dgnr.us/${{ gitea.repository }}:frontend-$TAG \
+            --image mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG \
             buzz_app
           docker service update \
-            --image git.dgnr.us/${{ gitea.repository }}:backend-$TAG \
+            --image mts.dgnr.us:5000/${{ gitea.repository }}:backend-$TAG \
             buzz_backend
