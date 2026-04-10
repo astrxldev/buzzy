@@ -19,6 +19,7 @@ import GuideImage2 from "#/guide/2.png";
 import Avatar from "@/components/avatar";
 import { Blocker } from "@/components/blocker";
 import { ComboBox } from "@/components/combobox";
+import { HorizontalDiv } from "@/components/horizontal";
 import { SimpleTooltip } from "@/components/tooltip";
 import {
   AlertDialog,
@@ -30,7 +31,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollBar } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import { getCharacters } from "@/lib/api";
 import { IccContext, shared } from "@/lib/comms";
@@ -150,7 +151,7 @@ export function CharacterChooser({
           className="w-full bg-transparent! hover:bg-accent!"
         />
       ) : (
-        <ScrollArea>
+        <HorizontalDiv magnitude={2}>
           {isError ? (
             <Placeholder className="flex-col">
               <div className="flex gap-2">
@@ -213,7 +214,7 @@ export function CharacterChooser({
             type="hidden"
             value={selected}
           />
-        </ScrollArea>
+        </HorizontalDiv>
       )}
     </>
   );
