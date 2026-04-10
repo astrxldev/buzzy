@@ -39,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full dark">
       <body
-        className={`${anuphan.variable} ${geistMono.variable} font-sans antialiased h-full`}
+        className={`${anuphan.variable} ${geistMono.variable} ${sarabun.variable} font-sans antialiased h-full`}
       >
         {children}
       </body>

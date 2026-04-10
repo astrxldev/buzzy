@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
+import { sarabun } from "@/app/layout";
 import Avatar from "@/components/avatar";
 import {
   Card,
@@ -41,7 +42,7 @@ export default async function AdminSubmissionView({
               <CardTitle className="font-bold">
                 {sub.queue}. {sub.name}
               </CardTitle>
-              <CardDescription className="text-white font-[sarabun]">
+              <CardDescription className={`text-white ${sarabun.className}`}>
                 {sub.comment}
               </CardDescription>
             </CardHeader>
