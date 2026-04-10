@@ -53,6 +53,7 @@ import {
 import { db } from "@/lib/db";
 import { endgameSubmissions } from "@/lib/db/schema";
 import { LiveButton } from "../artifact/live";
+import { Watcher } from "./admin/client";
 import { getDiscordSession, getEndgameConfig } from "./api";
 import {
   CancelButton,
@@ -325,6 +326,7 @@ export default async function EndgamePage() {
         </a>
       </span>
       {sid && !q && <ClearCookie />}
+      <Watcher />
     </div>
   );
 }
