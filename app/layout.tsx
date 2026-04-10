@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Anuphan, Geist_Mono, Sarabun } from "next/font/google";
+import { Anuphan, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 const anuphan = Anuphan({
@@ -10,12 +10,6 @@ const anuphan = Anuphan({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
-
-export const sarabun = Sarabun({
-  variable: "--font-sarabun",
-  weight: "400",
-  subsets: ["latin", "thai"],
 });
 
 export const metadata: Metadata = {
@@ -39,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full dark">
       <body
-        className={`${anuphan.variable} ${geistMono.variable} ${sarabun.variable} font-sans antialiased h-full`}
+        className={`${anuphan.variable} ${geistMono.variable} font-sans antialiased h-full`}
       >
         {children}
       </body>
