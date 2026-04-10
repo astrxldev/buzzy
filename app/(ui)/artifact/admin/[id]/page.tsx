@@ -41,7 +41,7 @@ export default async function AdminSubmissionView({
               <CardTitle className="font-bold">
                 {sub.queue}. {sub.name}
               </CardTitle>
-              <CardDescription className="text-white">
+              <CardDescription className="text-white font-[sarabun]">
                 {sub.comment}
               </CardDescription>
             </CardHeader>
