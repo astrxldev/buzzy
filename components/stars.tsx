@@ -38,7 +38,12 @@ export function StarsRenderer() {
       });
     }
 
-    function draw() {
+    let last = 0;
+    function draw(t: number | null = null) {
+      if (t !== null) {
+        if (t - last < 33) return requestAnimationFrame(draw);
+        last = t;
+      }
       if (!ctx) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -56,10 +61,6 @@ export function StarsRenderer() {
         ctx.fill();
       }
 
-      requestAnimationFrame(dummy);
-    }
-
-    function dummy() {
       requestAnimationFrame(draw);
     }
 
