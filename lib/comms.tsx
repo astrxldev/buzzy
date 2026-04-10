@@ -1,5 +1,11 @@
 "use client";
 
+declare global {
+  interface Window {
+    icc: IccMutator;
+  }
+}
+
 import {
   createContext,
   use,
@@ -17,12 +23,17 @@ type SharedStates = Partial<{
   "rubgram.services": string[];
   "tl.deleteMode": boolean;
   inspect: Record<string, string>;
+  // nf(Not Found) and showcase(Not In Showcase) is error dialog that opens guide
+  warning: "showcase" | "nf" | "guide" | "private";
+  "warning.uid": string;
+  "warning.src": "submit" | "input";
   _raw: Record<string, unknown>;
 }>;
 
 type SharedSignals = {
   beforeSubmit?: undefined;
   sync?: undefined;
+  warningSolved?: undefined;
 } & SharedStates;
 
 type IccMutator = {
@@ -105,6 +116,9 @@ export default function IccProvider({
     active: true,
   });
 
+  if (typeof window !== "undefined" && location.hostname === "localhost")
+    window.icc = contextValue.current;
+
   return <IccContext value={contextValue.current}>{children}</IccContext>;
 }
 
@@ -184,5 +198,13 @@ export const shared = {
         [k]: typeof v === "string" ? v : JSON.stringify(v),
       });
     }, [v]);
+  },
+  emit<K extends keyof SharedSignals>(
+    key: K,
+    ...data: SharedSignals[K] extends undefined ? [] : [SharedSignals[K]]
+  ) {
+    const comms = use(IccContext);
+
+    comms.emit(key, ...data);
   },
 };

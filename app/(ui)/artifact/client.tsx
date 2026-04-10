@@ -12,7 +12,7 @@ import {
   Wrench,
 } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { toast } from "sonner";
 import GuideImage1 from "#/guide/1.png";
 import GuideImage2 from "#/guide/2.png";
@@ -26,7 +26,6 @@ import {
   AlertDialogContent,
   AlertDialogFooter,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +33,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import { getCharacters } from "@/lib/api";
-import { shared } from "@/lib/comms";
+import { IccContext, shared } from "@/lib/comms";
 import { uidRegex } from "@/lib/const";
 import type { characters } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
@@ -60,9 +59,9 @@ export function CharacterChooser({
   const [isError, setIsError] = useState<boolean | string>(false);
   const [isLoading, setIsLoading] = useState(false);
   const [manual, setManual] = useState(false);
-  const [isRefreshing, setRefreshing] = useState(false);
-  const [guideDialogOpen, setGuideDialogOpen] = useState(false);
-  const [cacheTtl, setCacheTtl] = useState(new Date());
+  const [, setWarningUid] = shared.state("warning.uid");
+  const [, setWarningSrc] = shared.state("warning.src");
+  const [, setWarning] = shared.state("warning");
 
   useEffect(() => {
     if (defaultUid) setUid(defaultUid);
@@ -84,7 +83,7 @@ export function CharacterChooser({
           return setIsError("ไม่พบผู้เล่นที่มี UID นี้");
         if (!res.ok) return setIsError(true);
         if (!data.playerInfo) return setIsError(true);
-        setCacheTtl(new Date(Date.now() + (data.ttl + 5) * 1000));
+
         if (!data.playerInfo.showAvatarInfoList)
           return setIsError("UID นี้ไม่มีตัวละครที่จัดแสดงเป็นสาธารณะ");
         const charIds = data.playerInfo.showAvatarInfoList.map((c) =>
@@ -160,111 +159,19 @@ export function CharacterChooser({
                   ? isError
                   : "เกิดข้อผิดพลาดในการดึงข้อมูล"}
               </div>
-              {typeof isError === "string" && isError.startsWith("UID") && (
-                <AlertDialog
-                  onOpenChange={setGuideDialogOpen}
-                  open={guideDialogOpen}
-                >
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Wrench />
-                      วิธีแก้ไข
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogTitle>วิธีแก้ไขตัวละครไม่ขึ้น</AlertDialogTitle>
-                    <div className="gap-1 flex flex-col">
-                      <center>
-                        ในเกม เปิด<b>เมนูเกม</b>แล้วไปที่ <b>แก้ไขข้อมูลส่วนตัว</b>
-                      </center>
-                      <Image
-                        src={GuideImage1}
-                        width={500}
-                        height={200}
-                        alt="Guide Image 1"
-                        className="border-2 border-foreground rounded-md"
-                      />
-                    </div>
-                    <div className="gap-1 flex flex-col">
-                      <center>
-                        ใส่ตัวละครที่ต้องการ แล้วเปิด "<b>แสดงรายละเอียดตัวละคร</b>"
-                      </center>
-                      <Image
-                        src={GuideImage2}
-                        width={500}
-                        height={200}
-                        alt="Guide Image 1"
-                        className="border-2 border-foreground rounded-md"
-                      />
-                      <span className="ml-[60%] md:ml-[65%]">
-                        อย่าลืมเปิด <ArrowBigUp className="inline" />
-                      </span>
-                    </div>
-                    <center>ออกจากเกมเพื่อให้ข้อมูลอัพเดท แล้วกดรีโหลด</center>
-                    <AlertDialogFooter suppressHydrationWarning>
-                      <AlertDialogCancel>ปิดหน้าต่าง</AlertDialogCancel>
-                      <Countdown
-                        time={cacheTtl}
-                        render={(s) => (
-                          <Button
-                            disabled={!!s || isRefreshing}
-                            onClick={() => {
-                              setRefreshing(true);
-                              async function refreshChars() {
-                                const res = await fetch(`/api/enka/${uid}`);
-                                const data:
-                                  | (EnkaNetworkUser & { message: undefined })
-                                  | { message: string; playerInfo: undefined } =
-                                  await res
-                                    .json()
-                                    .catch(() => ({ message: "not json" }));
-                                if (
-                                  data.message === "This player does not exist."
-                                )
-                                  return toast.error("ไม่พบผู้เล่นที่มี UID นี้");
-                                if (!res.ok)
-                                  return toast.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
-                                if (!data.playerInfo)
-                                  return toast.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
-                                setCacheTtl(
-                                  new Date(Date.now() + data.ttl * 1000),
-                                );
-                                if (!data.playerInfo.showAvatarInfoList)
-                                  return toast.error(
-                                    "ยังไม่พบตัวละคร ลองใหม่อีกครั้ง",
-                                  );
-                                const charIds =
-                                  data.playerInfo.showAvatarInfoList.map((c) =>
-                                    c.avatarId.toString(),
-                                  );
-                                const chars = await getCharacters(charIds);
-                                setChars(
-                                  charIds
-                                    .map(
-                                      (e) => chars.find((c) => c.amber === e)!,
-                                    )
-                                    .filter(Boolean),
-                                );
-                                setSelected(undefined);
-                                setGuideDialogOpen(false);
-                              }
-                              refreshChars()
-                                .catch((e) => {
-                                  console.error(e);
-                                  toast.error("ข้อผิดพลาดภายในระบบ");
-                                })
-                                .finally(() => setRefreshing(false));
-                            }}
-                          >
-                            {isRefreshing ? <Spinner /> : <UserSearch />}
-                            {s ? `รีโหลดใหม่ (${s})` : `รีโหลดใหม่`}
-                          </Button>
-                        )}
-                      />
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setWarningUid(uid);
+                  setWarningSrc("input");
+                  setWarning("guide");
+                }}
+              >
+                <Wrench />
+                วิธีแก้ไข
+              </Button>
             </Placeholder>
           ) : isLoading ? (
             <Placeholder>
@@ -353,9 +260,198 @@ export function ClearCookie() {
 }
 
 export function WarningDialog() {
-  const [_manual, _setManual] = shared.state("manual");
+  const [warning, setWarning] = shared.state("warning");
+  const [uid] = shared.state("warning.uid");
 
-  shared.signal("beforeSubmit", () => {
-    _manual;
-  });
+  const [open, setOpen] = useState(false);
+  const [isRefreshing, setRefreshing] = useState(false);
+  const [cacheTtl, setCacheTtl] = useState(new Date());
+  const icc = use(IccContext);
+
+  // 👀 open when warning === "guide"
+  useEffect(() => {
+    setOpen(warning === "guide");
+  }, [warning]);
+
+  async function refreshChars() {
+    if (!uid) return;
+
+    setRefreshing(true);
+
+    try {
+      const res = await fetch(`/api/enka/${uid}`);
+      const data:
+        | (EnkaNetworkUser & { message: undefined })
+        | { message: string; playerInfo: undefined } = await res
+        .json()
+        .catch(() => ({ message: "not json" }));
+
+      if (data.message === "This player does not exist.")
+        return toast.error("ไม่พบผู้เล่นที่มี UID นี้");
+
+      if (!res.ok || !data.playerInfo)
+        return toast.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
+
+      setCacheTtl(new Date(Date.now() + data.ttl * 1000));
+
+      if (!data.playerInfo.showAvatarInfoList)
+        return toast.error("ยังไม่พบตัวละคร ลองใหม่อีกครั้ง");
+
+      const charIds = data.playerInfo.showAvatarInfoList.map((c) =>
+        c.avatarId.toString(),
+      );
+
+      await getCharacters(charIds); // warm cache / ensure available
+
+      // ✅ success → close dialog + notify
+      setWarning(undefined);
+      icc.emit("warningSolved");
+      setOpen(false);
+    } catch (e) {
+      console.error(e);
+      toast.error("ข้อผิดพลาดภายในระบบ");
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
+  if (warning === "nf")
+    return (
+      <AlertDialog onOpenChange={() => setWarning(undefined)} open>
+        <AlertDialogContent>
+          <AlertDialogTitle>เดี๋ยวนะ</AlertDialogTitle>
+          UID นี้ไม่มีอยู่จริง แน่เหรอว่าจะส่ง?
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setWarning(undefined);
+                icc.emit("warningSolved");
+              }}
+            >
+              ยังไงก็จะส่ง
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  if (warning === "showcase")
+    return (
+      <AlertDialog onOpenChange={() => setWarning(undefined)} open>
+        <AlertDialogContent>
+          <AlertDialogTitle>เดี๋ยวนะ</AlertDialogTitle>
+          ตัวละครที่เลือกไม่ได้อยู่ในตั้งโชว์
+          <br />
+          ถ้าส่งก่อนใส่มันจะไม่ขึ้นนะ ไปแก้ก่อนมั้ย
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setWarning(undefined);
+                icc.emit("warningSolved");
+              }}
+            >
+              ยังไงก็จะส่ง
+            </Button>
+            <Button onClick={() => setWarning("guide")}>
+              <Wrench />
+              วิธีแก้
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  if (warning === "private")
+    return (
+      <AlertDialog onOpenChange={() => setWarning(undefined)} open>
+        <AlertDialogContent>
+          <AlertDialogTitle>เดี๋ยวนะ</AlertDialogTitle>
+          ใน UID นี้ไม่มีตัวละครอะไรตั้งโชว์อยู่เลย
+          <br />
+          ถ้าส่งก่อนใส่มันจะไม่ขึ้นนะ ไปแก้ก่อนมั้ย
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setWarning(undefined);
+                icc.emit("warningSolved");
+              }}
+            >
+              ยังไงก็จะส่ง
+            </Button>
+            <Button onClick={() => setWarning("guide")}>
+              <Wrench />
+              วิธีแก้
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  if (!warning) return null;
+
+  return (
+    <AlertDialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) setWarning(undefined);
+      }}
+    >
+      <AlertDialogContent>
+        <AlertDialogTitle>วิธีแก้ไขตัวละครไม่ขึ้น</AlertDialogTitle>
+
+        <div className="flex flex-col gap-2">
+          <center>
+            ในเกม เปิด<b>เมนูเกม</b>แล้วไปที่ <b>แก้ไขข้อมูลส่วนตัว</b>
+          </center>
+
+          <Image
+            src={GuideImage1}
+            width={500}
+            height={200}
+            alt="Guide Image 1"
+            className="border-2 border-foreground rounded-md"
+          />
+
+          <center>
+            ใส่ตัวละครที่ต้องการ แล้วเปิด "<b>แสดงรายละเอียดตัวละคร</b>"
+          </center>
+
+          <Image
+            src={GuideImage2}
+            width={500}
+            height={200}
+            alt="Guide Image 2"
+            className="border-2 border-foreground rounded-md"
+          />
+
+          <span className="ml-[60%] md:ml-[65%]">
+            อย่าลืมเปิด <ArrowBigUp className="inline" />
+          </span>
+
+          <center>ออกจากเกมเพื่อให้ข้อมูลอัพเดท แล้วกดรีโหลด</center>
+        </div>
+
+        <AlertDialogFooter>
+          <AlertDialogCancel>ปิดหน้าต่าง</AlertDialogCancel>
+
+          <Countdown
+            time={cacheTtl}
+            render={(s) => (
+              <Button disabled={!!s || isRefreshing} onClick={refreshChars}>
+                {isRefreshing ? <Spinner /> : <UserSearch />}
+                {s ? `รีโหลดใหม่ (${s})` : `รีโหลดใหม่`}
+              </Button>
+            )}
+          />
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }

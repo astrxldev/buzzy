@@ -31,7 +31,12 @@ import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
 import { getArtifactConfig } from "@/lib/api";
 import { db } from "@/lib/db";
 import { characters, submissions } from "@/lib/db/schema";
-import { CharacterChooser, ClearCookie, Disclaimer } from "./client";
+import {
+  CharacterChooser,
+  ClearCookie,
+  Disclaimer,
+  WarningDialog,
+} from "./client";
 import { ArtifactFormWrapper } from "./form";
 import { LiveButton } from "./live";
 import { RulesDialog } from "./rules";
@@ -151,6 +156,7 @@ export default async function ArtifactFormPage({
           <ArtifactFormWrapper
             id="mainform"
             edit={q ? { token: q.editToken, sub: q.id } : undefined}
+            enka={config.enka}
           >
             <div className="flex flex-col gap-3">
               <div className="grid gap-2">
@@ -267,40 +273,8 @@ export default async function ArtifactFormPage({
           </div>
         </CardFooter>
       </Card>
-      {/*
-      <div className="hidden md:block bg-card p-5 rounded border border-border relative">
-        <span className="absolute font-semibold text-7xl -translate-y-3/4 w-110 text-center text-shadow-lg/80">
-          Guide
-        </span>
-        <video
-          src="https://cdn.gunshiz.top/buzz/artifact/guide.mp4"
-          controls
-          className="aspect-video w-110"
-        >
-          <track kind="captions" />
-        </video>
-      </div>
-      <Dialog>
-        <DialogTrigger asChild>
-          <div className="md:hidden absolute w-full bottom-0 p-1 font-semibold div flex justify-center items-center gap-2 text-xl bg-input/30 border">
-            <SquarePlay />
-            วิธีลงทะเบียน
-          </div>
-        </DialogTrigger>
-        <DialogContent className="p-1">
-          <DialogTitle className="hidden">Guide</DialogTitle>
-          <video
-            src="https://cdn.gunshiz.top/buzz/artifact/guide.mp4"
-            controls
-            autoPlay
-            className="aspect-video w-110"
-          >
-            <track kind="captions" />
-          </video>
-        </DialogContent>
-      </Dialog>
-      */}
       {sid && !q && <ClearCookie />}
+      <WarningDialog />
     </div>
   );
 }

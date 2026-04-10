@@ -147,6 +147,24 @@ export async function getCardStatus(submissionId: string) {
   return res;
 }
 
+export async function checkEnkaStatus(uid: string, char: string) {
+  const [ch] = await db
+    .select({
+      amber: characters.amber,
+    })
+    .from(characters)
+    .where(eq(characters.name, char));
+  const res = await fetch(
+    `http://mts.dgnr.us:8809/v1/card/genshin/${uid}/${ch ? ch.amber.split("-")[0] : "10000005"}?debug=dump`,
+  );
+  const text = await res.text(),
+    { status } = res;
+  if (text === "Character not found in showcase") return "showcase";
+  if (text === "The showcase for this UID is private") return "private";
+  if (status === 404) return "nf";
+  return false;
+}
+
 export async function toggleCheck(submissionId: string) {
   if (!(await adminCheck())) throw "Unauthorized";
   await db
