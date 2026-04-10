@@ -12,7 +12,7 @@ This is a Next.js project running multiple events for a YouTuber, Buzz. It have 
 - Drag n drop: `dndkit`
 - Database: `drizzle` and a Postgres cluster
   - All IDs are UUIDv7
-- `BROKEN` EventSource manager for live sync
+- EventSource manager for live sync
 - Rubgram
   - Payment verification: `SlipOK`
   - Authentication: DIscord OAuth2
@@ -20,7 +20,7 @@ This is a Next.js project running multiple events for a YouTuber, Buzz. It have 
 
 ## External APIs
 - Character&Version data: [Project Amber](https://gi.yatta.moe/en)
-- Character Card: [Enka.network](https://enka.network/)
+- Character Card: Rendered by [Astral API/Enka Embed](https://git.dgnr.us/astral/api) with data provided by [Enka.network](https://enka.network/)
 
 ## Developers
 Lead Developer: `@dmgnr`
