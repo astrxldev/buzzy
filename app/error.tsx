@@ -13,7 +13,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Dottore from "#/assets/dottore.webp";
-import Background from "#/bg.jpg";
+import Background from "#/bg.webp";
 import Image from "@/components/image";
 import { SimpleTooltip } from "@/components/tooltip";
 import { Button } from "@/components/ui/button";

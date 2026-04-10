@@ -4,7 +4,7 @@ import { Activity, Home } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Dottore from "#/assets/dottore.webp";
-import Background from "#/bg.jpg";
+import Background from "#/bg.webp";
 import Image from "@/components/image";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
