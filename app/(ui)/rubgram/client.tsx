@@ -2,6 +2,7 @@
 
 import { ArrowRight, Check, Download, LogIn, ScrollText } from "lucide-react";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Blocker } from "@/components/blocker";
@@ -61,7 +62,12 @@ export function WelcomeScreening({
       ) : (
         <div className="grid gap-2">
           โปรดล็อคอินผ่าน Discord เพื่อดำเนินการต่อ
-          <Button onClick={loginDiscord}>
+          <Button
+            onClick={() => {
+              posthog.capture("rubgram_discord_login_initiated");
+              loginDiscord();
+            }}
+          >
             <span className="flex justify-between w-full items-center">
               ล็อคอินผ่าน Discord
               <LogIn />
@@ -240,6 +246,7 @@ export function CancelButton({ sid }: { sid: string }) {
       variant="destructive"
       onClick={() => {
         setLoading(true);
+        posthog.capture("rubgram_cancelled", { sid });
         cancel(sid).then(() => toast.success("คิวยกเลิกแล้ว"));
         setServices([]);
       }}

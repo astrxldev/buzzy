@@ -23,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import posthog from "posthog-js";
 import {
   Fragment,
   type ReactNode,
@@ -333,6 +334,12 @@ export function TierList({
     }
 
     setPlacements(newPlacements);
+    posthog.capture("tierlist_character_placed", {
+      character_id: charId.split("#")[0],
+      target_cell: typeof over.id === "string" ? over.id : undefined,
+      tierlist_version: version.id,
+      tierlist_type: type.id,
+    });
     setEvStatus((x) => ({ ...x, upload: true }));
     tlPlacements(version.id, newPlacements)
       .catch((e) => toast.error(`Sync ล้มเหลว: ${e.message || e}`))

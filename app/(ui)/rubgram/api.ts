@@ -19,6 +19,7 @@ import {
   settings,
 } from "@/lib/db/schema";
 import { sse } from "@/lib/db/sse-endpoints";
+import { getPostHogClient } from "@/lib/posthog-server";
 import type { TypedFormData } from "./type";
 
 const {
@@ -227,6 +228,11 @@ export async function submitEndgame(formData: EndgameFormData) {
     .returning({ queue: endgameSubmissions.queue, id: endgameSubmissions.id });
   revalidatePath("/rubgram/admin");
   sse.rubgram.pub("update", { type: "submit", sub: queue.id });
+  getPostHogClient().capture({
+    distinctId: user,
+    event: "rubgram_registration_completed",
+    properties: { queue_position: queue.queue, server, services: service },
+  });
   return queue;
 }
 
@@ -296,8 +302,17 @@ export async function submitEndgamePayment(formData: EndgamePaymentFormData) {
       .where(eq(endgameSubmissions.id, sid));
   });
   revalidatePath("/rubgram/admin");
-  if (Array.isArray(queue))
+  if (Array.isArray(queue)) {
     sse.rubgram.pub("update", { type: "paid", sub: queue[0].id });
+    getPostHogClient().capture({
+      distinctId: sid,
+      event: "rubgram_payment_completed",
+      properties: {
+        submission_id: queue[0].id,
+        queue_position: queue[0].queue,
+      },
+    });
+  }
   return Array.isArray(queue) ? queue[0] : queue;
 }
 

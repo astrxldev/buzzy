@@ -2,6 +2,7 @@
 
 import { useProgress } from "@bprogress/next";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 import { toast } from "sonner";
 import {
   type EndgameFormData,
@@ -18,6 +19,11 @@ export function EndgameFormWrapper({
   const { start, stop } = useProgress();
   async function submit(data: FormData) {
     start();
+    posthog.capture(
+      type === "registration"
+        ? "rubgram_registration_submitted"
+        : "rubgram_payment_submitted",
+    );
 
     ({ registration: submitEndgame, payment: submitEndgamePayment })
       [type](data as unknown as EndgameFormData & EndgamePaymentFormData)

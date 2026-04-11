@@ -2,6 +2,7 @@
 
 import { Loader2, UserLock } from "lucide-react";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 import { type FormEvent, use, useEffect, useState } from "react";
 import { useSessionStorage } from "react-use";
 import { toast } from "sonner";
@@ -68,13 +69,18 @@ export default function LoginPage({
       .catch(() => toast.error("Failed to login"));
     if (typeof r !== "object") {
       setLoading(false);
+      posthog.capture("login_failed", { reason: "invalid_response" });
       return toast.error("Invalid email or password");
     }
     if (r.error) {
       setLoading(false);
       setFailed(failed + 1);
+      posthog.capture("login_failed", { reason: r.error.message });
       return toast.error(r.error.message);
     }
+    const email = (data.get("email") as string) || "";
+    posthog.identify(r.data?.user?.id || email, { email });
+    posthog.capture("user_logged_in", { email });
     router.push(cb);
     setLoading(false);
   }

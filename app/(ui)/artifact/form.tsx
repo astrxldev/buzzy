@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 import { useState } from "react";
 import { toast } from "sonner";
 import { checkEnkaStatus, submitArtifact } from "@/lib/api";
@@ -38,6 +39,10 @@ export function ArtifactFormWrapper({
       setDataHold(data);
       if (check) return setDialog(check);
     }
+    posthog.capture("artifact_submitted", {
+      character: data.get("character")?.toString(),
+      is_edit: !!edit,
+    });
     submitArtifact(data, edit)
       .then((q) => {
         if (typeof q === "string") return toast.error(q);

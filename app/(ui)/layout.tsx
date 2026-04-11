@@ -2,7 +2,6 @@ import { ViewTransition } from "react";
 import { Toaster } from "sonner";
 import Background from "#/bg.webp";
 import Image from "@/components/image";
-import { SentryDevToolbar } from "@/components/sentry";
 import { StarsRenderer } from "@/components/stars";
 import Providers, { VersionCheck } from "../client";
 import { Navbar } from "./navbar";
@@ -23,7 +22,6 @@ export default async function UiLayout({
       <Providers>
         <ViewTransition>{children}</ViewTransition>
         <VersionCheck />
-        <SentryDevToolbar />
         <Navbar />
       </Providers>
       <Toaster theme="dark" richColors closeButton />

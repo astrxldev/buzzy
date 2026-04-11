@@ -1,6 +1,5 @@
 "use client"; // Error boundaries must be Client Components
 
-import * as Sentry from "@sentry/nextjs";
 import {
   Activity,
   ArrowLeftRight,
@@ -39,7 +38,6 @@ export default function ErrorPage({
 
   useEffect(() => {
     // Log the error to an error reporting service
-    Sentry.captureException(error);
     console.error(error);
 
     const messages = [
