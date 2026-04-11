@@ -29,6 +29,7 @@ const nextConfig: NextConfig = withBundleAnalyzer({
     ],
     localPatterns: [
       { pathname: "/api/card/*" },
+      { pathname: "/api/slip/*" },
       {
         pathname: "/cdn/*",
       },
