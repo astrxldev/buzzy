@@ -30,17 +30,31 @@ const {
   BASE_URL,
 } = process.env as Record<string, string>;
 
-export async function wipe() {
+export async function archive({ onlyChecked = true, copy = true }) {
   if (!(await adminCheck())) throw "Unauthorized";
   await db.transaction(async (tx) => {
-    const deleted = await tx.delete(endgameSubmissions).returning();
-    await tx.execute(
-      sql`ALTER SEQUENCE endgame.submissions_queue_seq RESTART WITH 1`,
+    const deleted = await (copy
+      ? tx
+          .update(endgameSubmissions)
+          .set({
+            archived: true,
+          })
+          .returning()
+      : tx.delete(endgameSubmissions).returning()
+    ).where(
+      and(
+        onlyChecked ? eq(endgameSubmissions.checked, true) : undefined,
+        not(endgameSubmissions.archived),
+      ),
     );
-    const [{ maxRound }] = await db
+    if (!onlyChecked && !copy)
+      await tx.execute(
+        sql`ALTER SEQUENCE endgame.submissions_queue_seq RESTART WITH 1`,
+      );
+    const [{ maxRound }] = await tx
       .select({ maxRound: sql<number>`MAX(${endgameArchive.round})` })
       .from(endgameArchive);
-    await db.insert(endgameArchive).values(
+    await tx.insert(endgameArchive).values(
       deleted
         .filter((e) => e.paid)
         .map((s) => ({
@@ -49,6 +63,11 @@ export async function wipe() {
         })),
     );
   });
+}
+
+export async function wipe() {
+  if (!(await adminCheck())) throw "Unauthorized";
+  await archive({ onlyChecked: false });
   revalidatePath("/rubgram/admin");
   revalidatePath("/rubgram");
 

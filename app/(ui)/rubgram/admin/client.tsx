@@ -43,9 +43,11 @@ import { setFree, setLimit, toggleCheck, toggleLock } from "../api";
 export function SidebarLink({
   submission,
   className,
+  prefetch = true,
 }: {
   submission: { id: string; name: string; checked: boolean; queue: number };
   className?: string;
+  prefetch?: boolean;
 }) {
   const { stop } = useProgress();
   const { id } = useParams();
@@ -62,7 +64,7 @@ export function SidebarLink({
         className,
         id === submission.id && "bg-accent text-accent-foreground",
       )}
-      prefetch
+      prefetch={prefetch}
       onClick={(ev) => {
         if ((ev.target as HTMLButtonElement).type === "button") {
           ev.preventDefault();
@@ -250,10 +252,17 @@ export function SubmissionList({
     checked: boolean;
     queue: number;
     paid: boolean;
+    archived: boolean;
   }[];
 }) {
   const [query, setQuery] = useState("");
   const [debug] = shared.state("debug");
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    // Scrolls to the dummy div whenever 'items' changes
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
   return (
     <>
@@ -272,11 +281,12 @@ export function SubmissionList({
           <SidebarMenuButton
             key={s.id}
             asChild
-            className={cn(debug && !s.paid && "opacity-50")}
+            className={cn(((debug && !s.paid) || s.archived) && "opacity-50")}
           >
-            <SidebarLink submission={s} />
+            <SidebarLink submission={s} prefetch={!s.archived} />
           </SidebarMenuButton>
         ))}
+      <div ref={bottomRef} />
     </>
   );
 }

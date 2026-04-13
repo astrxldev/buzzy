@@ -29,6 +29,7 @@ import { db } from "@/lib/db";
 import { endgameSubmissions } from "@/lib/db/schema";
 import { getEndgameConfig, random, wipe } from "../api";
 import { LimitManager, SlipButton, SubmissionList, Watcher } from "./client";
+import { desc } from "drizzle-orm";
 
 export default async function AdminLayout({
   children,
@@ -43,9 +44,10 @@ export default async function AdminLayout({
       checked: endgameSubmissions.checked,
       queue: endgameSubmissions.queue,
       paid: endgameSubmissions.paid,
+      archived: endgameSubmissions.archived,
     })
     .from(endgameSubmissions)
-    .orderBy(endgameSubmissions.id);
+    .orderBy(desc(endgameSubmissions.archived), endgameSubmissions.id);
   const config = await getEndgameConfig();
   return (
     <SidebarProvider>

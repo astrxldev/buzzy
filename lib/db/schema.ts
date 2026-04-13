@@ -151,6 +151,7 @@ export const endgameSubmissions = endgame.table("submissions", {
           isNotNull(endgameSubmissions.slip),
         )!,
     ),
+  archived: boolean().notNull().default(false),
 });
 
 export const endgameArchive = endgame.table("sarchive", {
