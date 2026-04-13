@@ -83,7 +83,6 @@ export function ServiceSelector({
   types,
   allDiscount,
   free,
-  count,
 }: Awaited<ReturnType<typeof getEndgameConfig>>) {
   const [selected, setSelected] = shared.state("rubgram.services");
 
@@ -104,7 +103,7 @@ export function ServiceSelector({
               <MultiSelectItem value={t.id} key={t.id}>
                 {t.display}{" "}
                 <Kbd>
-                  {free > 0 && count < free ? (
+                  {free > 0 ? (
                     <>
                       <span className="line-through opacity-50">{t.price}</span>{" "}
                       <span className="text-emerald-500">ฟรี</span>

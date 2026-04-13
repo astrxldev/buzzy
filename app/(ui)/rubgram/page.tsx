@@ -1,4 +1,4 @@
-import { and, eq, gt, lt, not, or } from "drizzle-orm";
+import { and, eq, gt, lt, not, or, sql } from "drizzle-orm";
 import {
   AlertCircle,
   BookAlert,
@@ -80,7 +80,16 @@ export default async function EndgamePage() {
   const [q] = sid?.value
     ? await db
         .select({
-          queue: endgameSubmissions.queue,
+          // Using endgame.submissions.queue here because
+          // ${endgameSubmissions.queue} does not work
+          queue: sql<number>`
+            ${endgameSubmissions.queue} - (
+              select count(*)
+              from ${endgameSubmissions} as e2
+              where e2.checked = true
+              and e2.queue < endgame.submissions.queue
+            )
+          `.as("queue"),
           paid: endgameSubmissions.paid,
           price: endgameSubmissions.price,
           expires: endgameSubmissions.expires,

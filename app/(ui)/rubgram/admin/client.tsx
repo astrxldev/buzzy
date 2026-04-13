@@ -236,7 +236,7 @@ export function LimitManager({
         <SidebarMenuBadge>
           {length}
           {config.limit >= 0 ? `/${config.limit}` : ""}
-          {config.free > 0 ? ` (ฟรี ${config.free})` : ""}
+          {config.free > 0 ? ` (เหลือคิวฟรี ${config.free})` : ""}
         </SidebarMenuBadge>
       </SidebarMenuItem>
     </SidebarMenu>

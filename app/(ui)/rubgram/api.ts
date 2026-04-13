@@ -168,7 +168,7 @@ export async function setFree(free: number) {
 
   sse.rubgram.pub("update", { type: "setFree" });
 
-  await actionLog(`Set rubgram submit limit to ${free}`);
+  await actionLog(`Set rubgram free submission amount to ${free}`);
 }
 
 export async function getEndgameConfig() {
@@ -245,6 +245,9 @@ export async function submitEndgame(formData: EndgameFormData) {
       price: await calcPrice(service),
     })
     .returning({ queue: endgameSubmissions.queue, id: endgameSubmissions.id });
+  await db.update(endgameSettings).set({
+    free: sql`${endgameSettings.free} - 1`,
+  });
   revalidatePath("/rubgram/admin");
   sse.rubgram.pub("update", { type: "submit", sub: queue.id });
   getPostHogClient().capture({
@@ -379,8 +382,8 @@ export async function loginDiscord() {
 }
 
 export async function calcPrice(service: string[]) {
-  const { free, count, types, allDiscount } = await getEndgameConfig();
-  return count < free
+  const { free, types, allDiscount } = await getEndgameConfig();
+  return free > 0
     ? 0
     : service.reduce(
         (p, s) => p + (types.find((t) => t.id === s)?.price || 0),
