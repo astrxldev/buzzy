@@ -39,11 +39,11 @@ export default async function TierlistManagerPage() {
               </span>
             </div>
             <div className="md:opacity-0 group-hover/type:opacity-100 transition-opacity flex gap-1">
-              <SimpleTooltip text="Create version">
+              <SimpleTooltip text="Add version">
                 <Button asChild>
                   <Link href={`/admin/tl/ver/${t.id}/create`}>
                     <PlusIcon />
-                    <span className="md:hidden">Create</span>
+                    <span className="md:hidden">Add</span>
                   </Link>
                 </Button>
               </SimpleTooltip>
@@ -86,7 +86,7 @@ export default async function TierlistManagerPage() {
                 <div className="md:opacity-0 group-hover/ver:opacity-100 transition-opacity flex gap-1 absolute top-1 right-1">
                   <SimpleTooltip text="Open in admin">
                     <Button variant="outline" asChild className="bg-card!">
-                      <Link href={`/tl/${t.id}/${e.id}/admin`}>
+                      <Link href={`/tl/${t.id}/${e.id}/admin`} target="_blank">
                         <ExternalLink />
                         <span className="md:hidden">Open</span>
                       </Link>
