@@ -279,7 +279,7 @@ cron("0 0 1 * *", async function rubgramArchive() {
   log("Done");
 });
 
-cron("0 0 /14 * *", async function syncAmber() {
+cron("0 0 */14 * *", async function syncAmber() {
   const { log, error } = logger("syncAmber");
   log("Syncing...");
   const token = await issueInternalToken();

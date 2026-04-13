@@ -34,6 +34,8 @@ services:
           memory: 512M
       restart_policy:
         condition: any
+      update_config:
+        monitor: 5s
     stop_grace_period: 1s
     networks:
       - buzz
