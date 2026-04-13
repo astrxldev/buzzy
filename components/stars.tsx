@@ -50,7 +50,7 @@ export function StarsRenderer() {
     resize();
     window.addEventListener("resize", resize);
 
-    for (let i = 0; i < Math.min(1000, canvas.width); i++) {
+    for (let i = 0; i < Math.min(1000, canvas.width) / 2; i++) {
       stars.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
