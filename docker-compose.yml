@@ -36,6 +36,7 @@ services:
         condition: any
       update_config:
         monitor: 5s
+        failure_action: rollback
     stop_grace_period: 1s
     networks:
       - buzz
