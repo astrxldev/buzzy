@@ -212,7 +212,7 @@ export type EndgameFormData = TypedFormData<{
 }>;
 
 export async function submitEndgame(formData: EndgameFormData) {
-  const { full, locked, limit, types } = await getEndgameConfig();
+  const { full, locked, limit, types, free } = await getEndgameConfig();
   const name = formData.get("name");
   const server = formData.get("server");
   const service = formData.getAll("service");
@@ -245,9 +245,10 @@ export async function submitEndgame(formData: EndgameFormData) {
       price: await calcPrice(service),
     })
     .returning({ queue: endgameSubmissions.queue, id: endgameSubmissions.id });
-  await db.update(endgameSettings).set({
-    free: sql`${endgameSettings.free} - 1`,
-  });
+  if (free > 0)
+    await db.update(endgameSettings).set({
+      free: sql`${endgameSettings.free} - 1`,
+    });
   revalidatePath("/rubgram/admin");
   sse.rubgram.pub("update", { type: "submit", sub: queue.id });
   getPostHogClient().capture({
