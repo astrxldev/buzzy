@@ -198,26 +198,26 @@ export function TierList({
   const untieredRef = useRef<HTMLDivElement | null>(null);
 
   //#region tileSize calculation
-  // biome-ignore lint/correctness/useExhaustiveDependencies: falsy
   useLayoutEffect(() => {
+    let frame = 0;
+
     function recalc() {
+      if (!colRef.current || !untieredRef.current) return;
+
       let auto = 0;
       let tiles = Math.ceil(24 / columns.length);
+
+      const colRect = colRef.current.getBoundingClientRect();
+      const untieredRect = untieredRef.current.getBoundingClientRect();
+
+      const colPaddingLeft = 4;
+      const contPaddingLeft = 4;
+      const tilePaddingRight = 8;
+
       do {
-        if (!colRef.current || !untieredRef.current) return;
-
-        const colRect = colRef.current.getBoundingClientRect();
-        const untieredRect = untieredRef.current.getBoundingClientRect();
-
-        const colPaddingLeft = 4;
-        const contPaddingLeft = 4;
-        const tilePaddingRight = 8;
-
-        // tiered
         const tileSizeCol =
           (colRect.width - colPaddingLeft) / tiles - tilePaddingRight;
 
-        // untiered
         let x = Math.floor(
           (untieredRect.width - contPaddingLeft) /
             (tileSizeCol + tilePaddingRight),
@@ -227,23 +227,33 @@ export function TierList({
         const tileSizeUntiered =
           (untieredRect.width - contPaddingLeft) / x - tilePaddingRight;
 
-        console.log(tileSizeCol, tileSizeUntiered);
-        // final auto size
         auto = Math.min(tileSizeCol, tileSizeUntiered);
         tiles--;
       } while (auto < 60 && tiles > 0);
-      setTileSizeAuto(auto);
+
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        setTileSizeAuto((prev) => (prev !== auto ? auto : prev));
+      });
     }
 
-    const observer = new ResizeObserver(recalc);
-    if (colRef.current) observer.observe(colRef.current);
-    if (untieredRef.current) observer.observe(untieredRef.current);
+    const observer = new ResizeObserver(() => {
+      recalc();
+    });
 
-    // run once immediately
+    const col = colRef.current;
+    const untiered = untieredRef.current;
+
+    if (col) observer.observe(col);
+    if (untiered) observer.observe(untiered);
+
     recalc();
 
-    return () => observer.disconnect();
-  }, [columns.length, colRef.current, untieredRef.current]);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [columns.length]);
   //#endregion tileSize
 
   //#region placements
