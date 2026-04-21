@@ -1,6 +1,6 @@
 "use client";
 
-import { Compass, Search, SearchX } from "lucide-react";
+import { ArrowLeft, Compass, Search, SearchX } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useDebounce } from "react-use";
@@ -40,10 +40,12 @@ export function GuideList({
   return (
     <div className="flex justify-center h-svh">
       <div className="w-full xl:max-w-2/3 border flex flex-col">
-        <div className="border-b p-3 font-semibold leading-none flex items-center gap-2">
-          <Compass className="opacity-50" />
-          ไกด์ตัวละคร
-        </div>
+        <div>
+          <Link href="/" className="border-b p-3 font-semibold leading-none flex items-center gap-2">
+            <Compass className="opacity-50" />
+            ไกด์ตัวละคร
+          </Link>
+          </div>
         <div className="p-4 pb-2">
           <InputGroup className="w-full h-10">
             <InputGroupInput
@@ -64,7 +66,7 @@ export function GuideList({
           {list.length === 0 && loading === 0 ? (
             <div className="col-span-full flex flex-col items-center justify-center py-20 text-muted-foreground">
               <SearchX className="w-16 h-16 mb-4 opacity-50" />
-              <p className="text-2xl font-semibold">ไม่พบตัวละครที่คุณหา</p>
+              <p className="text-2xl font-semibold">ไม่พบตัวละครที่ค้นหา</p>
               <p className="text-lg ">ลองคำอื่นที่ความหมายใกล้เคียงกันดูนะ</p>
             </div>
           ) : (
