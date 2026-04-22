@@ -11,8 +11,15 @@ posthog.init(process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN!, {
     if (event?.event === "$exception") {
       const exceptionList = event.properties.$exception_list || [];
       const exception = exceptionList[0];
-      if (exception?.value === "NEXT_REDIRECT") {
-        return null; // Drop it entirely
+      if (exception) {
+        if (
+          exception.$exception_source?.includes("posthog") ||
+          exception.value?.includes("posthog") ||
+          exception.value?.includes("__ph_opt_in_out") ||
+          exception.value === "NEXT_REDIRECT"
+        ) {
+          return null;
+        }
       }
     }
     return event;
