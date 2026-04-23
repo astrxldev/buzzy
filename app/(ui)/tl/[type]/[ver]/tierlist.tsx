@@ -148,21 +148,21 @@ export function TierList({
   const session = authClient.useSession();
   const user = session.data?.user;
 
-  //#region error handling
-  useEffect(() => {
-    const handler = (ev: ErrorEvent) =>
-      toast.error("Unexpected Error Occured", {
-        description: `${ev?.error?.message || ev?.error || "*unknown error*"}`,
-      });
-    const promiseHandler = (ev: PromiseRejectionEvent) =>
-      toast.error("Unexpected Error Occured", {
-        description: `${ev.reason || ev || "*unknown error*"}`,
-      });
-    window.addEventListener("error", handler);
-    window.addEventListener("unhandledrejection", promiseHandler);
-    return () => window.removeEventListener("error", handler);
-  });
-  //#endregion
+  // //#region error handling
+  // useEffect(() => {
+  //   const handler = (ev: ErrorEvent) =>
+  //     toast.error("Unexpected Error Occured", {
+  //       description: `${ev?.error?.message || ev?.error || "*unknown error*"}`,
+  //     });
+  //   const promiseHandler = (ev: PromiseRejectionEvent) =>
+  //     toast.error("Unexpected Error Occured", {
+  //       description: `${ev.reason || ev || "*unknown error*"}`,
+  //     });
+  //   window.addEventListener("error", handler);
+  //   window.addEventListener("unhandledrejection", promiseHandler);
+  //   return () => window.removeEventListener("error", handler);
+  // });
+  // //#endregion
 
   //#region states fetching
   const fetchStates = useCallback(async () => {
