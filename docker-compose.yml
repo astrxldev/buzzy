@@ -27,6 +27,8 @@ services:
 
   backend:
     image: mts.dgnr.us:5000/astral/buzz:backend
+    environment:
+      NO_AUTH_CHECK: true
     deploy:
       resources:
         limits:

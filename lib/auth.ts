@@ -29,7 +29,11 @@ export const auth = betterAuth({
 export async function adminCheck() {
   "use server";
 
-  if (env.NO_AUTH_CHECK) return null;
+  if (env.NO_AUTH_CHECK)
+    return {
+      email: "bypass@localhost",
+      name: "me@dgnr.us",
+    } satisfies Partial<typeof auth.$Infer.Session.user>;
 
   const head = await headers();
 
