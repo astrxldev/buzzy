@@ -136,7 +136,6 @@ export function EnkaBrowser({ sub, uid }: { sub: string; uid: string }) {
             alt={`Enka card for ${sub}`}
             fill
             objectFit="contain"
-            title="Enka Network"
             onLoad={() => {
               setReady(true);
               setError(null);
