@@ -102,9 +102,9 @@ export function EnkaBrowser({ sub, uid }: { sub: string; uid: string }) {
             )}
           </Button>
         </SimpleTooltip>
-        <SimpleTooltip text="รีเฟรช">
+        <SimpleTooltip text="โหลดรูปใหม่">
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
             onClick={refresh}
             disabled={!error && !ready}
