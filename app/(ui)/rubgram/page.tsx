@@ -1,11 +1,5 @@
 import { and, eq, gt, lt, not, or, sql } from "drizzle-orm";
-import {
-  AlertCircle,
-  BookAlert,
-  CircleDollarSign,
-  SendHorizonal,
-  X,
-} from "lucide-react";
+import { AlertCircle, BookAlert, CircleDollarSign, SendHorizonal, X } from "lucide-react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
@@ -26,13 +20,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Kbd } from "@/components/ui/kbd";
 import { Label } from "@/components/ui/label";
@@ -45,11 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { db } from "@/lib/db";
 import { endgameSubmissions } from "@/lib/db/schema";
 import { LiveButton } from "../artifact/live";
@@ -96,12 +80,15 @@ export default async function EndgamePage() {
         })
         .from(endgameSubmissions)
         .where(
-          or(
-            eq(endgameSubmissions.id, sid.value),
-            and(
-              eq(endgameSubmissions.user, session?.uid || "placeholder"),
-              gt(endgameSubmissions.expires, new Date()),
+          and(
+            or(
+              eq(endgameSubmissions.id, sid.value),
+              and(
+                eq(endgameSubmissions.user, session?.uid || "placeholder"),
+                gt(endgameSubmissions.expires, new Date()),
+              ),
             ),
+            not(endgameSubmissions.archived),
           ),
         )
     : [];
@@ -110,12 +97,7 @@ export default async function EndgamePage() {
     ? await db
         .select({ queue: endgameSubmissions.queue })
         .from(endgameSubmissions)
-        .where(
-          and(
-            not(endgameSubmissions.paid),
-            lt(endgameSubmissions.queue, q.queue),
-          ),
-        )
+        .where(and(not(endgameSubmissions.paid), lt(endgameSubmissions.queue, q.queue)))
     : [];
 
   return (
@@ -190,12 +172,8 @@ export default async function EndgamePage() {
                         </Kbd>
                       )}
                     </span>
-                    <span className="text-sm text-muted-foreground">
-                      ผู้รับ: นาย พัชรพล พลพันธุ์
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      บัญชี: xxx-x-x8666-x
-                    </span>
+                    <span className="text-sm text-muted-foreground">ผู้รับ: นาย พัชรพล พลพันธุ์</span>
+                    <span className="text-sm text-muted-foreground">บัญชี: xxx-x-x8666-x</span>
                     <span className="text-sm text-muted-foreground">
                       เลขที่อ้างอิง: 004999056945438
                     </span>
@@ -289,9 +267,7 @@ export default async function EndgamePage() {
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>แน่ใจหรอ</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      ต้องการยกเลิกการลงคิวของคุณหรือไม่
-                    </AlertDialogDescription>
+                    <AlertDialogDescription>ต้องการยกเลิกการลงคิวของคุณหรือไม่</AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>ไม่ยกเลิก</AlertDialogCancel>
@@ -313,11 +289,7 @@ export default async function EndgamePage() {
               <Button
                 type="submit"
                 form="mainform"
-                disabled={
-                  q?.paid ||
-                  config.locked ||
-                  (config.limit >= 0 && count >= config.limit)
-                }
+                disabled={q?.paid || config.locked || (config.limit >= 0 && count >= config.limit)}
               >
                 <SendHorizonal />
               </Button>
@@ -327,10 +299,7 @@ export default async function EndgamePage() {
       </Card>
       <span className="backdrop-blur-md p-1 text-xs m-1 border rounded-sm">
         หากติดปัญหา โปรดแจ้งผ่านทาง
-        <a
-          href="https://discord.gg/HQwDXNhxuK"
-          className="underline text-green-200"
-        >
+        <a href="https://discord.gg/HQwDXNhxuK" className="underline text-green-200">
           ช่องดิสคอร์ด
         </a>
       </span>
