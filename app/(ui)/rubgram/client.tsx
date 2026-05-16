@@ -120,7 +120,7 @@ export function ServiceSelector({
         </MultiSelectContent>
       </MultiSelect>
       <span className="text-xs text-muted-foreground -mt-1">
-        เลือกทั้งหมด ลดให้ {allDiscount} บาท
+        เลือกทั้ง {types.length} อย่าง ลดให้ {allDiscount} บาท
       </span>
       <select
         hidden
