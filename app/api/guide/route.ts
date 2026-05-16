@@ -45,4 +45,6 @@ export async function POST(req: Request) {
   await actionLog(`API Added guide ${name}`, { link, imageUrl });
   revalidatePath("/guide");
   revalidatePath("/admin/guide");
+
+  return new Response("OK");
 }
