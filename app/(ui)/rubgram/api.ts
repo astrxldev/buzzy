@@ -232,7 +232,14 @@ export async function submitEndgame(formData: EndgameFormData) {
   const [existing] = await db
     .select({ queue: endgameSubmissions.queue, id: endgameSubmissions.id })
     .from(endgameSubmissions)
-    .where(eq(endgameSubmissions.user, user))
+    .where(
+      and(
+        eq(endgameSubmissions.user, user),
+        not(endgameSubmissions.archived),
+        not(endgameSubmissions.checked),
+        not(endgameSubmissions.paid),
+      ),
+    )
     .limit(1);
   if (existing) return existing;
   const [queue] = await db
