@@ -297,7 +297,7 @@ export default async function EndgamePage() {
           </div>
         </CardFooter>
       </Card>
-      <span className="backdrop-blur-md p-1 text-xs m-1 border rounded-sm">
+      <span className="p-1 text-xs m-1 border rounded-sm">
         หากติดปัญหา โปรดแจ้งผ่านทาง
         <a href="https://discord.gg/HQwDXNhxuK" className="underline text-green-200">
           ช่องดิสคอร์ด
