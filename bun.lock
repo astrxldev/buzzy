@@ -11,7 +11,7 @@
         "@headless-tree/core": "^1.6.0",
         "@headless-tree/react": "^1.6.0",
         "@hookform/resolvers": "^5.2.2",
-        "@next/bundle-analyzer": "16.0.6",
+        "@next/bundle-analyzer": "16.2.6",
         "@radix-ui/react-accordion": "^1.2.12",
         "@radix-ui/react-alert-dialog": "^1.1.15",
         "@radix-ui/react-aspect-ratio": "^1.1.8",
@@ -374,7 +374,7 @@
 
     "@mrleebo/prisma-ast": ["@mrleebo/prisma-ast@0.13.0", "", { "dependencies": { "chevrotain": "^10.5.0", "lilconfig": "^2.1.0" } }, "sha512-VxS+okLpNp6YUDLz3rAXv6sE8G4W5cX039bumkPub65xRr9BFxjHaT5ebX4DsiixIGaBwitjWTvx3mAbyI2EUQ=="],
 
-    "@next/bundle-analyzer": ["@next/bundle-analyzer@16.0.6", "", { "dependencies": { "webpack-bundle-analyzer": "4.10.1" } }, "sha512-zoa/w3TYl6kBcJesvj7JM96fHu1WiHRLTRMgEdLEn2kh1cGJMkIIlOGyekjnccaozd+oIyQ925lKrkCMfgt1xg=="],
+    "@next/bundle-analyzer": ["@next/bundle-analyzer@16.2.6", "", { "dependencies": { "webpack-bundle-analyzer": "4.10.1" } }, "sha512-amPkVtHCTJAdBwyhhl5+qztHk24O4JlASgrWqh15AmnYi74apfZR46NGC0u4pM6BMAU1mYld4WdzD3cRBP3dOA=="],
 
     "@next/env": ["@next/env@16.0.10", "", {}, "sha512-8tuaQkyDVgeONQ1MeT9Mkk8pQmZapMKFh5B+OrFUlG3rVmYTXcXlBetBgTurKXGaIZvkoqRT9JL5K3phXcgang=="],
 
