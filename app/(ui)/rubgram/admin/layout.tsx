@@ -43,6 +43,7 @@ export default async function AdminLayout({
       name: endgameSubmissions.name,
       checked: endgameSubmissions.checked,
       queue: endgameSubmissions.queue,
+      publicQueue: endgameSubmissions.publicQueue,
       paid: endgameSubmissions.paid,
       archived: endgameSubmissions.archived,
     })

@@ -30,11 +30,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { shared } from "@/lib/comms";
 import { sse } from "@/lib/db/sse-endpoints";
 import { cn } from "@/lib/utils";
@@ -60,10 +56,7 @@ export function SidebarLink({
   return (
     <Link
       href={`/rubgram/admin/${submission.id}`}
-      className={cn(
-        className,
-        id === submission.id && "bg-accent text-accent-foreground",
-      )}
+      className={cn(className, id === submission.id && "bg-accent text-accent-foreground")}
       prefetch={prefetch}
       onClick={(ev) => {
         if ((ev.target as HTMLButtonElement).type === "button") {
@@ -251,6 +244,7 @@ export function SubmissionList({
     name: string;
     checked: boolean;
     queue: number;
+    publicQueue: number;
     paid: boolean;
     archived: boolean;
   }[];
@@ -260,9 +254,10 @@ export function SubmissionList({
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    void debug;
     // Scrolls to the dummy div whenever 'items' changes
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, []);
+  }, [debug]);
 
   return (
     <>
@@ -274,8 +269,7 @@ export function SubmissionList({
       {subs
         .filter(
           (s) =>
-            (debug || s.paid) &&
-            (s.queue + s.name).toLowerCase().includes(query),
+            (debug || (s.paid && !s.archived)) && (s.queue + s.name).toLowerCase().includes(query),
         )
         .map((s) => (
           <SidebarMenuButton
@@ -283,7 +277,10 @@ export function SubmissionList({
             asChild
             className={cn(((debug && !s.paid) || s.archived) && "opacity-50")}
           >
-            <SidebarLink submission={s} prefetch={!s.archived} />
+            <SidebarLink
+              submission={debug ? s : { ...s, queue: s.publicQueue }}
+              prefetch={!s.archived}
+            />
           </SidebarMenuButton>
         ))}
       <div ref={bottomRef} />
