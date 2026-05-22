@@ -134,17 +134,6 @@ export const endgameSubmissions = endgame.table("submissions", {
     }),
   expires: timestamp().$defaultFn(() => new Date(Date.now() + 20 * 60 * 1000)), // 20 minutes to pay
   queue: serial(),
-  publicQueue: integer()
-    .notNull()
-    .generatedAlwaysAs(
-      (): SQL => sql`
-        ${endgameSubmissions.queue} - (
-          select count(*)
-          from ${endgameSubmissions} as e2
-          where e2.checked = true
-          and e2.queue < endgame.submissions.queue
-        )`,
-    ),
   server: endgameServer().notNull(),
   service: text()
     .references(() => endgameTypes.id)
