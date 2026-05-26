@@ -23,12 +23,11 @@ import {
 } from "./db/schema";
 import { sse, tlSse } from "./db/sse-endpoints";
 import { b2s } from "./utils";
+import { redis } from "./db/redis";
+import { fetch } from "bun";
 
 export async function getCharacters(chars: string[]) {
-  return await db
-    .select()
-    .from(characters)
-    .where(inArray(characters.amber, chars));
+  return await db.select().from(characters).where(inArray(characters.amber, chars));
 }
 
 export async function getArtifactConfig() {
@@ -53,9 +52,7 @@ const ArtifactSubmission = (editToken?: string) =>
               .where(
                 and(
                   eq(submissions.uid, uid),
-                  editToken
-                    ? not(eq(submissions.editToken, editToken))
-                    : undefined,
+                  editToken ? not(eq(submissions.editToken, editToken)) : undefined,
                 ),
               )
               .limit(1)
@@ -72,25 +69,19 @@ const ArtifactSubmission = (editToken?: string) =>
             .then((r) => !!r.length),
         "ไม่พบตัวละครที่เลือก",
       ),
-      comment: z
-        .string()
-        .max(1024, "ข้อความเพิ่มเติมยาวเกินไป ต้องไม่เกิน 1024 ตัวอักษร"),
+      comment: z.string().max(1024, "ข้อความเพิ่มเติมยาวเกินไป ต้องไม่เกิน 1024 ตัวอักษร"),
     },
     "กรุณากรอกข้อมูลให้ครบถ้วน",
   );
 
-export async function submitArtifact(
-  formData: FormData,
-  edit?: { sub: string; token: string },
-) {
+export async function submitArtifact(formData: FormData, edit?: { sub: string; token: string }) {
   const config = await getArtifactConfig();
   if (config.locked) return "ปิดรับลงทะเบียนชั่วคราว เนื่องจากมีผู้ลงจำนวนมาก";
   const count = await db.$count(submissions);
-  if (config.limit !== -1 && count >= config.limit)
-    return `คิวลงทะเบียนเต็มแล้ว (${config.limit} ครั้ง)`;
-  const { success, data, error } = await ArtifactSubmission(
-    edit?.token,
-  ).safeParseAsync(Object.fromEntries(formData.entries()));
+  if (config.limit !== -1 && count >= config.limit) return `คิวลงทะเบียนเต็มแล้ว (${config.limit} ครั้ง)`;
+  const { success, data, error } = await ArtifactSubmission(edit?.token).safeParseAsync(
+    Object.fromEntries(formData.entries()),
+  );
   if (!success) return z.prettifyError(error);
   if (edit) {
     const [existing] = await db
@@ -188,8 +179,7 @@ export async function toggleLock() {
       locked: not(artifactSettings.locked),
     })
     .returning({ locked: artifactSettings.locked });
-  if (existing.length === 0)
-    await db.insert(artifactSettings).values({ locked: true });
+  if (existing.length === 0) await db.insert(artifactSettings).values({ locked: true });
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
 
@@ -217,17 +207,13 @@ export async function setLimit(limit: number) {
   revalidatePath("/artifact");
 
   sse.artifact.pub("update", { type: "setLimit" });
-  await actionLog(
-    `Set artifact submit limit to ${limit < 0 ? "unlimited" : limit}`,
-  );
+  await actionLog(`Set artifact submit limit to ${limit < 0 ? "unlimited" : limit}`);
 }
 
 export async function wipe() {
   if (!(await adminCheck())) throw "Unauthorized";
   await db.delete(submissions);
-  await db.execute(
-    sql`ALTER SEQUENCE artifact.submissions_queue_seq RESTART WITH 1`,
-  );
+  await db.execute(sql`ALTER SEQUENCE artifact.submissions_queue_seq RESTART WITH 1`);
   revalidatePath("/artifact");
 
   sse.artifact.pub("update", { type: "wipe" });
@@ -253,9 +239,7 @@ export async function revalidateCard(sub: string) {
   revalidatePath(`/api/card/${sub}`);
 }
 
-export async function tlState(
-  data: Partial<typeof tierlistStates.$inferInsert>,
-) {
+export async function tlState(data: Partial<typeof tierlistStates.$inferInsert>) {
   if (!(await adminCheck())) throw "Unauthorized";
   const [existing] = await db
     .select()
@@ -263,26 +247,14 @@ export async function tlState(
     .where(
       or(
         eq(tierlistStates.uuid, `${data.uuid}`),
-        and(
-          eq(tierlistStates.ref, `${data.ref}`),
-          eq(tierlistStates.list, `${data.list}`),
-        ),
+        and(eq(tierlistStates.ref, `${data.ref}`), eq(tierlistStates.list, `${data.list}`)),
       ),
     );
   if (existing)
-    await db
-      .update(tierlistStates)
-      .set(data)
-      .where(eq(tierlistStates.uuid, existing.uuid));
-  else
-    await db
-      .insert(tierlistStates)
-      .values(data as typeof tierlistStates.$inferInsert);
+    await db.update(tierlistStates).set(data).where(eq(tierlistStates.uuid, existing.uuid));
+  else await db.insert(tierlistStates).values(data as typeof tierlistStates.$inferInsert);
   const list = data.list || existing?.list;
-  const states = await db
-    .select()
-    .from(tierlistStates)
-    .where(eq(tierlistStates.list, list));
+  const states = await db.select().from(tierlistStates).where(eq(tierlistStates.list, list));
 
   revalidatePath(`/api/tl/${list}/states`);
 
@@ -290,13 +262,10 @@ export async function tlState(
   tlSse(list).pub("update_states", states);
 }
 
-export async function tlPlacements(
-  list: string,
-  placements: Record<string, string[]>,
-) {
+export async function tlPlacements(list: string, placements: Record<string, string[]>) {
   if (!(await adminCheck())) throw "Unauthorized";
 
-  const { untiered, ...placementObj } = placements;
+  const { untiered: _, ...placementObj } = placements;
 
   await db
     .update(tierlistVersions)
@@ -356,8 +325,7 @@ export async function cdnify(
   // biome-ignore lint/suspicious/noExplicitAny: type parameters
   config: { tx?: PgDatabase<any, any, any>; name?: string } = {},
 ) {
-  const { tx = db, name = data instanceof File ? (data as File).name : null } =
-    config;
+  const { tx = db, name = data instanceof File ? (data as File).name : null } = config;
   const [{ id }] = await tx
     .insert(cdn)
     .values({
@@ -401,4 +369,20 @@ export async function actionLog(text: string, details?: unknown) {
   } catch {}
 
   if (res) sse.log.pub("update", res);
+}
+
+export async function getAmberVh() {
+  const cached = await redis!.get("amber:vh");
+  if (cached) return cached;
+  const Schema = z.object({
+    response: z.number().positive(),
+    data: z.object({
+      vh: z.string().max(10),
+    }),
+  });
+  const {
+    data: { vh },
+  } = Schema.parse(await fetch("https://gi.yatta.moe/api/v2/static/version").then((e) => e.json()));
+  queueMicrotask(() => redis!.setex("amber:vh", 86400, vh));
+  return vh;
 }
