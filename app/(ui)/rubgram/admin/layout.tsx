@@ -54,6 +54,7 @@ export default async function AdminLayout({
           from ${endgameSubmissions} e2
           where e2.checked = true
             and e2.queue < ${endgameSubmissions.queue}
+            or  e2.archived
         )
       `,
       paid: endgameSubmissions.paid,
