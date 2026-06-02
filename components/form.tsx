@@ -9,6 +9,7 @@ import type {
 import { cn } from "@/lib/utils";
 import { DialogClose } from "./ui/dialog";
 import { Label } from "./ui/label";
+import { Divide } from "lucide-react";
 
 const AUTOSAVE_TTL_MS = 10 * 60 * 1000;
 const STORAGE_PREFIX = "form:autosave:";
@@ -28,7 +29,7 @@ type FormContextValue = {
 
 const FormContext = React.createContext<FormContextValue | null>(null);
 
-function useFormContext() {
+export function useFormContext() {
   const ctx = React.useContext(FormContext);
   if (!ctx) throw new Error("FormInput/FormAction must be inside FormProvider");
   return ctx;
@@ -153,9 +154,13 @@ export function FormProvider<T extends TypedFormDataShape>({
 
   React.useEffect(() => {
     const stored = safeParseAutosave(localStorage.getItem(storageKey(id)));
-    if (!stored) return;
+    if (!stored) {
+      setStorageLock(null);
+      return;
+    }
     if (Date.now() - stored.savedAt > AUTOSAVE_TTL_MS) {
       localStorage.removeItem(storageKey(id));
+      setStorageLock(null);
       return;
     }
     setValues(stored.values || {});
@@ -282,8 +287,8 @@ export function FormInput({
   className,
 }: FormInputProps) {
   const { values, setValue, updateValues } = useFormContext();
-  const childProps = children.props as Record<string, unknown>;
-  const value = (values[name] ?? childProps.defaultValue) || "";
+  const childProps = (children.props ?? {}) as Record<string, unknown>;
+  const value = values[name] ?? childProps?.defaultValue ?? "";
   const nextProps: Record<string, unknown> = { name, defaultValue: undefined };
   const applyValue = React.useCallback(
     (nextValue: unknown) => {
@@ -336,6 +341,10 @@ export function FormInput({
     nextProps.id = `forminput-${name}`;
   }
 
+  if (children.$$typeof === Symbol.for("react.lazy")) {
+    children = React.use((children as any)._payload);
+  }
+
   return (
     <>
       {label ? (
@@ -346,10 +355,10 @@ export function FormInput({
               <span className="font-normal opacity-70">{subLabel}</span>
             )}
           </Label>
-          {React.cloneElement(children, nextProps)}
+          {React.cloneElement(children || Divide, nextProps)}
         </div>
       ) : (
-        React.cloneElement(children, nextProps)
+        React.cloneElement(children || Divide, nextProps)
       )}
     </>
   );

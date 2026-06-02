@@ -14,7 +14,9 @@ services:
         - path: ..
           target: /home/container
           action: sync
-    env_file: .env.development
+    env_file:
+      - ../.env
+      - .env.development
     ports:
       - 3000:3000
     restart: on-failure

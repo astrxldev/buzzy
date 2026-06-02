@@ -1,0 +1,8 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["nextjs"],
+  "rules": {
+    "nextjs/no-html-link-for-pages": "error",
+    "nextjs/next-script-for-ga": "error"
+  }
+}

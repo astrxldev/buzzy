@@ -24,7 +24,7 @@ export interface TypedFormData<T extends TypedFormDataShape> {
 
   has<K extends keyof T>(key: K): boolean;
 
-  entries(): T;
+  entries(): ReturnType<FormData["entries"]>;
 
   /** underlying raw FormData */
   readonly raw: FormData;

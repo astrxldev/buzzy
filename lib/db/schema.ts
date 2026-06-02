@@ -146,7 +146,10 @@ export const endgameSubmissions = endgame.table("submissions", {
     .notNull()
     .generatedAlwaysAs(
       (): SQL =>
-        or(lte(endgameSubmissions.price, sql.raw("0")), isNotNull(endgameSubmissions.slip))!,
+        or(
+          lte(endgameSubmissions.price, sql.raw("0")),
+          isNotNull(endgameSubmissions.slip),
+        )!,
     ),
   archived: boolean().notNull().default(false),
 });

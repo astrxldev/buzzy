@@ -1,6 +1,3 @@
-import { YAML } from "bun";
-import { and, eq, getTableColumns } from "drizzle-orm";
-import { ReceiptText } from "lucide-react";
 import { calcPrice } from "@/app/(ui)/rubgram/api";
 import Image from "@/components/image";
 import { DiscordMentionable } from "@/components/mentionable";
@@ -21,6 +18,9 @@ import {
 import { db } from "@/lib/db";
 import { endgameArchive, endgameDiscord, endgameSlips } from "@/lib/db/schema";
 import { parseSearchNumber } from "@/lib/utils";
+import { YAML } from "bun";
+import { and, eq, getTableColumns } from "drizzle-orm";
+import { ReceiptText } from "lucide-react";
 import { DataViewer } from "./client";
 
 export default async function ({
@@ -29,7 +29,7 @@ export default async function ({
   const { round: r, queue: q } = await params;
   const round = parseSearchNumber(r) || 1;
   const queue = parseSearchNumber(q) || 1;
-  const { slip, ...slipColumns } = getTableColumns(endgameSlips);
+  const { slip: _, ...slipColumns } = getTableColumns(endgameSlips);
   const [entry] = await db
     .select({
       ...getTableColumns(endgameArchive),

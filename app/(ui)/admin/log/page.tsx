@@ -13,7 +13,7 @@ export default async function AuditLogViewerPage() {
       LIMIT 1000
     ) t
     ORDER BY id ASC;
-  `)) as { rows: (typeof auditLog.$inferSelect)[] };
+  `)) as unknown as { rows: (typeof auditLog.$inferSelect)[] };
   const users = await db
     .select({ name: user.name, email: user.email })
     .from(user);

@@ -30,7 +30,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { shared } from "@/lib/comms";
 import { sse } from "@/lib/db/sse-endpoints";
 import { cn } from "@/lib/utils";
@@ -56,7 +60,10 @@ export function SidebarLink({
   return (
     <Link
       href={`/rubgram/admin/${submission.id}`}
-      className={cn(className, id === submission.id && "bg-accent text-accent-foreground")}
+      className={cn(
+        className,
+        id === submission.id && "bg-accent text-accent-foreground",
+      )}
       prefetch={prefetch}
       onClick={(ev) => {
         if ((ev.target as HTMLButtonElement).type === "button") {
@@ -269,7 +276,8 @@ export function SubmissionList({
       {subs
         .filter(
           (s) =>
-            (debug || (s.paid && !s.archived)) && (s.queue + s.name).toLowerCase().includes(query),
+            (debug || (s.paid && !s.archived)) &&
+            (s.queue + s.name).toLowerCase().includes(query),
         )
         .map((s) => (
           <SidebarMenuButton

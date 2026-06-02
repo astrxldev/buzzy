@@ -185,7 +185,7 @@ export const shared = {
     // unmount handler
     useEffect(
       () => () => {
-        const { [k]: removed, ...rest } = comms.get("inspect") || {};
+        const { [k]: _, ...rest } = comms.get("inspect") || {};
         comms.set("inspect", rest);
       },
       [],

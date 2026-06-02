@@ -33,14 +33,15 @@ const {
 export async function archive({ onlyChecked = true, copy = true }) {
   if (!(await adminCheck())) throw "Unauthorized";
   await db.transaction(async (tx) => {
-    const deleted = await (copy
-      ? tx
-          .update(endgameSubmissions)
-          .set({
-            archived: true,
-          })
-          .returning()
-      : tx.delete(endgameSubmissions).returning()
+    const deleted = await (
+      copy
+        ? tx
+            .update(endgameSubmissions)
+            .set({
+              archived: true,
+            })
+            .returning()
+        : tx.delete(endgameSubmissions).returning()
     ).where(
       and(
         onlyChecked ? eq(endgameSubmissions.checked, true) : undefined,

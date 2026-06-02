@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Compass, Search, SearchX } from "lucide-react";
+import { Compass, Search, SearchX } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useDebounce } from "react-use";
@@ -41,11 +41,14 @@ export function GuideList({
     <div className="flex justify-center h-svh">
       <div className="w-full xl:max-w-2/3 border flex flex-col">
         <div>
-          <Link href="/" className="border-b p-3 font-semibold leading-none flex items-center gap-2">
+          <Link
+            href="/"
+            className="border-b p-3 font-semibold leading-none flex items-center gap-2"
+          >
             <Compass className="opacity-50" />
             ไกด์ตัวละคร
           </Link>
-          </div>
+        </div>
         <div className="p-4 pb-2">
           <InputGroup className="w-full h-10">
             <InputGroupInput

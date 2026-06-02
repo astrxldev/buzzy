@@ -16,50 +16,51 @@ All tables are defined in `lib/db/schema.ts`. The database uses **three named sc
 
 ### Public schema
 
-| Table | Purpose |
-|---|---|
-| `cdn` | File storage (bytea), used for images, cards, slips |
-| `auditLog` | Admin action audit trail |
-| `characters` | Genshin characters (linked to versions, CDN images) |
-| `versions` | Game version tracking (self-referencing FK for `from`) |
-| `settings` | Global app settings (singleton row, PK is boolean `true`) |
-| `guides` | Character build guide links |
-| `user`, `session`, `account`, `verification` | Better-auth tables |
+| Table                                        | Purpose                                                   |
+| -------------------------------------------- | --------------------------------------------------------- |
+| `cdn`                                        | File storage (bytea), used for images, cards, slips       |
+| `auditLog`                                   | Admin action audit trail                                  |
+| `characters`                                 | Genshin characters (linked to versions, CDN images)       |
+| `versions`                                   | Game version tracking (self-referencing FK for `from`)    |
+| `settings`                                   | Global app settings (singleton row, PK is boolean `true`) |
+| `guides`                                     | Character build guide links                               |
+| `user`, `session`, `account`, `verification` | Better-auth tables                                        |
 
 ### `artifact` schema
 
-| Table | Purpose |
-|---|---|
-| `submissions` | Artifact review queue submissions |
-| `cards` | Generated character cards for submissions |
-| `settings` | Artifact-specific settings (locked, limit) |
+| Table         | Purpose                                    |
+| ------------- | ------------------------------------------ |
+| `submissions` | Artifact review queue submissions          |
+| `cards`       | Generated character cards for submissions  |
+| `settings`    | Artifact-specific settings (locked, limit) |
 
 ### `endgame` schema
 
-| Table | Purpose |
-|---|---|
+| Table         | Purpose                             |
+| ------------- | ----------------------------------- |
 | `submissions` | Rubgram (endgame) queue submissions |
-| `sarchive` | Archived completed submissions |
-| `expired` | Expired unpaid submissions |
-| `slips` | SlipOK payment slip images and data |
-| `settings` | Rubgram-specific settings |
-| `discord` | Discord user mapping |
-| `types` | Service types with pricing |
+| `sarchive`    | Archived completed submissions      |
+| `expired`     | Expired unpaid submissions          |
+| `slips`       | SlipOK payment slip images and data |
+| `settings`    | Rubgram-specific settings           |
+| `discord`     | Discord user mapping                |
+| `types`       | Service types with pricing          |
 
 ### `tierlist` schema
 
-| Table | Purpose |
-|---|---|
-| `types` | Tierlist categories (Spiral Abyss, Stygian Onslaught) |
-| `tiers` | Tier definitions (S, A, B, etc.) |
-| `columns` | Column layout definitions |
-| `badges` | Badge icons for tiers |
-| `versions` | Tierlist versions per type |
-| `states` | Character placements per version (JSONB badges) |
+| Table      | Purpose                                               |
+| ---------- | ----------------------------------------------------- |
+| `types`    | Tierlist categories (Spiral Abyss, Stygian Onslaught) |
+| `tiers`    | Tier definitions (S, A, B, etc.)                      |
+| `columns`  | Column layout definitions                             |
+| `badges`   | Badge icons for tiers                                 |
+| `versions` | Tierlist versions per type                            |
+| `states`   | Character placements per version (JSONB badges)       |
 
 ### Key schema patterns
 
 **UUIDv7 primary keys:**
+
 ```ts
 import { uuidv7 } from "uuidv7";
 
@@ -67,6 +68,7 @@ id: uuid("id").primaryKey().$defaultFn(uuidv7),
 ```
 
 **Named schemas with `pgSchema`:**
+
 ```ts
 import { pgSchema } from "drizzle-orm/pg-core";
 
@@ -75,12 +77,14 @@ export const submissions = artifact.table("submissions", { ... });
 ```
 
 **Custom `bytea` column** (for binary data like images):
+
 ```ts
 import { bytea } from "$/db/custom";
 // used in: cdn, cards, slips tables
 ```
 
 **Generated columns:**
+
 ```ts
 paid: boolean().generatedAlwaysAs(
   sql`(price <= (0)::numeric) OR (slip IS NOT NULL)`
@@ -88,18 +92,27 @@ paid: boolean().generatedAlwaysAs(
 ```
 
 **Serial sequences** for queue numbering per schema:
+
 ```ts
 queue: integer().notNull().default(sql`(nextval('artifact.submissions_queue_seq'::regclass))`),
 ```
 
 **Enums:**
+
 ```ts
 export const characterElement = pgEnum("character_element", [
-  "anemo", "geo", "dendro", "hydro", "pyro", "cryo", "electro",
+  "anemo",
+  "geo",
+  "dendro",
+  "hydro",
+  "pyro",
+  "cryo",
+  "electro",
 ]);
 ```
 
 **Foreign keys with cascade:**
+
 ```ts
 char: uuid("char").notNull().references(() => characters.id, {
   onDelete: "cascade",
@@ -113,10 +126,10 @@ char: uuid("char").notNull().references(() => characters.id, {
 
 Schema changes must be pushed to the database **before** the new code deploys. Otherwise the running app will crash on startup when it queries tables or columns that don't exist yet.
 
-| Environment | Command | Timing |
-|---|---|---|
-| **Dev** | `bun ds dr push` | Run inside app container (via `bun ds`) against dev DB |
-| **Production** | `bun dr push` | Run locally with production env vars against prod DB. **Must run before `git push`.** |
+| Environment    | Command          | Timing                                                                                |
+| -------------- | ---------------- | ------------------------------------------------------------------------------------- |
+| **Dev**        | `bun ds dr push` | Run inside app container (via `bun ds`) against dev DB                                |
+| **Production** | `bun dr push`    | Run locally with production env vars against prod DB. **Must run before `git push`.** |
 
 ### Full migration workflow
 
@@ -196,15 +209,20 @@ refId: uuid("ref_id")
 ## Query patterns
 
 ### Basic select
+
 ```ts
 import { db } from "$/db";
 import { submissions } from "$/db/schema";
 import { eq } from "drizzle-orm";
 
-const items = await db.select().from(submissions).where(eq(submissions.checked, false));
+const items = await db
+  .select()
+  .from(submissions)
+  .where(eq(submissions.checked, false));
 ```
 
 ### Select with join
+
 ```ts
 const result = await db
   .select({
@@ -217,6 +235,7 @@ const result = await db
 ```
 
 ### Insert
+
 ```ts
 const [inserted] = await db
   .insert(submissions)
@@ -225,6 +244,7 @@ const [inserted] = await db
 ```
 
 ### Update
+
 ```ts
 await db
   .update(submissions)
@@ -233,18 +253,23 @@ await db
 ```
 
 ### Delete with cascade check (CDN)
+
 ```ts
 // Use checkCdnRefs() from $api before deleting CDN files
 ```
 
 ### Raw SQL
+
 ```ts
 import { sql } from "drizzle-orm";
 
-await db.execute(sql`ALTER SEQUENCE artifact.submissions_queue_seq RESTART WITH 1`);
+await db.execute(
+  sql`ALTER SEQUENCE artifact.submissions_queue_seq RESTART WITH 1`,
+);
 ```
 
 ### Transactions
+
 ```ts
 await db.transaction(async (tx) => {
   await tx.insert(...);
@@ -253,6 +278,7 @@ await db.transaction(async (tx) => {
 ```
 
 ### Counting
+
 ```ts
 const count = await db.$count(submissions);
 ```

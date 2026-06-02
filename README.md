@@ -1,5 +1,7 @@
 # Buzz Events
+
 This is a Next.js project running multiple events for a YouTuber, Buzz. It have been branched into 5 different parts:
+
 - Artifact: Versionly watcher-submitted ID review.
 - Rubgram: A paid event that basically lets Buzz play endgame content for you.
 - Tierlist: Versionly tierlist rating characters for Spiral Abyss & Stygian Onslaught.
@@ -7,6 +9,7 @@ This is a Next.js project running multiple events for a YouTuber, Buzz. It have 
 - `WIP` Admin: Admin panel where you can manage versions, characters, tierlists, external services, etc.
 
 ## Architecture
+
 - User Interface: `shadcn`
 - Authentication: `better-auth`
 - Drag n drop: `dndkit`
@@ -19,10 +22,12 @@ This is a Next.js project running multiple events for a YouTuber, Buzz. It have 
 - Client side cross components communication with debug menu
 
 ## External APIs
+
 - Character&Version data: [Project Amber](https://gi.yatta.moe/en)
 - Character Card: Rendered by [Astral API/Enka Embed](https://git.dgnr.us/astral/api) with data provided by [Enka.network](https://enka.network/)
 
 ## Developers
+
 Lead Developer: `@dmgnr`
 
 Project Coordinator: `@gunshiz`

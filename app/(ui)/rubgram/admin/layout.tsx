@@ -1,4 +1,4 @@
-import { Dice5, Trash2 } from "lucide-react";
+import { Dice5, PlusIcon, Trash2 } from "lucide-react";
 import { redirect } from "next/navigation";
 import {
   AlertDialog,
@@ -30,8 +30,17 @@ import { endgameSubmissions } from "@/lib/db/schema";
 import { getEndgameConfig, random, wipe } from "../api";
 import { LimitManager, SlipButton, SubmissionList, Watcher } from "./client";
 import { desc, sql } from "drizzle-orm";
+import Link from "next/link";
+import { ErrorBoundary } from "next/dist/client/components/error-boundary";
+import { ErrorModal } from "@/components/error";
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({
+  modal,
+  children,
+}: {
+  children: React.ReactNode;
+  modal: React.ReactNode;
+}) {
   if (!(await adminCheck())) redirect("/login");
   const subs = await db
     .select({
@@ -60,7 +69,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <div className="flex justify-between items-center">
             <b>Admin</b>
             <div className="flex gap-1">
-              <Button variant="ghost" size="icon" className="size-8" onClick={random}>
+              <Button variant="ghost" size="icon" className="size-8" asChild>
+                <Link href="/rubgram/admin/manual">
+                  <PlusIcon size={24} className="size-6" />
+                </Link>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8"
+                onClick={random}
+              >
                 <Dice5 size={24} className="size-6" />
               </Button>
               <SlipButton />
@@ -72,14 +91,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 </AlertDialogTrigger>
                 <AlertDialogContent className="z-101">
                   <AlertDialogHeader>
-                    <AlertDialogTitle>คุณมั่นใจที่จะล้างข้อมูลทั้งหมดใช่ไหม?</AlertDialogTitle>
+                    <AlertDialogTitle>
+                      คุณมั่นใจที่จะล้างข้อมูลทั้งหมดใช่ไหม?
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
                       การกระทำนี้ไม่สามารถย้อนกลับได้ เราจะลบบัญชีของท่านออกจากระบบ
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-                    <AlertDialogAction onClick={wipe}>ดำเนินการต่อ</AlertDialogAction>
+                    <AlertDialogAction onClick={wipe}>
+                      ดำเนินการต่อ
+                    </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -97,11 +120,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <SidebarFooter>
           <SidebarGroup>
             <SidebarGroupLabel>การตั้งค่า</SidebarGroupLabel>
-            <LimitManager config={config} length={subs.reduce((c, s) => c + (s.paid ? 1 : 0), 0)} />
+            <LimitManager
+              config={config}
+              length={subs.reduce((c, s) => c + (s.paid ? 1 : 0), 0)}
+            />
           </SidebarGroup>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="bg-transparent">
+        <ErrorBoundary errorComponent={ErrorModal}>{modal}</ErrorBoundary>
         {children}
         <div className="absolute block md:hidden opacity-50 hover:opacity-100 bottom-1 left-1">
           <SidebarTrigger />

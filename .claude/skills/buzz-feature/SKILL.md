@@ -14,24 +14,24 @@ This skill covers the full workflow for adding new features — from routing and
 
 ### Path aliases
 
-| Alias | Maps to |
-|---|---|
+| Alias | Maps to              |
+| ----- | -------------------- |
 | `@/*` | `./*` (project root) |
-| `$/*` | `./lib/*` |
-| `#/*` | `./public/*` |
+| `$/*` | `./lib/*`            |
+| `#/*` | `./public/*`         |
 
 ### Tech choices
 
-| Concern | Choice |
-|---|---|
-| Styling | Tailwind CSS v4, shadcn/ui (Radix primitives), `cn()` from `@/lib/utils` |
-| Forms | Custom `FormProvider`/`FormInput`/`FormAction` system with autosave |
+| Concern       | Choice                                                                     |
+| ------------- | -------------------------------------------------------------------------- |
+| Styling       | Tailwind CSS v4, shadcn/ui (Radix primitives), `cn()` from `@/lib/utils`   |
+| Forms         | Custom `FormProvider`/`FormInput`/`FormAction` system with autosave        |
 | Data fetching | Server components (async, direct `db` calls) + React `Suspense` boundaries |
-| Mutations | Server actions (`"use server"`) with Zod validation |
-| Real-time | Redis pub-sub → SSE via `EventSourceEndpoint` |
-| Auth | `better-auth` — server `adminCheck()`, client `createAuthClient()` |
-| State | React context, ICC (`IccProvider`/`shared.state`), no global state lib |
-| Icons | `lucide-react` |
+| Mutations     | Server actions (`"use server"`) with Zod validation                        |
+| Real-time     | Redis pub-sub → SSE via `EventSourceEndpoint`                              |
+| Auth          | `better-auth` — server `adminCheck()`, client `createAuthClient()`         |
+| State         | React context, ICC (`IccProvider`/`shared.state`), no global state lib     |
+| Icons         | `lucide-react`                                                             |
 
 ### Key principles
 
@@ -62,6 +62,7 @@ app/(ui)/<feature>/
 ```
 
 **Pattern for `page.tsx`:**
+
 ```tsx
 import { Suspense } from "react";
 import { FeatureClient } from "./client";
@@ -120,6 +121,7 @@ The form system auto-saves to localStorage (keyed by `id`, 10-min TTL) and resto
 ### 4. Add live SSE updates
 
 Define events in `lib/db/sse-endpoints.ts`:
+
 ```ts
 export const sse = sseEndpointMap({
   ...existing,
@@ -130,11 +132,13 @@ export const sse = sseEndpointMap({
 ```
 
 Publish in your server action:
+
 ```ts
 sse.myFeature.pub("update", { type: "action1" });
 ```
 
 Subscribe on the client:
+
 ```ts
 useEffect(() => {
   const { clean } = sse.myFeature.sub("update", (data) => {
@@ -145,6 +149,7 @@ useEffect(() => {
 ```
 
 For dynamic topics (e.g. per-tierlist), use `tlSse(listId)`:
+
 ```ts
 // Server
 tlSse(listId).pub("update_states", states);
@@ -161,6 +166,7 @@ SSE endpoints are served via `app/sse/[topic]/route.ts`.
 ### 5. Add OG image
 
 Create `opengraph-image.ts` using `@/lib/og`:
+
 ```tsx
 import { ImageResponse } from "next/og";
 
@@ -168,7 +174,15 @@ export const size = { width: 1200, height: 630 };
 
 export default function OGImage() {
   return new ImageResponse(
-    <div style={{ /* ... */ }}>Buzz Feature</div>,
+    <div
+      style={
+        {
+          /* ... */
+        }
+      }
+    >
+      Buzz Feature
+    </div>,
     { ...size },
   );
 }
@@ -218,7 +232,10 @@ import { db } from "$/db";
 import { FeatureClient } from "./client";
 
 export default async function AdminFeaturePage() {
-  const items = await db.select().from(featureTable).orderBy(featureTable.order);
+  const items = await db
+    .select()
+    .from(featureTable)
+    .orderBy(featureTable.order);
   return <FeatureClient items={items} />;
 }
 ```
@@ -226,6 +243,7 @@ export default async function AdminFeaturePage() {
 ### 5. Parallel route modal for create/edit
 
 Create modal (`@modal/<feature>/create/page.tsx`):
+
 ```tsx
 import { ModalBase } from "@/components/modal";
 import { CreateForm } from "./overrides";
@@ -261,6 +279,7 @@ export async function updateItem(id: string, data: FormData) {
 ### 7. Audit logging
 
 Every admin mutation must call `actionLog(text, details?)` from `$api`:
+
 ```ts
 await actionLog("Description of what happened", optionalDetails);
 ```
@@ -270,6 +289,7 @@ This inserts into the `auditLog` table, revalidates the log page, and publishes 
 ### 8. CDN assets
 
 For features that need image/file uploads:
+
 - Use `CdnChooserProvider` + CDN chooser component from `@/components/chooser`
 - Upload via `cdnify()` from `$api` (returns the CDN record ID)
 - Reference CDN IDs in your DB schema as foreign keys to `cdn` table
@@ -279,6 +299,7 @@ For features that need image/file uploads:
 ### 9. TanStack Table for data display
 
 For list views with sorting/selection/context menus:
+
 ```tsx
 import { DataTable } from "@/components/tantable";
 import { columns } from "./columns";
@@ -300,6 +321,7 @@ export async function GET(req: Request) {
 ```
 
 Patterns used in this project:
+
 - **Proxy routes**: `/api/enka/[uid]`, `/api/amber/char` — forward to external APIs
 - **Count routes**: `/api/artifact/count`, `/api/rubgram/count` — quick aggregate queries
 - **Health check**: `/api/health` — returns status of DB, Enka, Amber, Redis
@@ -315,7 +337,12 @@ The form system (`@/components/form.tsx`) provides:
 - **`FormRow`**: Wraps fields in a horizontal or vertical layout row.
 
 ```tsx
-<FormProvider id="my-form" clean={() => { /* on success */ }}>
+<FormProvider
+  id="my-form"
+  clean={() => {
+    /* on success */
+  }}
+>
   <FormInput name="title" label="Title" required />
   <FormInput name="description" label="Description" />
   <FormAction action={submitAction}>Save</FormAction>

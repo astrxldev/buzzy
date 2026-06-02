@@ -26,14 +26,14 @@ bun dev
 
 This runs `docker compose up --watch` from `dev/compose.yml`, spinning up:
 
-| Container | Purpose | Notes |
-|---|---|---|
-| `app` | Next.js dev server (port 3000) | File sync via Docker watch, autoreloads |
-| `backend` | Background worker (card caching, cron, webhooks) | Rebuilds on `backend/` changes |
-| `db` | PostgreSQL (port 5432) | Auto-creates on first run |
-| `redis` | Redis (port 6379) | Pub-sub for SSE, persistence enabled |
-| `redis-commander` | Redis GUI (port 6380) | Optional, for debugging |
-| `drizzle` | Drizzle Studio (port 4983) | DB management UI |
+| Container         | Purpose                                          | Notes                                   |
+| ----------------- | ------------------------------------------------ | --------------------------------------- |
+| `app`             | Next.js dev server (port 3000)                   | File sync via Docker watch, autoreloads |
+| `backend`         | Background worker (card caching, cron, webhooks) | Rebuilds on `backend/` changes          |
+| `db`              | PostgreSQL (port 5432)                           | Auto-creates on first run               |
+| `redis`           | Redis (port 6379)                                | Pub-sub for SSE, persistence enabled    |
+| `redis-commander` | Redis GUI (port 6380)                            | Optional, for debugging                 |
+| `drizzle`         | Drizzle Studio (port 4983)                       | DB management UI                        |
 
 The `bun dev` command runs **foreground only**. Press Ctrl+C to stop all containers.
 
@@ -56,28 +56,28 @@ bun ds bun lint             # lint inside container
 
 Seeded automatically by the backend on first startup when `ENVIRONMENT=development`:
 
-| Field | Value |
-|---|---|
-| Email | `admin@dgnr.us` |
+| Field    | Value             |
+| -------- | ----------------- |
+| Email    | `admin@dgnr.us`   |
 | Password | `youshallnotpass` |
-| Role | `admin` |
+| Role     | `admin`           |
 
 Seeding is idempotent — it skips if an admin account already exists.
 
 ## Command Reference
 
-| Command | What it does |
-|---|---|
-| `bun dev` | Start all dev containers with file watch |
-| `bun ds <cmd>` | Run a command in the app container |
-| `bun nextdev` | Start Next.js dev server directly (outside Docker) |
-| `bun build` | Build for production (Turbopack) |
-| `bun start` | Start production server |
-| `bun lint` | Run Biome check with auto-fix |
-| `bun format` | Run Biome formatter |
-| `bun dr <args>` | Run drizzle-kit commands |
-| `bun logs` | Tail logs from all containers (`docker compose logs -fn50`) |
-| `bun test` | Run Playwright tests (outdated — unreliable) |
+| Command         | What it does                                                |
+| --------------- | ----------------------------------------------------------- |
+| `bun dev`       | Start all dev containers with file watch                    |
+| `bun ds <cmd>`  | Run a command in the app container                          |
+| `bun nextdev`   | Start Next.js dev server directly (outside Docker)          |
+| `bun build`     | Build for production (Turbopack)                            |
+| `bun start`     | Start production server                                     |
+| `bun lint`      | Run Biome check with auto-fix                               |
+| `bun format`    | Run Biome formatter                                         |
+| `bun dr <args>` | Run drizzle-kit commands                                    |
+| `bun logs`      | Tail logs from all containers (`docker compose logs -fn50`) |
+| `bun test`      | Run Playwright tests (outdated — unreliable)                |
 
 ## Common Maintenance Tasks
 
@@ -129,23 +129,25 @@ Before doing any UI/interaction work, you **must** set up BrowserMCP for automat
 
 ### Flow
 
-1. The agent will ask you: *"Do you want to set up BrowserMCP for automated browser testing?"*
+1. The agent will ask you: _"Do you want to set up BrowserMCP for automated browser testing?"_
 2. If you agree, the agent will:
 
    a. Install the BrowserMCP package:
+
    ```bash
    bun add -d @anthropic/browser-use
    ```
 
    b. Add the MCP server configuration to `opencode.json` (or create/edit `.opencode.jsonc`):
+
    ```jsonc
    {
      "mcpServers": {
        "browser": {
          "command": "bunx",
-         "args": ["@anthropic/browser-use"]
-       }
-     }
+         "args": ["@anthropic/browser-use"],
+       },
+     },
    }
    ```
 
