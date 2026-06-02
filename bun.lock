@@ -8,7 +8,7 @@
         "@bprogress/next": "^3.2.12",
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "^10.0.0",
-        "@headless-tree/core": "^1.6.0",
+        "@headless-tree/core": "^1.7.0",
         "@headless-tree/react": "^1.6.0",
         "@hookform/resolvers": "^5.2.2",
         "@next/bundle-analyzer": "16.0.6",
@@ -306,7 +306,7 @@
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.10", "", {}, "sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ=="],
 
-    "@headless-tree/core": ["@headless-tree/core@1.6.3", "", {}, "sha512-en0EOaZfiCRF2B8DEnhGhSaUf3hVr9Bauye8G8aswPbHOKSyhJiN4bsczz1GvqF4Xb7Ga3LP0vLA6Zih7YLoyw=="],
+    "@headless-tree/core": ["@headless-tree/core@1.7.0", "", {}, "sha512-LxcX7LNepwfOPrZcs4PNfDwCzbi326uCAX5jYBfw94jI+pZQA7ANaE/No3LW0XFgcBcQtK/G2bInbVEhLF1C/Q=="],
 
     "@headless-tree/react": ["@headless-tree/react@1.6.3", "", { "peerDependencies": { "@headless-tree/core": "*", "react": "*", "react-dom": "*" } }, "sha512-aiRwG6e2EPBSec9uLLy9GlTvAuCtSTouU30Nwcr5ZTsYjG/i7B/ouC8f8Zu4unzo/v1h5ztbemp+EH2TPTKh+g=="],
 
