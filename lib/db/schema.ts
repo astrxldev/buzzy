@@ -342,6 +342,19 @@ export const guides = pgTable("guides", {
 
 //#endregion
 
+//#region Donate
+export const schDonate = pgSchema("donate");
+
+export const donations = schDonate.table("donations", {
+  id: text().primaryKey().$defaultFn(uuidv7),
+  name: text().notNull(),
+  amount: numeric().notNull(),
+  image: bytea(),
+  message: text(),
+});
+
+//#endregion
+
 //#region Better Auth
 export const user = pgTable("user", {
   id: text("id").primaryKey(),

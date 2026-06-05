@@ -3,7 +3,6 @@ import { eq } from "drizzle-orm";
 import { SaveIcon, Trash2 } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
-import type { TypedFormData } from "@/app/(ui)/rubgram/type";
 import { CdnChooser } from "@/components/chooser";
 import {
   FormAction,
@@ -34,13 +33,7 @@ export default async function TlTypeEditPage({
   if (!type) notFound();
 
   async function submit(
-    form: TypedFormData<{
-      name: string;
-      id: string;
-      order: string;
-      image: string;
-      mode: string;
-    }>,
+    form: FormData,
   ) {
     "use server";
     if (!(await adminCheck())) redirect("/login");
@@ -55,11 +48,11 @@ export default async function TlTypeEditPage({
 
     try {
       data = {
-        id: form.get("id")!,
-        name: form.get("name")!,
-        image: form.get("image")!,
-        order: parseInt(form.get("order")!, 10),
-        mode: form.get("mode")!,
+        id: form.get("id") as string,
+        name: form.get("name") as string,
+        image: form.get("image") as string,
+        order: parseInt(form.get("order") as string, 10),
+        mode: form.get("mode") as string,
       };
       await db
         .update(tierlistTypes)

@@ -29,7 +29,7 @@ export default function Home() {
           </center>
         </section>
 
-        <div className="flex flex-wrap my-10">
+        <div className="flex flex-wrap justify-evenly my-10 gap-5">
           <HomeLink
             name="เสือกไอดีชาวบ้าน"
             desc="ระบบลงคิวดูอาร์ติแฟกต์เกนชินในไลฟ์สตรีม"
@@ -59,6 +59,12 @@ export default function Home() {
             href="/guide"
             logo={GuideLogo}
           />
+          {/* <HomeLink
+            name="Donate"
+            desc="โดเนทขึ้นไลฟ์สตรีม"
+            href="/tip"
+            logo={GuideLogo}
+          /> */}
         </div>
         <footer className="text-muted-foreground h-full flex flex-col justify-end pb-3 md:justify-center">
           <div className="flex justify-between flex-col text-center gap-2 sm:flex-row sm:text-left">
@@ -144,7 +150,7 @@ function HomeLink({
     <SimpleTooltip text={desc}>
       <Link
         href={href}
-        className={cn("flex flex-col p-10 mx-auto text-center", className)}
+        className={cn("flex flex-col p-10 text-center", className)}
       >
         <Image
           src={logo}

@@ -2,14 +2,12 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import type {
-  TypedFormData,
-  TypedFormDataShape,
-} from "@/app/(ui)/rubgram/type";
 import { cn } from "@/lib/utils";
 import { DialogClose } from "./ui/dialog";
 import { Label } from "./ui/label";
+import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { Divide } from "lucide-react";
+import type { FormSubmitResult } from "./form-submit";
 
 const AUTOSAVE_TTL_MS = 10 * 60 * 1000;
 const STORAGE_PREFIX = "form:autosave:";
@@ -19,12 +17,14 @@ type FormValues = Record<string, unknown>;
 type FormContextValue = {
   id: string;
   values: FormValues;
+  errors: Record<string, string>;
   loading: boolean;
   setValue: (name: string, value: unknown) => void;
   updateValues: (updater: (prev: FormValues) => FormValues) => void;
   clear: () => void;
   submit: () => Promise<void>;
   closeDialog: () => void;
+  setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 };
 
 const FormContext = React.createContext<FormContextValue | null>(null);
@@ -87,19 +87,6 @@ function appendFormValue(form: FormData, key: string, value: unknown) {
   form.append(key, typeof value === "string" ? value : String(value));
 }
 
-function toTypedFormData<T extends TypedFormDataShape>(
-  formData: FormData,
-): TypedFormData<T> {
-  const base = formData as unknown as TypedFormData<T>;
-  if (!("raw" in base)) {
-    Object.defineProperty(base, "raw", {
-      value: formData,
-      enumerable: false,
-    });
-  }
-  return base;
-}
-
 function getInputValue(eventOrValue: unknown) {
   const event = eventOrValue as React.ChangeEvent<HTMLInputElement>;
   const target = event?.target as
@@ -118,35 +105,25 @@ function getInputValue(eventOrValue: unknown) {
   return eventOrValue;
 }
 
-type SubmitFnResult =
-  | {
-      toast?: string;
-      close?: boolean;
-      error?: string;
-    }
-  | undefined;
-
-type FormProviderProps<T extends TypedFormDataShape> = Omit<
-  React.ComponentProps<"form">,
-  "id" | "onSubmit"
-> & {
+type FormProviderProps = Omit<React.ComponentProps<"form">, "id" | "onSubmit"> & {
   // Unique Autosave Key
   id: string;
-  onSubmit?: (
-    form: TypedFormData<T>,
-  ) => SubmitFnResult | Promise<SubmitFnResult>;
+  onSubmit?: (form: FormData) => FormSubmitResult | Promise<FormSubmitResult>;
   values?: FormValues;
+  inDialog?: boolean;
 };
 
-export function FormProvider<T extends TypedFormDataShape>({
+export function FormProvider({
   id,
   onSubmit,
   className,
   children,
+  inDialog = true,
   values: defaultValues = {},
   ...props
-}: FormProviderProps<T>) {
+}: FormProviderProps) {
   const [values, setValues] = React.useState<FormValues>(defaultValues);
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [loading, setLoading] = React.useState(false);
   const formRef = React.useRef<HTMLFormElement | null>(null);
   const [storageLock, setStorageLock] = React.useState<"r" | "w" | null>("r");
@@ -180,6 +157,12 @@ export function FormProvider<T extends TypedFormDataShape>({
 
   const setValue = React.useCallback((name: string, value: unknown) => {
     setValues((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => {
+      if (!prev[name]) return prev;
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
   }, []);
   const updateValues = React.useCallback(
     (updater: (prev: FormValues) => FormValues) => {
@@ -190,6 +173,7 @@ export function FormProvider<T extends TypedFormDataShape>({
 
   const clear = React.useCallback(() => {
     setValues({});
+    setErrors({});
     localStorage.removeItem(storageKey(id));
     formRef.current?.reset();
   }, [id]);
@@ -204,12 +188,25 @@ export function FormProvider<T extends TypedFormDataShape>({
       appendFormValue(formData, key, value);
     }
     setLoading(true);
+    setErrors({});
     try {
-      const res = await onSubmit?.(toTypedFormData(formData));
+      const res = await onSubmit?.(formData);
       if (res && typeof res === "object") {
         if ("error" in res) {
           const { error } = res;
-          if (typeof error === "string") throw new Error(error);
+          if (typeof error === "string") {
+            toast.error(error);
+          } else if (Array.isArray(error)) {
+            const fieldErrors: Record<string, string> = {};
+            for (const e of error) {
+              fieldErrors[e.where] = e.what;
+            }
+            setErrors(fieldErrors);
+          } else if (error) {
+            setErrors({ [error.where]: error.what });
+          }
+        } else {
+          setErrors({});
         }
         if ("toast" in res) {
           const { toast: toastMsg } = res;
@@ -239,14 +236,16 @@ export function FormProvider<T extends TypedFormDataShape>({
     () => ({
       id,
       values,
+      errors,
       loading,
       setValue,
       updateValues,
       clear,
       submit,
       closeDialog,
+      setErrors,
     }),
-    [id, values, loading, setValue, updateValues, clear, submit, closeDialog],
+    [id, values, errors, loading, setValue, updateValues, clear, submit, closeDialog, setErrors],
   );
 
   return (
@@ -263,7 +262,7 @@ export function FormProvider<T extends TypedFormDataShape>({
       >
         {children}
       </form>
-      <DialogClose ref={closerRef} />
+      {inDialog && <DialogClose ref={closerRef} />}
     </FormContext.Provider>
   );
 }
@@ -286,7 +285,7 @@ export function FormInput({
   subLabel,
   className,
 }: FormInputProps) {
-  const { values, setValue, updateValues } = useFormContext();
+  const { values, setValue, updateValues, errors } = useFormContext();
   const childProps = (children.props ?? {}) as Record<string, unknown>;
   const value = values[name] ?? childProps?.defaultValue ?? "";
   const nextProps: Record<string, unknown> = { name, defaultValue: undefined };
@@ -356,9 +355,17 @@ export function FormInput({
             )}
           </Label>
           {React.cloneElement(children || Divide, nextProps)}
+          {errors[name] && (
+            <span className="text-destructive text-sm">{errors[name]}</span>
+          )}
         </div>
       ) : (
-        React.cloneElement(children || Divide, nextProps)
+        <div className={cn(className)}>
+          {React.cloneElement(children || Divide, nextProps)}
+          {errors[name] && (
+            <span className="text-destructive text-sm">{errors[name]}</span>
+          )}
+        </div>
       )}
     </>
   );
@@ -370,7 +377,7 @@ type FormActionProps = Omit<
 > & {
   type: "clear" | "submit" | "action";
 
-  action?: () => SubmitFnResult | Promise<SubmitFnResult>;
+  action?: () => FormSubmitResult | Promise<FormSubmitResult>;
   children?: React.ReactNode;
   loading?: React.ReactNode;
   asChild?: boolean;
@@ -384,7 +391,7 @@ export function FormAction({
   loading: loadingComponent,
   ...props
 }: FormActionProps) {
-  const { loading: formLoading, clear, closeDialog } = useFormContext();
+  const { loading: formLoading, clear, closeDialog, setErrors } = useFormContext();
   const [actionLoading, setActionLoading] = React.useState(false);
   const loading = formLoading || actionLoading;
 
@@ -401,7 +408,19 @@ export function FormAction({
           if (res && typeof res === "object") {
             if ("error" in res) {
               const { error } = res;
-              if (typeof error === "string") throw new Error(error);
+              if (typeof error === "string") {
+                toast.error(error);
+              } else if (Array.isArray(error)) {
+                const fieldErrors: Record<string, string> = {};
+                for (const e of error) {
+                  fieldErrors[e.where] = e.what;
+                }
+                setErrors(fieldErrors);
+              } else if (error) {
+                setErrors({ [error.where]: error.what });
+              }
+            } else {
+              setErrors({});
             }
             if ("toast" in res) {
               const { toast: toastMsg } = res;
@@ -452,3 +471,61 @@ export function FormRow({ className, ...props }: React.ComponentProps<"div">) {
     />
   );
 }
+
+export function FormTab({
+  label,
+  name,
+  tabs,
+  children,
+}: {
+  label?: React.ReactNode;
+  name: string;
+  tabs: { label: React.ReactNode; value: string }[];
+  children: React.ReactNode;
+}) {
+  const { values, setValue } = useFormContext();
+  const active = (values[name] as string | undefined) ?? tabs[0]?.value;
+
+  React.useEffect(() => {
+    if (values[name] === undefined && tabs[0]) {
+      setValue(name, tabs[0].value);
+    }
+    // biome-ignore lint/correctness/useExhaustiveDependencies: only run on mount to seed default
+  }, []);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex w-full justify-between items-end">
+        {label}
+        <Tabs value={active} onValueChange={(v) => setValue(name, v)}>
+          <TabsList>
+            {tabs.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value}>
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </div>
+      <div className="bg-muted-foreground/10 p-3 rounded-md">
+        {React.Children.map(children, (child) => {
+          if (!React.isValidElement(child)) return null;
+          const childValue = (child.props as Record<string, unknown>).value;
+          return childValue === active ? child : null;
+        })}
+      </div>
+    </div>
+  );
+}
+
+export function FormChoice({
+  children,
+}: {
+  // biome-ignore lint/style/useExportType: not a type
+  value: string;
+  children: React.ReactNode;
+}) {
+  return <>{children}</>;
+}
+
+

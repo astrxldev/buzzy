@@ -31,6 +31,17 @@ export const sse = sseEndpointMap({
         }),
       ),
   },
+  donate: {
+    ping: z.object({
+      name: z.string(),
+      amount: z.number(),
+      image: z.string(),
+      message: z.string(),
+    }),
+    // roundtrip SSE system check
+    heartbeat: z.number(),
+    update: z.null(),
+  },
   // Passive Update Checker
   active: {
     version: z.string(),

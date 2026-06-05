@@ -2,7 +2,6 @@ import { desc, sql } from "drizzle-orm";
 import { ArrowRight, PlusIcon } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import type { TypedFormData } from "@/app/(ui)/rubgram/type";
 import { CdnChooser } from "@/components/chooser";
 import { FormAction, FormInput, FormProvider } from "@/components/form";
 import { ModalBase } from "@/components/modal";
@@ -34,17 +33,7 @@ export default async function CharacterCreatePage() {
   ]);
 
   async function submit(
-    form: TypedFormData<{
-      name: string;
-      id: string;
-      element: (typeof elementEnum.enumValues)[number];
-      stars: "4" | "5";
-      image: string;
-      order: string;
-      version: string;
-      weapon: string;
-      amber: string;
-    }>,
+    form: FormData,
   ) {
     "use server";
     if (!(await adminCheck())) redirect("/login");
@@ -69,15 +58,15 @@ export default async function CharacterCreatePage() {
 
     try {
       data = {
-        id: form.get("id")!,
-        name: form.get("name")!,
-        vision: form.get("element")!,
-        stars: parseInt(form.get("stars") || "0", 10) as 4 | 5,
-        image: form.get("image")!,
-        order: parseInt(form.get("order")!, 10),
-        version: form.get("version")!,
-        weapon: form.get("weapon")!,
-        amber: form.get("amber")!,
+        id: form.get("id") as string,
+        name: form.get("name") as string,
+        vision: form.get("element") as string,
+        stars: parseInt((form.get("stars") as string) || "0", 10) as 4 | 5,
+        image: form.get("image") as string,
+        order: parseInt(form.get("order") as string, 10),
+        version: form.get("version") as string,
+        weapon: form.get("weapon") as string,
+        amber: form.get("amber") as string,
       };
       await db.insert(characters).values(data);
     } catch (e) {

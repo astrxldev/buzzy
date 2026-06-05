@@ -24,14 +24,13 @@ import {
   MultiSelectValue,
 } from "@/components/ui/multi-select";
 import { cn } from "@/lib/utils";
-import { Select, SelectTrigger } from "@/components/ui/select";
 import { VirtualizedComboBox } from "@/components/combobox";
 import { Spinner } from "@/components/ui/spinner";
 
 export function CurrencyInput(props: ComponentProps<typeof Input>) {
   return (
-    <InputGroup className="max-w-xs">
-      <InputGroupInput placeholder="ฟรี" {...props} />
+    <InputGroup>
+      <InputGroupInput {...props} />
       <InputGroupAddon align="inline-end">฿</InputGroupAddon>
     </InputGroup>
   );
@@ -131,7 +130,7 @@ export function SlipUpload({
             {value.name} <Kbd>{b2sClient(Number(value.size))}</Kbd>
           </span>
         ) : (
-          "Upload Slip"
+          "อัพโหลดสลิปโอนเงิน"
         )}
         {isSelected ? (
           <SimpleTooltip text="Unselect">
@@ -151,7 +150,6 @@ export function SlipUpload({
         ref={ref}
         type="file"
         accept="image/*"
-        required
         hidden
         onChange={() => {
           const file = ref.current?.files?.[0] || null;

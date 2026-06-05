@@ -2,7 +2,6 @@ import { sql } from "drizzle-orm";
 import { PlusIcon } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import type { TypedFormData } from "@/app/(ui)/rubgram/type";
 import { CdnChooser } from "@/components/chooser";
 import { FormAction, FormInput, FormProvider } from "@/components/form";
 import { ModalBase } from "@/components/modal";
@@ -22,13 +21,7 @@ export default async function TlTypeCreatePage() {
     .from(tierlistTypes);
 
   async function submit(
-    form: TypedFormData<{
-      name: string;
-      id: string;
-      order: string;
-      image: string;
-      mode: string;
-    }>,
+    form: FormData,
   ) {
     "use server";
     if (!(await adminCheck())) redirect("/login");
@@ -43,11 +36,11 @@ export default async function TlTypeCreatePage() {
 
     try {
       data = {
-        id: form.get("id")!,
-        name: form.get("name")!,
-        image: form.get("image")!,
-        mode: form.get("mode")!,
-        order: parseInt(form.get("order")!, 10),
+        id: form.get("id") as string,
+        name: form.get("name") as string,
+        image: form.get("image") as string,
+        mode: form.get("mode") as string,
+        order: parseInt(form.get("order") as string, 10),
       };
       await db.insert(tierlistTypes).values(data);
     } catch (e) {

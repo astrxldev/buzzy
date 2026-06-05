@@ -22,7 +22,6 @@ import {
   endgameSubmissions,
   endgameTypes,
 } from "@/lib/db/schema";
-import type { TypedFormData, TypedFormDataShape } from "../../../type";
 import { CurrencyInput, ServiceSelect, SlipUpload, UserSelect } from "./client";
 import {
   Select,
@@ -35,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { SlipokResponse } from "../../../api";
 import { getDiscordUsers } from "@/app/api/discord/users/api";
+import { th } from "zod/v4/locales";
 
 const Schema = z.object({
   name: z.string(),
@@ -48,14 +48,22 @@ const Schema = z.object({
 export default async function RgManualCreateModal() {
   if (!(await adminCheck())) redirect("/login");
   const types = await db.select().from(endgameTypes);
-  async function submit(form: TypedFormData<TypedFormDataShape>) {
+  async function submit(form: FormData) {
     "use server";
     if (!(await adminCheck())) redirect("/login");
 
     const raw = Object.fromEntries([...form.entries()]);
+    z.config(th());
     const parsed = Schema.safeParse(raw);
     console.log(raw, parsed);
-    if (!parsed.success) return { error: z.prettifyError(parsed.error) };
+    if (!parsed.success) {
+      return {
+        error: parsed.error.issues.map((issue) => ({
+          what: issue.message,
+          where: issue.path.join("."),
+        })),
+      };
+    }
     const { data } = parsed;
 
     const [{ id: slipId }] = await db
@@ -101,7 +109,7 @@ export default async function RgManualCreateModal() {
             <Input placeholder="Dreamgineer" autoFocus />
           </FormInput>
           <FormInput name="price" label="Price" className="flex-1">
-            <CurrencyInput />
+            <CurrencyInput placeholder="ฟรี" />
           </FormInput>
         </FormRow>
         <FormInput name="services" label="Services">

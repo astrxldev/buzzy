@@ -1,6 +1,13 @@
 "use client";
 
-import { Feather, Home, LoaderPinwheel, StickyNote, Table } from "lucide-react";
+import {
+  Bitcoin,
+  Feather,
+  Home,
+  LoaderPinwheel,
+  StickyNote,
+  Table,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -11,7 +18,9 @@ export function Navbar() {
   const pathname = usePathname();
   const mobile = useIsMobile();
 
-  if (!/^\/(?:tl(?:\/[a-zA-Z0-9]+)?|rubgram|artifact|guide)$/gm.test(pathname))
+  if (
+    !/^\/(?:tl(?:\/[a-zA-Z0-9]+)?|rubgram|artifact|guide|tip)$/gm.test(pathname)
+  )
     return "";
   return (
     <div
@@ -32,12 +41,8 @@ export function Navbar() {
         href="/rubgram"
       />
       <Item icon={<Table size={16} />} name="จัดเทียร์ลิสต์" href="/tl" />
-      <Item
-        icon={<StickyNote size={16} />}
-        name="ไกด์ตัวละคร"
-        href="/guide"
-        last
-      />
+      <Item icon={<StickyNote size={16} />} name="ไกด์ตัวละคร" href="/guide" />
+      <Item icon={<Bitcoin size={16} />} name="โดเนทขึ้นจอ" href="/tip" last />
     </div>
   );
 }

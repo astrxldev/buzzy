@@ -2,7 +2,6 @@ import { sql } from "drizzle-orm";
 import { PlusIcon } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import type { TypedFormData } from "@/app/(ui)/rubgram/type";
 import { CdnChooser } from "@/components/chooser";
 import {
   FormAction,
@@ -29,12 +28,7 @@ export default async function GuideCreatePage() {
     })
     .from(guides);
   async function submit(
-    form: TypedFormData<{
-      name: string;
-      link: string;
-      image: string;
-      order: string;
-    }>,
+    form: FormData,
   ) {
     "use server";
     if (!(await adminCheck())) redirect("/login");
@@ -49,10 +43,10 @@ export default async function GuideCreatePage() {
 
     try {
       data = {
-        name: form.get("name")!,
-        image: form.get("image")!,
-        link: form.get("link")!,
-        order: parseInt(form.get("order")!, 10),
+        name: form.get("name") as string,
+        image: form.get("image") as string,
+        link: form.get("link") as string,
+        order: parseInt(form.get("order") as string, 10),
       };
       try {
         new URL(data.link);

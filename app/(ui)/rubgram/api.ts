@@ -20,8 +20,6 @@ import {
 } from "@/lib/db/schema";
 import { sse } from "@/lib/db/sse-endpoints";
 import { getPostHogClient } from "@/lib/posthog-server";
-import type { TypedFormData } from "./type";
-
 const {
   SLIPOK_API_URL,
   SLIPOK_API_KEY,
@@ -205,19 +203,12 @@ export async function getEndgameConfig() {
   };
 }
 
-export type EndgameFormData = TypedFormData<{
-  name: string;
-  server: "as" | "eu" | "us" | "tw";
-  service: string;
-  user: string; // user snowflake
-}>;
-
-export async function submitEndgame(formData: EndgameFormData) {
+export async function submitEndgame(formData: FormData) {
   const { full, locked, limit, types, free } = await getEndgameConfig();
-  const name = formData.get("name");
-  const server = formData.get("server");
-  const service = formData.getAll("service");
-  const user = formData.get("user");
+  const name = formData.get("name") as string;
+  const server = formData.get("server") as "as" | "eu" | "us" | "tw";
+  const service = formData.getAll("service") as string[];
+  const user = formData.get("user") as string;
   if (!name || !server || !service.length || !user)
     return "กรุณากรอกข้อมูลให้ครบถ้วน";
 
@@ -267,14 +258,9 @@ export async function submitEndgame(formData: EndgameFormData) {
   return queue;
 }
 
-export type EndgamePaymentFormData = TypedFormData<{
-  sid: string;
-  slip: File;
-}>;
-
-export async function submitEndgamePayment(formData: EndgamePaymentFormData) {
-  const sid = formData.get("sid");
-  const slip = formData.get("slip");
+export async function submitEndgamePayment(formData: FormData) {
+  const sid = formData.get("sid") as string;
+  const slip = formData.get("slip") as File;
   if (!sid || !slip) return "กรุณาอัพโหลดสลิปให้ครบถ้วน";
 
   const arrayBuffer = await slip.arrayBuffer();

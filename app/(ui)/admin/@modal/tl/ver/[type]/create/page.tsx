@@ -3,7 +3,6 @@ import { ArrowRight, PlusIcon } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import type { TypedFormData } from "@/app/(ui)/rubgram/type";
 import { CdnChooser } from "@/components/chooser";
 import { DatePicker } from "@/components/date";
 import {
@@ -59,15 +58,7 @@ export default async function TlVersionCreatePage({
   if (!type) notFound();
 
   async function submit(
-    form: TypedFormData<{
-      name: string;
-      id: string;
-      order: string;
-      from: string;
-      image: string;
-      disclaimer: string;
-      deprecates: string;
-    }>,
+    form: FormData,
   ) {
     "use server";
     if (!(await adminCheck())) redirect("/login");
@@ -88,13 +79,13 @@ export default async function TlVersionCreatePage({
 
     try {
       data = {
-        id: form.get("id")!,
-        name: form.get("name")!,
-        image: form.get("image")!,
-        disclaimer: form.get("disclaimer")!,
-        from: form.get("from")!,
-        deprecates: form.get("deprecates")!,
-        order: parseInt(form.get("order")!, 10),
+        id: form.get("id") as string,
+        name: form.get("name") as string,
+        image: form.get("image") as string,
+        disclaimer: form.get("disclaimer") as string,
+        from: form.get("from") as string,
+        deprecates: form.get("deprecates") as string,
+        order: parseInt(form.get("order") as string, 10),
         type: typeId,
       };
       await db.insert(tierlistVersions).values(data);

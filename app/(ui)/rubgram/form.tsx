@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { toast } from "sonner";
 import {
-  type EndgameFormData,
-  type EndgamePaymentFormData,
   submitEndgame,
   submitEndgamePayment,
 } from "./api";
@@ -26,7 +24,7 @@ export function EndgameFormWrapper({
     );
 
     ({ registration: submitEndgame, payment: submitEndgamePayment })
-      [type](data as unknown as EndgameFormData & EndgamePaymentFormData)
+      [type](data)
       .then((q) => {
         if (typeof q === "string") return toast.error(q);
         try {
