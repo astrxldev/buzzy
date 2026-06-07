@@ -5,7 +5,7 @@ FROM oven/bun:canary-alpine AS deps
 WORKDIR /home/container
 
 COPY package*.json bun.lock ./
-# COPY patches ./patches
+COPY patches ./patches
 
 # Install into cache, then persist into real node_modules
 RUN --mount=type=cache,target=/root/.bun bun install --frozen-lockfile
