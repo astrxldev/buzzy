@@ -85,7 +85,13 @@ async function getCroppedImg(
   }
 }
 
-export default function Component() {
+export default function Component({
+  value,
+  onValueChange,
+}: {
+  value?: File | undefined;
+  onValueChange?: (value: File | undefined) => void;
+}) {
   const [
     { files, isDragging },
     {
@@ -156,7 +162,15 @@ export default function Component() {
       // 4. Set the final avatar state to the NEW URL
       setFinalImageUrl(newFinalUrl);
 
-      // 5. Close the dialog (don't remove the file yet)
+      // 5. Create a File from the blob and pass it to the form
+      const croppedFile = new File(
+        [croppedBlob],
+        files[0]?.file.name || "cropped-image.jpg",
+        { type: croppedBlob.type },
+      );
+      onValueChange?.(croppedFile);
+
+      // 6. Close the dialog (don't remove the file yet)
       setIsDialogOpen(false);
     } catch (error) {
       console.error("Error during apply:", error);
@@ -170,6 +184,7 @@ export default function Component() {
       URL.revokeObjectURL(finalImageUrl);
     }
     setFinalImageUrl(null);
+    onValueChange?.(undefined);
   };
 
   useEffect(() => {
@@ -193,6 +208,23 @@ export default function Component() {
     // Update the ref to the current fileId for the next render
     previousFileIdRef.current = fileId;
   }, [fileId]); // Depend only on fileId
+
+  // Reset cropper when value is cleared externally (e.g., form reset)
+  const previousValueRef = useRef(value);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only fire on value change
+  useEffect(() => {
+    const wasSet = !!previousValueRef.current;
+    const isBlank = !value;
+    if (wasSet && isBlank) {
+      if (finalImageUrl) {
+        URL.revokeObjectURL(finalImageUrl);
+      }
+      setFinalImageUrl(null);
+      setCroppedAreaPixels(null);
+      setZoom(1);
+    }
+    previousValueRef.current = value;
+  }, [value]);
 
   return (
     <>
