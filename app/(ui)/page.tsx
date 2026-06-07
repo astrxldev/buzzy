@@ -6,6 +6,7 @@ import ArtifactLogo from "#/logos/artifact.webp";
 import GuideLogo from "#/logos/guide.webp";
 import RubgramLogo from "#/logos/rubgram.webp";
 import TierlistLogo from "#/logos/tierlist.webp";
+import DonateLogo from "#/logos/donate.svg";
 import Image from "@/components/image";
 import { SimpleTooltip } from "@/components/tooltip";
 import { cn } from "@/lib/utils";
@@ -59,12 +60,13 @@ export default function Home() {
             href="/guide"
             logo={GuideLogo}
           />
-          {/* <HomeLink
+          <HomeLink
             name="Donate"
             desc="โดเนทขึ้นไลฟ์สตรีม"
-            href="/tip"
-            logo={GuideLogo}
-          /> */}
+            href="/donate"
+            disabled
+            logo={DonateLogo}
+          />
         </div>
         <footer className="text-muted-foreground h-full flex flex-col justify-end pb-3 md:justify-center">
           <div className="flex justify-between flex-col text-center gap-2 sm:flex-row sm:text-left">
@@ -139,18 +141,24 @@ function HomeLink({
   logo,
   desc,
   className,
+  disabled,
 }: {
   href: string;
   name: string;
   desc: ReactNode;
   logo: string | StaticImport;
   className?: string;
+  disabled?: boolean;
 }) {
   return (
     <SimpleTooltip text={desc}>
       <Link
         href={href}
-        className={cn("flex flex-col p-10 text-center", className)}
+        className={cn(
+          "flex flex-col p-10 text-center",
+          disabled && "pointer-events-none brightness-50",
+          className,
+        )}
       >
         <Image
           src={logo}

@@ -19,7 +19,7 @@ export function Navbar() {
   const mobile = useIsMobile();
 
   if (
-    !/^\/(?:tl(?:\/[a-zA-Z0-9]+)?|rubgram|artifact|guide|tip)$/gm.test(pathname)
+    !/^\/(?:tl(?:\/[a-zA-Z0-9]+)?|rubgram|artifact|guide|donate)$/gm.test(pathname)
   )
     return "";
   return (
@@ -42,7 +42,7 @@ export function Navbar() {
       />
       <Item icon={<Table size={16} />} name="จัดเทียร์ลิสต์" href="/tl" />
       <Item icon={<StickyNote size={16} />} name="ไกด์ตัวละคร" href="/guide" />
-      <Item icon={<Bitcoin size={16} />} name="โดเนทขึ้นจอ" href="/tip" last />
+      <Item icon={<Bitcoin size={16} />} name="โดเนทขึ้นจอ" href="/donate" last />
     </div>
   );
 }
