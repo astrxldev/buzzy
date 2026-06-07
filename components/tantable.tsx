@@ -79,13 +79,22 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className={cn("overflow-hidden rounded-md border", className)}>
-      <Table>
+      <Table className="table-fixed">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id}>
+                  <TableHead
+                    key={header.id}
+                    className={
+                      (
+                        header.column.columnDef.meta as
+                          | { className?: string }
+                          | undefined
+                      )?.className
+                    }
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -106,9 +115,19 @@ export function DataTable<TData, TValue>({
                   <TableRow
                     data-state={row.getIsSelected() && "selected"}
                     onClick={() => onClick?.(row.original)}
+                    className="group"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
+                      <TableCell
+                        key={cell.id}
+                        className={
+                          (
+                            cell.column.columnDef.meta as
+                              | { className?: string }
+                              | undefined
+                          )?.className
+                        }
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext(),
