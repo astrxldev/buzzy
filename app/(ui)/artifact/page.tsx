@@ -174,7 +174,11 @@ export default async function ArtifactFormPage({
               </div>
               {config.enka ? (
                 editing ? (
-                  <CharacterChooser clist={clist} uid={q.uid} char={q.char} />
+                  <CharacterChooser
+                    clist={clist}
+                    uid={q.uid}
+                    char={q.char ?? undefined}
+                  />
                 ) : (
                   <CharacterChooser clist={clist} />
                 )
@@ -200,7 +204,7 @@ export default async function ArtifactFormPage({
                       name="character"
                       data={clist}
                       className="w-full bg-transparent! hover:bg-accent!"
-                      defaultValue={editing ? q.char : undefined}
+                      defaultValue={editing ? (q.char ?? undefined) : undefined}
                     />
                   </div>
                 </>

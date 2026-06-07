@@ -21,7 +21,12 @@ import { Spinner } from "@/components/ui/spinner";
 import { actionLog } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { characters, element as elementEnum, versions } from "@/lib/db/schema";
+import {
+  characters,
+  element,
+  element as elementEnum,
+  versions,
+} from "@/lib/db/schema";
 
 export default async function CharacterEditPage({
   params,
@@ -35,9 +40,7 @@ export default async function CharacterEditPage({
   ]);
   if (!char) redirect("/admin/char");
 
-  async function submit(
-    form: FormData,
-  ) {
+  async function submit(form: FormData) {
     "use server";
     if (!(await adminCheck())) redirect("/login");
 
@@ -62,7 +65,7 @@ export default async function CharacterEditPage({
     try {
       data = {
         name: form.get("name") as string,
-        vision: form.get("element") as string,
+        vision: form.get("element") as (typeof element.enumValues)[number],
         stars: parseInt((form.get("stars") as string) || "0", 10) as 4 | 5,
         image: form.get("image") as string,
         order: parseInt(form.get("order") as string, 10),

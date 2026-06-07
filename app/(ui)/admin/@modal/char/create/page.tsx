@@ -21,7 +21,12 @@ import { Spinner } from "@/components/ui/spinner";
 import { actionLog } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { characters, element as elementEnum, versions } from "@/lib/db/schema";
+import {
+  characters,
+  element,
+  element as elementEnum,
+  versions,
+} from "@/lib/db/schema";
 import { genId } from "./overrides";
 
 export default async function CharacterCreatePage() {
@@ -32,9 +37,7 @@ export default async function CharacterCreatePage() {
     db.select().from(versions).orderBy(desc(versions.id)),
   ]);
 
-  async function submit(
-    form: FormData,
-  ) {
+  async function submit(form: FormData) {
     "use server";
     if (!(await adminCheck())) redirect("/login");
 
@@ -60,7 +63,7 @@ export default async function CharacterCreatePage() {
       data = {
         id: form.get("id") as string,
         name: form.get("name") as string,
-        vision: form.get("element") as string,
+        vision: form.get("element") as (typeof element.enumValues)[number],
         stars: parseInt((form.get("stars") as string) || "0", 10) as 4 | 5,
         image: form.get("image") as string,
         order: parseInt(form.get("order") as string, 10),

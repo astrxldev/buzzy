@@ -16,7 +16,7 @@ export async function GET(
   const [char] = await db
     .select()
     .from(characters)
-    .where(eq(characters.name, sub.char));
+    .where(eq(characters.name, sub.char ?? "THISISNULLANDNOTSUPPOSEDTOMATCH"));
   if (!char)
     return new Response(`Unknown character: ${sub.char}`, { status: 500 });
   const card = await fetch(
