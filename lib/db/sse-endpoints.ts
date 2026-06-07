@@ -33,9 +33,10 @@ export const sse = sseEndpointMap({
   },
   donate: {
     ping: z.object({
+      id: z.string(),
       name: z.string(),
       amount: z.number(),
-      image: z.string(),
+      image: z.string().optional(),
       message: z.string(),
     }),
     // roundtrip SSE system check

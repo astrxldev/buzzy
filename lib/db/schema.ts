@@ -88,12 +88,12 @@ export const submissions = artifact.table("submissions", {
   name: text().notNull(),
   comment: text().notNull(),
   char: text()
-    .notNull()
+    // .notNull() // For Special Queue
     .references(() => characters.name, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
-  queue: serial(),
+  queue: serial(), // NULL for Spacial Queue
   editToken: text().notNull().$defaultFn(uuidv7),
   edits: integer().notNull().default(0),
   checked: boolean().notNull().default(false),
@@ -348,9 +348,14 @@ export const schDonate = pgSchema("donate");
 export const donations = schDonate.table("donations", {
   id: text().primaryKey().$defaultFn(uuidv7),
   name: text().notNull(),
-  amount: numeric().notNull(),
+  amount: numeric({ mode: "number", precision: 7, scale: 2 }).notNull(),
   image: bytea(),
   message: text(),
+  created: timestamp("created_at").defaultNow().notNull(),
+  // The retry system
+  lastPing: timestamp("last_ping").default(new Date("01-01-2000")).notNull(),
+  sent: boolean().default(false).notNull(),
+  uid: text(),
 });
 
 //#endregion

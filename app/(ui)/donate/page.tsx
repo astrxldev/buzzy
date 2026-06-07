@@ -1,11 +1,13 @@
-import { formParse } from "@/components/form-submit";
+import { formParse, FormSubmitResult } from "@/components/form-submit";
 import {
   FormAction,
   FormChoice,
+  FormIf,
   FormInput,
   FormProvider,
   FormRow,
   FormTab,
+  FormWrapper,
 } from "@/components/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,24 +25,50 @@ import TruemoneyIcon from "#/assets/tmn.webp";
 import z from "zod";
 import { th } from "zod/v4/locales";
 import Cropper from "@/components/cropper";
+import { checkSlip } from "@/lib/payment";
+import { db } from "@/lib/db";
+import { donations, endgameSlips, submissions } from "@/lib/db/schema";
+import { Checkbox } from "@/components/ui/checkbox";
+import { uidRegex } from "@/lib/const";
+import { getArtifactConfig } from "@/lib/api";
+import { sse } from "@/lib/db/sse-endpoints";
+import { fileToDataUrl } from "@/lib/utils";
+const { TMN_DEST_PHONE_NUM, SASTIFY_API_PRIVKEY } = process.env as Record<
+  string,
+  string
+>;
+
+type SastifyApiResponse =
+  | {
+      success: true;
+      data: {
+        amount: number;
+        status: "SUCCESS";
+      };
+    }
+  | {
+      success: false;
+      code?: string | number;
+      message: string;
+    };
 
 z.config(th());
 
+//#region Schema
 const Schema = z
   .object({
-    name: z.string().max(50, { error: "ชื่อยาวสุด 50 ตัวอักษร" }).optional(),
-    message: z
-      .string()
-      .max(500, { error: "ข้อความยาวสุด 200 ตัวอักษร" })
-      .optional(),
+    name: z.string().max(50, "ชื่อยาวสุด 50 ตัวอักษร").default("Anonymous"),
+    message: z.string().max(500, "ข้อความยาวสุด 200 ตัวอักษร").default(""),
     amount: z.coerce
-      .number({ error: "จำนวนต้องเป็นตัวเลข" })
-      .min(10, { error: "โดเนทขั้นต่ำ 10 บาท" }),
+      .number("จำนวนต้องเป็นตัวเลข")
+      .min(10, "โดเนทขั้นต่ำ 1 บาท")
+      .max(10000, "โดเนทได้ไม่เกิน 1 หมื่นบาท"),
+    image: z.file().optional(),
   })
   .and(
     z.discriminatedUnion("type", [
       z.object({
-        type: z.literal("tmn"),
+        type: z.literal("tmn").optional(),
         link: z.httpUrl(),
       }),
       z.object({
@@ -48,17 +76,120 @@ const Schema = z
         slip: z.file(),
       }),
     ]),
+  )
+  .and(
+    z.discriminatedUnion("artifact", [
+      z.object({
+        artifact: z.literal("false").optional(),
+      }),
+      z.object({
+        artifact: z.literal("true"),
+        uid: z.string().regex(uidRegex, "รูปแบบ UID ไม่ถูกต้อง"),
+      }),
+    ]),
   );
 
 export default async function () {
-  async function submit(data: FormData) {
+  //#region Server Data Load
+  const artifactConfig = await getArtifactConfig();
+  //#region Submit Handler
+  async function submit(data: FormData): Promise<FormSubmitResult> {
     "use server";
     const { $, error } = formParse(Schema, data);
     if (error) return { error };
 
-    return { toast: "ระบบยังไม่เสร็จ" };
+    return await db.transaction(async (tx): Promise<FormSubmitResult> => {
+      if ($.type === "pp") {
+        const arrayBuffer = await $.slip.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const processed = await checkSlip(buffer, $.slip.type, $.amount);
+        if (!processed.success)
+          return {
+            error: {
+              where: "slip",
+              what: `${processed.code}: ${processed.message}`,
+            },
+          };
+        const [check] = await tx
+          .insert(endgameSlips)
+          .values({
+            slip: buffer,
+            amount: $.amount.toString(),
+            data: processed,
+            ref: processed.data.transRef,
+          })
+          .returning({ id: endgameSlips.id })
+          .catch((e) => {
+            console.log(e);
+            return [{ id: "conflict" }];
+          });
+        if (check.id === "conflict")
+          return { error: { where: "slip", what: "สลิปนี้ถูกใช้ไปแล้ว" } };
+      } else {
+        const res: SastifyApiResponse = await fetch(
+          "https://api.sastify.xyz/v1/gateway/tmn",
+          {
+            method: "POST",
+            headers: {
+              authorization: `Bearer ${SASTIFY_API_PRIVKEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              phone_number: TMN_DEST_PHONE_NUM,
+              voucher_url: $.link,
+            }),
+            signal: AbortSignal.timeout(30_000),
+          },
+        )
+          .then((r) => r.json())
+          .catch((e) => e);
+        if (!res.success)
+          return { error: { where: "link", what: res.message } };
+      }
+
+      const { name, amount, message, image } = $;
+
+      const [{ id }] = await tx
+        .insert(donations)
+        .values({
+          name,
+          amount,
+          message,
+          image: image ? Buffer.from(await image.arrayBuffer()) : undefined,
+          uid: $.artifact === "true" ? $.uid : null,
+          // dont send on screen if less than 10
+          sent: $.amount < 10,
+        })
+        .returning({ id: donations.id });
+      if ($.artifact === "true") {
+        const res = await tx
+          .insert(submissions)
+          .values({
+            name,
+            comment: message,
+            uid: $.uid,
+            queue: null as unknown as undefined,
+          })
+          .catch(() => "conflict");
+        if (res === "conflict") {
+          tx.rollback();
+          return { error: { where: "uid", what: "ไม่สามารถสร้างคิวลัดได้" } };
+        }
+      }
+      if ($.amount >= 10)
+        sse.donate.pub("ping", {
+          id,
+          name,
+          amount,
+          message,
+          image: image ? await fileToDataUrl(image) : undefined,
+        });
+
+      return { toast: "ส่งเรียบร้อย", reset: true };
+    });
   }
 
+  //#region TSX
   return (
     <div className="flex items-center justify-center min-h-svh">
       <div className="p-5 bg-card border rounded-md w-full max-w-md">
@@ -71,7 +202,11 @@ export default async function () {
               <FormInput name="name" label="ชื่อ" subLabel="ไม่จำเป็น">
                 <Input placeholder="Anonymous" />
               </FormInput>
-              <FormInput name="amount" label="จำนวนโดเนท" subLabel="ขึ้นจอขั้นต่ำ 10 บาท">
+              <FormInput
+                name="amount"
+                label="จำนวนโดเนท"
+                subLabel="ขึ้นจอขั้นต่ำ 10 บาท"
+              >
                 <CurrencyInput placeholder="ขั้นต่ำ 1 บาท" />
               </FormInput>
             </div>
@@ -79,6 +214,21 @@ export default async function () {
           <FormInput name="message" label="ข้อความ" subLabel="max. 500 ตัวอักษร">
             <Textarea placeholder="ข้อความ" />
           </FormInput>
+          {!artifactConfig.locked && (
+            <>
+              <FormInput name="artifact">
+                <FormWrapper className="flex gap-2 items-center">
+                  <Checkbox />
+                  ลัดคิวเสือกไอดีชาวบ้าน
+                </FormWrapper>
+              </FormInput>
+              <FormIf artifact={true}>
+                <FormInput name="uid" label="UID สำหรับเสือกไอดีชาวบ้าน">
+                  <Input placeholder="814006303" />
+                </FormInput>
+              </FormIf>
+            </>
+          )}
           <FormTab
             label="วิธีการโอนเงิน"
             name="type"
