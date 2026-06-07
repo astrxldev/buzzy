@@ -1,0 +1,31 @@
+diff --git a/node_modules/react-hook-text-overflow/dist/index.d.ts b/dist/index.d.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..52b8c4a4c1f0ec307e974698fcc80b66497bdad6
+--- /dev/null
++++ b/dist/index.d.ts
+@@ -0,0 +1,13 @@
++import React from "react";
++
++export function useEllipsisVisibleWrapper(): [
++  wrapperNodeWidth: number | null,
++  wrapperRef: (node: HTMLElement | null) => void,
++];
++
++export const EllipsisVisibleWrapperWidthContext: React.Context<number | null>;
++
++export function useEllipsisVisible(): [
++  isEllipsisVisible: boolean,
++  ellipsisVisibleRef: (node: HTMLElement | null) => void,
++];
+diff --git a/package.json b/package.json
+index 75355d4f422ca8b9100b0d358a4a520be45df8d6..abe4653d537f23d2438b51b14bd69273c257c0b6 100644
+--- a/package.json
++++ b/package.json
+@@ -12,6 +12,7 @@
+   "license": "MIT",
+   "author": "Bence A. Toth <tothab@gmail.com>",
+   "main": "dist/index.js",
++  "types": "dist/index.d.ts",
+   "scripts": {
+     "build": "rm -rf dist && babel src --out-dir dist",
+     "build:watch": "babel src --out-dir dist --watch"

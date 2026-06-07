@@ -80,6 +80,7 @@
     "react-day-picker": "^9.12.0",
     "react-dom": "19.2.6",
     "react-hook-form": "^7.68.0",
+    "react-hook-text-overflow": "^1.0.1",
     "react-resizable-panels": "^3.0.6",
     "react-use": "^17.6.0",
     "recharts": "2.15.4",
@@ -121,5 +122,8 @@
     "esbuild",
     "prisma",
     "sharp"
-  ]
+  ],
+  "patchedDependencies": {
+    "react-hook-text-overflow@1.0.1": "patches/react-hook-text-overflow@1.0.1.patch"
+  }
 }

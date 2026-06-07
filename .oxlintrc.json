@@ -3,6 +3,8 @@
   "plugins": ["nextjs"],
   "rules": {
     "nextjs/no-html-link-for-pages": "error",
-    "nextjs/next-script-for-ga": "error"
+    "nextjs/next-script-for-ga": "error",
+    "typescript/no-import-type-side-effects": "error",
+    "typescript/consistent-type-imports": "error"
   }
 }

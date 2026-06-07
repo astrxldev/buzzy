@@ -56,6 +56,7 @@ services:
     restart: on-failure
     ports:
       - 5432:5432
+    command: -p 5432 -c idle_session_timeout=60000
   redis:
     image: redis:latest
     ports:
