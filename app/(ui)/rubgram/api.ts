@@ -3,7 +3,6 @@
 import { and, desc, eq, gt, lt, not, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
-import image from "next/image";
 import { redirect } from "next/navigation";
 import { actionLog } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
@@ -20,13 +19,9 @@ import {
 } from "@/lib/db/schema";
 import { sse } from "@/lib/db/sse-endpoints";
 import { getPostHogClient } from "@/lib/posthog-server";
-const {
-  SLIPOK_API_URL,
-  SLIPOK_API_KEY,
-  DISCORD_WEBHOOK_URL,
-  DISCORD_CLIENT_ID,
-  BASE_URL,
-} = process.env as Record<string, string>;
+import { checkSlip } from "@/lib/payment";
+const { DISCORD_WEBHOOK_URL, DISCORD_CLIENT_ID, BASE_URL } =
+  process.env as Record<string, string>;
 
 export async function archive({ onlyChecked = true, copy = true }) {
   if (!(await adminCheck())) throw "Unauthorized";
@@ -331,31 +326,6 @@ export async function submitEndgamePayment(formData: FormData) {
     });
   }
   return Array.isArray(queue) ? queue[0] : queue;
-}
-
-async function checkSlip(
-  buffer: Buffer<ArrayBuffer>,
-  type: string,
-  amount: number,
-): Promise<SlipokResponse> {
-  const response = await fetch(SLIPOK_API_URL, {
-    method: "POST",
-    headers: {
-      "x-authorization": SLIPOK_API_KEY,
-    },
-    body: (() => {
-      const formData = new FormData();
-      formData.append("files", new Blob([buffer], { type }), image.name);
-      formData.append("amount", amount.toString());
-      // formData.append("log", "true"); // no log cause im logging myself
-      return formData;
-    })(),
-  });
-
-  const data = await response.json();
-
-  // if (!response.ok) throw data;
-  return data;
 }
 
 // discord auth
