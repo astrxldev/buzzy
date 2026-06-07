@@ -105,7 +105,10 @@ function getInputValue(eventOrValue: unknown) {
   return eventOrValue;
 }
 
-type FormProviderProps = Omit<React.ComponentProps<"form">, "id" | "onSubmit"> & {
+type FormProviderProps = Omit<
+  React.ComponentProps<"form">,
+  "id" | "onSubmit"
+> & {
   // Unique Autosave Key
   id: string;
   onSubmit?: (form: FormData) => FormSubmitResult | Promise<FormSubmitResult>;
@@ -218,6 +221,10 @@ export function FormProvider({
             if (close) closerRef.current?.click();
           }
         }
+        if ("reset" in res) {
+          const { reset } = res;
+          if (reset) clear();
+        }
       }
     } catch (error) {
       const message =
@@ -230,7 +237,7 @@ export function FormProvider({
     } finally {
       setLoading(false);
     }
-  }, [onSubmit, values]);
+  }, [onSubmit, values, clear]);
 
   const contextValue = React.useMemo<FormContextValue>(
     () => ({
@@ -245,7 +252,18 @@ export function FormProvider({
       closeDialog,
       setErrors,
     }),
-    [id, values, errors, loading, setValue, updateValues, clear, submit, closeDialog, setErrors],
+    [
+      id,
+      values,
+      errors,
+      loading,
+      setValue,
+      updateValues,
+      clear,
+      submit,
+      closeDialog,
+      setErrors,
+    ],
   );
 
   return (
@@ -391,7 +409,12 @@ export function FormAction({
   loading: loadingComponent,
   ...props
 }: FormActionProps) {
-  const { loading: formLoading, clear, closeDialog, setErrors } = useFormContext();
+  const {
+    loading: formLoading,
+    clear,
+    closeDialog,
+    setErrors,
+  } = useFormContext();
   const [actionLoading, setActionLoading] = React.useState(false);
   const loading = formLoading || actionLoading;
 
@@ -431,6 +454,10 @@ export function FormAction({
               if (typeof close === "boolean") {
                 if (close) closeDialog();
               }
+            }
+            if ("reset" in res) {
+              const { reset } = res;
+              if (reset) clear();
             }
           }
         } catch (error) {
@@ -528,4 +555,31 @@ export function FormChoice({
   return <>{children}</>;
 }
 
+export function FormIf({
+  children,
+  ...conditions
+}: {
+  children: React.ReactNode;
+} & Record<string, unknown>) {
+  const { values } = useFormContext();
+  const match = Object.entries(conditions).every(
+    ([name, equals]) => values[name] === equals,
+  );
 
+  return <div className={cn(!match && "hidden")}>{children}</div>;
+}
+
+export function FormWrapper({
+  children,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div {...props}>
+      {React.Children.map(children, (child) =>
+        React.isValidElement(child)
+          ? React.cloneElement(child, props as Record<string, unknown>)
+          : child,
+      )}
+    </div>
+  );
+}

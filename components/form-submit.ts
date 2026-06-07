@@ -4,6 +4,7 @@ export type FormSubmitResult =
   | {
       toast?: string;
       close?: boolean;
+      reset?: boolean;
       error?:
         | string
         | { what: string; where: string }
