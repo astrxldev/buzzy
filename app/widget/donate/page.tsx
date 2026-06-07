@@ -6,10 +6,13 @@ import { useEffect, useRef, useState } from "react";
 import { VersionCheck } from "@/app/client";
 import { cn } from "@/lib/utils";
 import { sse } from "@/lib/db/sse-endpoints";
+import DefaultImage from "#/favicon.webp";
+import { markDone, markRunning } from "./api";
 
 type DonateData = {
+  id: string;
   name: string;
-  image: string;
+  image?: string;
   amount: number;
   message: string;
 };
@@ -18,13 +21,22 @@ export default function () {
   const [current, setCurrent] = useState<DonateData>();
   const [mounted, setMounted] = useState(false);
   const sfx = useRef<HTMLAudioElement | null>(null);
+  const onQueue = useRef<string[]>([]);
+  const queue = useRef<Promise<void>>(Promise.resolve());
+
+  function enqueue(data: DonateData) {
+    if (onQueue.current.includes(data.id)) return;
+    onQueue.current.push(data.id);
+    queue.current = queue.current.then(() => ping(data).catch(console.error));
+  }
 
   async function ping(data: DonateData) {
     setCurrent(data);
     const { name, amount, message } = data;
+    markRunning(data.id);
     console.log("Requesting TTS");
     const tts = new Audio(
-      `/api/tts?message=${encodeURIComponent(`${name} โดเนทมา ${amount} บาท\n${message}`)}`,
+      `/api/tts?message=${encodeURIComponent(`"${name} โดเนทมา ${amount} บาท.. ${message}"`)}`,
     );
     tts.load();
     console.log("Waiting for response");
@@ -47,7 +59,12 @@ export default function () {
     tts.play();
     if (ttsAvailable) await new Promise((r) => (tts.onended = r));
     console.log("Done");
-    setTimeout(() => setMounted(false), 3000);
+    markDone(data.id);
+    await new Promise((r) => setTimeout(r, 3000));
+    setMounted(false);
+    await new Promise((r) => setTimeout(r, 1200));
+    console.log("Handing off");
+    onQueue.current = onQueue.current.filter((q) => q !== data.id);
   }
 
   const { name, amount, message, image } = current ?? {};
@@ -56,10 +73,10 @@ export default function () {
     const pendingHeartbeat: Record<number, (v?: unknown) => void> = {};
     const { clean } = sse.donate.subMany({
       heartbeat: (tag) => pendingHeartbeat[tag]?.(),
-      ping,
+      ping: enqueue,
     });
 
-    setInterval(async () => {
+    const interval = setInterval(async () => {
       const tag = Math.floor(Math.random() * 1000);
       const promise = new Promise(
         (r, j) => ((pendingHeartbeat[tag] = r), setTimeout(j, 30000)),
@@ -74,13 +91,14 @@ export default function () {
         console.error("Heartbeat timed out");
       }
     }, 10000);
-    return clean;
+    return () => {
+      clearInterval(interval);
+      clean();
+    };
     // ping({
-    //   image: TestImage as unknown as string,
     //   name: "Gayshin",
     //   amount: 1,
-    //   message: `สวัสดีครับ วันนี้เรากำลังทดสอบระบบ Text to Speech แบบ mixed language โดยประโยคนี้จะสลับระหว่างภาษาไทยและ English หลายครั้ง เพื่อดูว่า model สามารถ handle pronunciation, pacing, และ sentence transition ได้ดีแค่ไหน ตัวอย่างเช่น "The quick brown fox jumps over the lazy dog" แล้วกลับมาเป็นภาษาไทยอีกครั้ง จากนั้นปิดท้ายด้วยคำว่า thank you for listening และขอให้มีวันที่ดีครับ`,
-    //   // message: "ฮีตดฮีตดฮีตดฮีตดฮีตดฮีตด",
+    //   message: `เสื้อดำเด้าหน่อย`,
     // });
   }, []);
 
@@ -94,7 +112,7 @@ export default function () {
                 className="absolute left-1/2 top-1/2 z-10 -translate-1/2"
                 initial={{ top: "200%", rotateZ: "600deg" }}
                 animate={{ top: "50%", rotateZ: "0deg" }}
-                exit={{ opacity: 0, transition: { delay: 0, duration: 2 } }}
+                exit={{ opacity: 0, transition: { delay: 0, duration: 1 } }}
                 transition={{ duration: 1, ease: "circOut" }}
               >
                 <motion.div
@@ -104,7 +122,9 @@ export default function () {
                   transition={{ delay: 1, duration: 1, ease: "circOut" }}
                 >
                   <Image
-                    src={image ?? ""}
+                    src={image ?? DefaultImage}
+                    width={128}
+                    height={128}
                     alt="User submitted image"
                     className="aspect-square size-32 shrink-0 rounded-2xl bg-black/50"
                   />
@@ -114,7 +134,7 @@ export default function () {
                 className="rounded-4xl bg-black/50 p-5 flex gap-3 max-w-162.5 h-39 overflow-hidden mx-auto"
                 initial={{ width: 0, padding: 0 }}
                 animate={{ width: "100%", padding: "20px" }}
-                exit={{ opacity: 0, transition: { delay: 0, duration: 2 } }}
+                exit={{ opacity: 0, transition: { delay: 0, duration: 1 } }}
                 transition={{ delay: 1, duration: 1, ease: "circOut" }}
               >
                 <div className="aspect-square size-32 shrink-0 rounded-2xl" />
