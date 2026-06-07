@@ -46,6 +46,8 @@ export default async function AdminLayout({
       name: submissions.name,
       checked: submissions.checked,
       queue: submissions.queue,
+      comment: submissions.comment,
+      uid: submissions.uid,
     })
     .from(submissions)
     .orderBy(submissions.queue);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useProgress } from "@bprogress/next";
-import { Lock, Unlock } from "lucide-react";
+import { BitcoinIcon, Lock, Unlock } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -39,12 +39,25 @@ import { setLimit, toggleCheck, toggleLock } from "@/lib/api";
 import { shared } from "@/lib/comms";
 import { sse } from "@/lib/db/sse-endpoints";
 import { cn } from "@/lib/utils";
+import { MaybeWrap } from "@/components/action-button";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 export function SidebarLink({
   submission,
   className,
 }: {
-  submission: { id: string; name: string; checked: boolean; queue: number };
+  submission: {
+    id: string;
+    name: string;
+    checked: boolean;
+    queue: number | null;
+    comment: string;
+    uid: string;
+  };
   className?: string;
 }) {
   const { stop } = useProgress();
@@ -56,32 +69,66 @@ export function SidebarLink({
   }, [submission.checked]);
 
   return (
-    <Link
-      href={`/artifact/admin/${submission.id}`}
-      className={cn(
-        className,
-        id === submission.id && "bg-accent text-accent-foreground",
+    <MaybeWrap
+      wrap={submission.queue === null}
+      wrapper={({ children }) => (
+        <HoverCard openDelay={150} closeDelay={0}>
+          <HoverCardTrigger
+            onClick={() => {
+              navigator.clipboard.writeText(submission.uid);
+              toast("คัดลอก UID แล้ว");
+            }}
+          >
+            {children}
+          </HoverCardTrigger>
+          <HoverCardContent
+            className="flex max-w-2xl flex-col gap-0.5"
+            side="right"
+          >
+            <div className="font-semibold">{submission.name}</div>
+            <div className="line-clamp-3">{submission.comment}</div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              คิวลัด - UID ${submission.uid} (คลิ๊กเพื่อคัดลอก)
+            </div>
+          </HoverCardContent>
+        </HoverCard>
       )}
-      prefetch
-      onClick={(ev) => {
-        if ((ev.target as HTMLButtonElement).type === "button") {
-          ev.preventDefault();
-        }
-      }}
     >
-      {submission.queue}. {submission.name}
-      <SidebarMenuBadge className="pointer-events-auto">
-        <Checkbox
-          className="mr-2"
-          checked={checked}
-          onCheckedChange={async () => {
-            setChecked((x) => !x);
-            await toggleCheck(submission.id);
-            stop();
-          }}
-        />
-      </SidebarMenuBadge>
-    </Link>
+      <Link
+        href={
+          submission.queue === null ? "" : `/artifact/admin/${submission.id}`
+        }
+        className={cn(
+          className,
+          id === submission.id && "bg-accent text-accent-foreground",
+        )}
+        prefetch
+        onClick={(ev) => {
+          if ((ev.target as HTMLButtonElement).type === "button") {
+            ev.preventDefault();
+          }
+        }}
+      >
+        {submission.queue === null ? (
+          <div className="flex items-center">
+            <BitcoinIcon className="-ml-1" size={20} /> {submission.name}
+          </div>
+        ) : (
+          `${submission.queue}. ${submission.name}`
+        )}
+        <SidebarMenuBadge className="pointer-events-auto">
+          <Checkbox
+            className="mr-2"
+            checked={checked}
+            onCheckedChange={async () => {
+              setChecked((x) => !x);
+              await toggleCheck(submission.id);
+              stop();
+            }}
+          />
+        </SidebarMenuBadge>
+      </Link>
+    </MaybeWrap>
   );
 }
 
@@ -192,7 +239,14 @@ export function LimitManager({
 export function SubmissionList({
   subs,
 }: {
-  subs: { id: string; name: string; checked: boolean; queue: number }[];
+  subs: {
+    id: string;
+    name: string;
+    checked: boolean;
+    queue: number | null;
+    comment: string;
+    uid: string;
+  }[];
 }) {
   const [query, setQuery] = useState("");
   return (
