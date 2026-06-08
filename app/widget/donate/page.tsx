@@ -136,7 +136,7 @@ export default function () {
                 </motion.div>
               </motion.div>
               <motion.div
-                className="rounded-4xl bg-black/50 p-5 flex gap-3 max-w-162.5 h-39 overflow-hidden mx-auto"
+                className="rounded-4xl bg-black/80 p-5 flex gap-3 max-w-162.5 h-39 overflow-hidden mx-auto"
                 initial={{ width: 0, padding: 0 }}
                 animate={{ width: "100%", padding: "20px" }}
                 exit={{ opacity: 0, transition: { delay: 0, duration: 1 } }}
