@@ -33,10 +33,15 @@ import { uidRegex } from "@/lib/const";
 import { getArtifactConfig } from "@/lib/api";
 import { sse } from "@/lib/db/sse-endpoints";
 import { fileToDataUrl } from "@/lib/utils";
+import type { Metadata } from "next";
 const { TMN_DEST_PHONE_NUM, SASTIFY_API_PRIVKEY } = process.env as Record<
   string,
   string
 >;
+
+export const metadata: Metadata = {
+  title: "โดเนท",
+};
 
 type SastifyApiResponse =
   | {
