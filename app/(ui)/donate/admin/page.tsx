@@ -16,3 +16,5 @@ export default async function () {
     .orderBy(desc(donations.id));
   return <DonateAdminPage data={data} />;
 }
+
+export const dynamic = "force-dynamic";
