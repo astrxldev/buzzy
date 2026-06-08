@@ -140,6 +140,7 @@ export default async function () {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
+              amount: $.amount,
               phone_number: TMN_DEST_PHONE_NUM,
               voucher_url: $.link,
             }),
