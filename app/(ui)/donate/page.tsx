@@ -1,39 +1,39 @@
-import { formParse, FormSubmitResult } from "@/components/form-submit";
+import { QrCodeIcon, SendIcon } from "lucide-react";
+import type { Metadata } from "next";
+import z from "zod";
+import { th } from "zod/v4/locales";
+import PromptpayImage from "#/assets/promptpay.jpg";
+import TruemoneyIcon from "#/assets/tmn.webp";
+import Cropper from "@/components/cropper";
 import {
   FormAction,
   FormChoice,
   FormIf,
   FormInput,
   FormProvider,
-  FormRow,
   FormTab,
   FormWrapper,
 } from "@/components/form";
+import { type FormSubmitResult, formParse } from "@/components/form-submit";
+import Image from "@/components/image";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { getArtifactConfig } from "@/lib/api";
+import { uidRegex } from "@/lib/const";
+import { db } from "@/lib/db";
+import { donations, endgameSlips, submissions } from "@/lib/db/schema";
+import { sse } from "@/lib/db/sse-endpoints";
+import { checkSlip } from "@/lib/payment";
+import { fileToDataUrl } from "@/lib/utils";
 import {
   CurrencyInput,
   SlipUpload,
 } from "../rubgram/admin/@modal/manual/client";
-import Image from "@/components/image";
-import PromptpayImage from "#/assets/promptpay.jpg";
 import { DownloadButton } from "../rubgram/client";
-import { QrCodeIcon, SendIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
-import TruemoneyIcon from "#/assets/tmn.webp";
-import z from "zod";
-import { th } from "zod/v4/locales";
-import Cropper from "@/components/cropper";
-import { checkSlip } from "@/lib/payment";
-import { db } from "@/lib/db";
-import { donations, endgameSlips, submissions } from "@/lib/db/schema";
-import { Checkbox } from "@/components/ui/checkbox";
-import { uidRegex } from "@/lib/const";
-import { getArtifactConfig } from "@/lib/api";
-import { sse } from "@/lib/db/sse-endpoints";
-import { fileToDataUrl } from "@/lib/utils";
-import type { Metadata } from "next";
+
 const { TMN_DEST_PHONE_NUM, SASTIFY_API_PRIVKEY } = process.env as Record<
   string,
   string
@@ -199,11 +199,11 @@ export default async function () {
     <div className="flex items-center justify-center min-h-svh">
       <div className="p-5 bg-card border rounded-md w-full max-w-md">
         <FormProvider id="tip" inDialog={false} onSubmit={submit}>
-          <FormRow>
-            <FormInput name="image" className="h-full">
+          <div className="flex flex-col items-center sm:flex-row sm:items-end gap-2">
+            <FormInput name="image" className="w-fit">
               <Cropper />
             </FormInput>
-            <div className="grid gap-4 [&>label]:-mb-2 grow">
+            <div className="grid gap-4 [&>label]:-mb-2 grow w-full">
               <FormInput name="name" label="ชื่อ" subLabel="ไม่จำเป็น">
                 <Input placeholder="Anonymous" />
               </FormInput>
@@ -215,7 +215,7 @@ export default async function () {
                 <CurrencyInput placeholder="ขั้นต่ำ 1 บาท" />
               </FormInput>
             </div>
-          </FormRow>
+          </div>
           <FormInput name="message" label="ข้อความ" subLabel="max. 500 ตัวอักษร">
             <Textarea placeholder="ข้อความ" />
           </FormInput>

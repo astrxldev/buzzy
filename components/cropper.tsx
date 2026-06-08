@@ -232,7 +232,7 @@ export default function Component({
         {/* Drop area - uses finalImageUrl */}
         <button
           aria-label={finalImageUrl ? "Change image" : "Upload image"}
-          className="relative flex size-32 items-center justify-center overflow-hidden rounded-lg border border-input border-dashed outline-none transition-colors hover:bg-accent/50 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-disabled:pointer-events-none has-[img]:border-none has-disabled:opacity-50 data-[dragging=true]:bg-accent/50"
+          className="relative flex size-24 sm:size-32 items-center justify-center overflow-hidden rounded-lg border border-input border-dashed outline-none transition-colors hover:bg-accent/50 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-disabled:pointer-events-none has-[img]:border-none has-disabled:opacity-50 data-[dragging=true]:bg-accent/50"
           data-dragging={isDragging || undefined}
           onClick={openFileDialog}
           onDragEnter={handleDragEnter}
