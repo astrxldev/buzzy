@@ -82,13 +82,13 @@ export function SidebarLink({
             {children}
           </HoverCardTrigger>
           <HoverCardContent
-            className="flex max-w-2xl flex-col gap-0.5"
+            className="flex flex-col gap-0.5 w-2xl"
             side="right"
           >
             <div className="font-semibold">{submission.name}</div>
             <div className="line-clamp-3">{submission.comment}</div>
             <div className="mt-1 text-xs text-muted-foreground">
-              คิวลัด - UID ${submission.uid} (คลิ๊กเพื่อคัดลอก)
+              คิวลัด - UID {submission.uid} (คลิ๊กเพื่อคัดลอก)
             </div>
           </HoverCardContent>
         </HoverCard>
@@ -101,6 +101,7 @@ export function SidebarLink({
         className={cn(
           className,
           id === submission.id && "bg-accent text-accent-foreground",
+          submission.queue === null && "border border-yellow-400",
         )}
         prefetch
         onClick={(ev) => {
@@ -111,7 +112,8 @@ export function SidebarLink({
       >
         {submission.queue === null ? (
           <div className="flex items-center">
-            <BitcoinIcon className="-ml-1" size={20} /> {submission.name}
+            <BitcoinIcon className="-ml-1 text-yellow-400" size={20} />{" "}
+            {submission.name}
           </div>
         ) : (
           `${submission.queue}. ${submission.name}`
