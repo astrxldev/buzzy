@@ -64,7 +64,6 @@ export default function Home() {
             name="Donate"
             desc="โดเนทขึ้นไลฟ์สตรีม"
             href="/donate"
-            disabled
             logo={DonateLogo}
           />
         </div>
