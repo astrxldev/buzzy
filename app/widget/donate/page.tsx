@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
+import posthog from "posthog-js";
 import { useEffect, useRef, useState } from "react";
 import { VersionCheck } from "@/app/client";
 import { cn } from "@/lib/utils";
@@ -47,8 +48,10 @@ export default function () {
         (tts.onerror = () => r(false))
       ),
     );
+    if (!ttsAvailable) posthog.capture("donation_widget_tts_failed", { amount: data.amount });
     console.log("Transitioning in");
     setMounted(true);
+    posthog.capture("donation_widget_displayed", { amount: data.amount, name_length: data.name.length, has_image: !!data.image });
     console.log("Running SFX");
     if (sfx.current) {
       const player = sfx.current;
@@ -61,6 +64,7 @@ export default function () {
     if (ttsAvailable) await new Promise((r) => (tts.onended = r));
     console.log("Done");
     markDone(data.id);
+    posthog.capture("donation_widget_animation_end", { amount: data.amount, tts_available: ttsAvailable });
     await new Promise((r) => setTimeout(r, 3000));
     setMounted(false);
     await new Promise((r) => setTimeout(r, 1200));
@@ -77,6 +81,7 @@ export default function () {
       ping: enqueue,
       refresh: () => location.reload(),
     });
+    posthog.capture("donation_widget_connected");
 
     const interval = setInterval(async () => {
       const tag = Math.floor(Math.random() * 1000);
@@ -93,6 +98,7 @@ export default function () {
       } catch {
         console.error("Heartbeat timed out");
         setFailed((x) => x + 1);
+        posthog.capture("donation_widget_heartbeat_failure", { fail_count: failed + 1 });
         if (failed > 12) location.reload();
       }
     }, 10000);

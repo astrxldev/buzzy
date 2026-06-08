@@ -21,6 +21,7 @@ import { useEllipsisVisible } from "react-hook-text-overflow";
 import { ActionButton } from "../../../../components/action-button";
 import { reloadWidget, resendPopup, testPopup } from "./api";
 import { useEffect } from "react";
+import posthog from "posthog-js";
 import { sse } from "@/lib/db/sse-endpoints";
 import { useRouter } from "next/navigation";
 
@@ -65,16 +66,16 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
       return (
         <div className="flex gap-1">
           <SimpleTooltip text="Send test popup">
-            <ActionButton variant="outline" size="icon-sm" action={testPopup}>
+              <ActionButton variant="outline" size="icon-sm" action={() => { posthog.capture("donation_admin_test_popup"); return testPopup(); }}>
               <BugPlay />
             </ActionButton>
           </SimpleTooltip>
           <SimpleTooltip text="Reload all widget">
-            <ActionButton
-              variant="outline"
-              size="icon-sm"
-              action={reloadWidget}
-            >
+              <ActionButton
+                variant="outline"
+                size="icon-sm"
+                action={() => { posthog.capture("donation_admin_widget_reload"); return reloadWidget(); }}
+              >
               <ChevronsLeftRightEllipsis />
             </ActionButton>
           </SimpleTooltip>
@@ -91,11 +92,11 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
           )}
         >
           <SimpleTooltip text="Re-send Popup">
-            <ActionButton
-              variant="outline"
-              size="icon-sm"
-              action={() => resendPopup(row.row.original.id)}
-            >
+              <ActionButton
+                variant="outline"
+                size="icon-sm"
+                action={() => { posthog.capture("donation_admin_resend", { id: row.row.original.id }); return resendPopup(row.row.original.id); }}
+              >
               <MessageCircleWarning />
             </ActionButton>
           </SimpleTooltip>

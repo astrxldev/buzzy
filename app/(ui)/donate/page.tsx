@@ -33,6 +33,7 @@ import {
   SlipUpload,
 } from "../rubgram/admin/@modal/manual/client";
 import { DownloadButton } from "../rubgram/client";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 const { TMN_DEST_PHONE_NUM, SASTIFY_API_PRIVKEY } = process.env as Record<
   string,
@@ -103,18 +104,23 @@ export default async function () {
     const { $, error } = formParse(Schema, data);
     if (error) return { error };
 
+    const ph = getPostHogClient();
+    const distinctId = crypto.randomUUID();
+
     return await db.transaction(async (tx): Promise<FormSubmitResult> => {
       if ($.type === "pp") {
         const arrayBuffer = await $.slip.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const processed = await checkSlip(buffer, $.slip.type, $.amount);
-        if (!processed.success)
+        if (!processed.success) {
+          ph.capture({ distinctId, event: "donation_slip_check_failed", properties: { amount: $.amount, code: processed.code, message: processed.message } });
           return {
             error: {
               where: "slip",
               what: `${processed.code}: ${processed.message}`,
             },
           };
+        }
         const [check] = await tx
           .insert(endgameSlips)
           .values({
@@ -128,8 +134,10 @@ export default async function () {
             console.log(e);
             return [{ id: "conflict" }];
           });
-        if (check.id === "conflict")
+        if (check.id === "conflict") {
+          ph.capture({ distinctId, event: "donation_slip_conflict", properties: { amount: $.amount } });
           return { error: { where: "slip", what: "สลิปนี้ถูกใช้ไปแล้ว" } };
+        }
       } else {
         const res: SastifyApiResponse = await fetch(
           "https://api.sastify.xyz/v1/gateway/tmn",
@@ -149,8 +157,10 @@ export default async function () {
         )
           .then((r) => r.json())
           .catch((e) => e);
-        if (!res.success)
+        if (!res.success) {
+          ph.capture({ distinctId, event: "donation_payment_failed", properties: { amount: $.amount, message: res.message } });
           return { error: { where: "link", what: res.message } };
+        }
       }
 
       const { name, amount, message, image } = $;
@@ -186,6 +196,7 @@ export default async function () {
           .catch(() => "conflict");
         if (res === "conflict") {
           tx.rollback();
+          ph.capture({ distinctId, event: "donation_artifact_conflict", properties: { amount: $.amount, uid: $.uid } });
           return { error: { where: "uid", what: "ไม่สามารถสร้างคิวลัดได้" } };
         }
       }
@@ -198,6 +209,18 @@ export default async function () {
           image: image ? await fileToDataUrl(image) : undefined,
         });
       else sse.donate.pub("update", null);
+
+      ph.capture({
+        distinctId,
+        event: "donation_completed",
+        properties: {
+          amount: $.amount,
+          payment_method: $.type,
+          artifact: $.artifact === "true",
+          has_image: !!image,
+          on_screen: $.amount >= 10,
+        },
+      });
 
       return { toast: "ส่งเรียบร้อย", reset: true };
     });
