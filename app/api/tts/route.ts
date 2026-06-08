@@ -2,10 +2,16 @@ import { GoogleGenAI } from "@google/genai";
 import wav from "wav";
 import { Readable, PassThrough } from "stream";
 import z from "zod";
-import { env } from "process";
 import { redis } from "@/lib/db/redis";
 import { hash } from "bun";
-const { DONATE_WIDGET_KEY } = process.env as Record<string, string>;
+const { DONATE_WIDGET_KEY, GEMINI_TTS_API_KEY } = process.env as Record<
+  string,
+  string
+>;
+
+const API_KEYS = GEMINI_TTS_API_KEY.split(",")
+  .map((k) => k.trim())
+  .filter(Boolean);
 
 const Schema = z.object({
   message: z.string().max(1000),
@@ -31,25 +37,34 @@ export async function GET(request: Request) {
       headers: { "Content-Type": "audio/wav" },
     });
 
-  const client = new GoogleGenAI({ apiKey: env.GEMINI_TTS_API_KEY });
+  let audioData: string | undefined;
 
-  const response = await client.models.generateContent({
-    model: "gemini-2.5-flash-preview-tts",
-    contents: [{ parts: [{ text: message }] }],
-    config: {
-      responseModalities: ["AUDIO"],
-      speechConfig: {
-        voiceConfig: {
-          prebuiltVoiceConfig: {
-            voiceName: voices[Math.floor(Math.random() * voices.length)],
+  for (const apiKey of API_KEYS) {
+    const client = new GoogleGenAI({ apiKey });
+
+    try {
+      const response = await client.models.generateContent({
+        model: "gemini-2.5-flash-preview-tts",
+        contents: [{ parts: [{ text: message }] }],
+        config: {
+          responseModalities: ["AUDIO"],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: {
+                voiceName: voices[Math.floor(Math.random() * voices.length)],
+              },
+            },
           },
         },
-      },
-    },
-  });
+      });
 
-  const audioData =
-    response.candidates?.[0].content?.parts?.[0].inlineData?.data;
+      audioData = response.candidates?.[0].content?.parts?.[0].inlineData?.data;
+      if (audioData) break;
+    } catch (e) {
+      console.error(`TTS API key failed: ${apiKey.slice(0, 8)}...`, e);
+    }
+  }
+
   if (!audioData)
     return Response.json({ error: "Response is empty" }, { status: 500 });
   queueMicrotask(() => {
