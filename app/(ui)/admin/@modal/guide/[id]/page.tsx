@@ -27,9 +27,7 @@ export default async function GuideEditPage({
   const [guide] = await db.select().from(guides).where(eq(guides.id, id));
   if (!guide) notFound();
 
-  async function submit(
-    form: FormData,
-  ) {
+  async function submit(form: FormData) {
     "use server";
     if (!(await adminCheck())) redirect("/login");
 

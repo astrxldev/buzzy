@@ -4,10 +4,7 @@ import { useProgress } from "@bprogress/next";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { toast } from "sonner";
-import {
-  submitEndgame,
-  submitEndgamePayment,
-} from "./api";
+import { submitEndgame, submitEndgamePayment } from "./api";
 
 export function EndgameFormWrapper({
   type,

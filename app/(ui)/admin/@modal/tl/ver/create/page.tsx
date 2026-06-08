@@ -20,9 +20,7 @@ export default async function TlTypeCreatePage() {
     .select({ maxOrder: sql<number>`MAX(${tierlistTypes.order})` })
     .from(tierlistTypes);
 
-  async function submit(
-    form: FormData,
-  ) {
+  async function submit(form: FormData) {
     "use server";
     if (!(await adminCheck())) redirect("/login");
 

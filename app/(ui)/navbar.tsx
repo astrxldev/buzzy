@@ -19,7 +19,9 @@ export function Navbar() {
   const mobile = useIsMobile();
 
   if (
-    !/^\/(?:tl(?:\/[a-zA-Z0-9]+)?|rubgram|artifact|guide|donate)$/gm.test(pathname)
+    !/^\/(?:tl(?:\/[a-zA-Z0-9]+)?|rubgram|artifact|guide|donate)$/gm.test(
+      pathname,
+    )
   )
     return "";
   return (

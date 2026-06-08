@@ -32,9 +32,7 @@ export default async function TlTypeEditPage({
     .where(eq(tierlistTypes.id, typeId));
   if (!type) notFound();
 
-  async function submit(
-    form: FormData,
-  ) {
+  async function submit(form: FormData) {
     "use server";
     if (!(await adminCheck())) redirect("/login");
 

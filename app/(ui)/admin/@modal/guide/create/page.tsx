@@ -27,9 +27,7 @@ export default async function GuideCreatePage() {
       MAX(${guides.order})`,
     })
     .from(guides);
-  async function submit(
-    form: FormData,
-  ) {
+  async function submit(form: FormData) {
     "use server";
     if (!(await adminCheck())) redirect("/login");
 

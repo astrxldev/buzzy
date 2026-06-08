@@ -57,9 +57,7 @@ export default async function TlVersionCreatePage({
     ]);
   if (!type) notFound();
 
-  async function submit(
-    form: FormData,
-  ) {
+  async function submit(form: FormData) {
     "use server";
     if (!(await adminCheck())) redirect("/login");
 

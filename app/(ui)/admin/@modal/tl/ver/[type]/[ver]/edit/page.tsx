@@ -42,9 +42,7 @@ export default async function TlVersionEditPage({
   if (!type) notFound();
   if (!ver) notFound();
 
-  async function submit(
-    form: FormData,
-  ) {
+  async function submit(form: FormData) {
     "use server";
     if (!(await adminCheck())) redirect("/login");
 
