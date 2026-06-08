@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { sse } from "@/lib/db/sse-endpoints";
 import DefaultImage from "#/favicon.webp";
 import { markDone, markRunning } from "./api";
+import { useSearchParams } from "next/navigation";
 
 type DonateData = {
   id: string;
@@ -23,6 +24,7 @@ export default function () {
   const sfx = useRef<HTMLAudioElement | null>(null);
   const onQueue = useRef<string[]>([]);
   const queue = useRef<Promise<void>>(Promise.resolve());
+  const sp = useSearchParams();
 
   function enqueue(data: DonateData) {
     if (onQueue.current.includes(data.id)) return;
@@ -36,7 +38,7 @@ export default function () {
     markRunning(data.id);
     console.log("Requesting TTS");
     const tts = new Audio(
-      `/api/tts?message=${encodeURIComponent(`"${name} โดเนทมา ${amount} บาท.. ${message}"`)}`,
+      `/api/tts?message=${encodeURIComponent(`"${name} โดเนทมา ${amount} บาท.. ${message}"`)}&key=${sp.get("key")}`,
     );
     tts.load();
     console.log("Waiting for response");

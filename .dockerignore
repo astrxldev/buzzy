@@ -11,3 +11,4 @@ docker-compose.yml
 nginx
 test-results
 playwright-report
+dist

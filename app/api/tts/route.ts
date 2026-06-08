@@ -5,9 +5,11 @@ import z from "zod";
 import { env } from "process";
 import { redis } from "@/lib/db/redis";
 import { hash } from "bun";
+const { DONATE_WIDGET_KEY } = process.env as Record<string, string>;
 
 const Schema = z.object({
   message: z.string().max(1000),
+  key: z.literal(DONATE_WIDGET_KEY),
 });
 
 const voices = ["Zephyr", "Charon", "Fenrir", "Kore", "Sulafat"];
