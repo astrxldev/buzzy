@@ -154,7 +154,7 @@ function HomeLink({
       <Link
         href={href}
         className={cn(
-          "flex flex-col p-10 text-center",
+          "flex flex-col p-8 text-center",
           disabled && "pointer-events-none brightness-50",
           className,
         )}
@@ -162,11 +162,11 @@ function HomeLink({
         <Image
           src={logo}
           alt={name}
-          className="w-30 h-24 sm:w-50 sm:h-40 object-contain hover:scale-110 transition-transform duration-100"
+          className="w-48 h-24 sm:w-50 sm:h-40 object-contain hover:scale-110 transition-transform duration-100"
           width={200}
           height={200}
         />
-        <span className="md:hidden block visible text-xs">{name}</span>
+        <span className="md:hidden block visible text-lg">{name}</span>
       </Link>
     </SimpleTooltip>
   );
