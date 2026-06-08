@@ -7,40 +7,49 @@ on:
       - dev
 
 jobs:
-  docker:
+  build-frontend:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Restore .env
-        run: |
+      - uses: actions/checkout@v4
+      - run: |
           docker info
           env="${{ secrets.ENV_B64 }}"
           length=${#env}
           echo "Length: $length"
           echo "${{ secrets.ENV_B64 }}" | base64 -d > .env
           ls -l .env
-
-      - name: Build & Push Images
-        run: |
+      - run: |
           TAG=${{ gitea.sha }}
-
-          # frontend
           docker build \
             -t mts.dgnr.us:5000/${{ gitea.repository }}:frontend \
             -t mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG \
-            . &
+            .
 
-          # backend
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          docker info
+          env="${{ secrets.ENV_B64 }}"
+          length=${#env}
+          echo "Length: $length"
+          echo "${{ secrets.ENV_B64 }}" | base64 -d > .env
+          ls -l .env
+      - run: |
+          TAG=${{ gitea.sha }}
           docker build \
             -f backend.dockerfile \
             -t mts.dgnr.us:5000/${{ gitea.repository }}:backend \
             -t mts.dgnr.us:5000/${{ gitea.repository }}:backend-$TAG \
-            . &
-          wait
+            .
 
+  push:
+    needs: [build-frontend, build-backend]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          TAG=${{ gitea.sha }}
           docker push mts.dgnr.us:5000/${{ gitea.repository }}:backend &
           docker push mts.dgnr.us:5000/${{ gitea.repository }}:backend-$TAG &
           docker push mts.dgnr.us:5000/${{ gitea.repository }}:frontend &
