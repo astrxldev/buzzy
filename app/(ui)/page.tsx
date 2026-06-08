@@ -55,13 +55,13 @@ export default function Home() {
             logo={TierlistLogo}
           />
           <HomeLink
-            name="Guide"
+            name="ไกด์ตัวละคร"
             desc="ไกด์ตัวละครใน Google Sheets"
             href="/guide"
             logo={GuideLogo}
           />
           <HomeLink
-            name="Donate"
+            name="โดเนทขึ้นจอ"
             desc="โดเนทขึ้นไลฟ์สตรีม"
             href="/donate"
             logo={DonateLogo}
