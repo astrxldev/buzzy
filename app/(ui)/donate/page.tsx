@@ -66,7 +66,7 @@ const Schema = z
     message: z.string().max(500, "ข้อความยาวสุด 200 ตัวอักษร").default(""),
     amount: z.coerce
       .number("จำนวนต้องเป็นตัวเลข")
-      .min(10, "โดเนทขั้นต่ำ 1 บาท")
+      .min(1, "โดเนทขั้นต่ำ 1 บาท")
       .max(10000, "โดเนทได้ไม่เกิน 1 หมื่นบาท"),
     image: z.file().optional(),
   })
