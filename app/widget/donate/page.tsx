@@ -20,6 +20,7 @@ type DonateData = {
 export default function () {
   const [current, setCurrent] = useState<DonateData>();
   const [mounted, setMounted] = useState(false);
+  const [failed, setFailed] = useState(0);
   const sfx = useRef<HTMLAudioElement | null>(null);
   const onQueue = useRef<string[]>([]);
   const queue = useRef<Promise<void>>(Promise.resolve());
@@ -87,8 +88,11 @@ export default function () {
       try {
         await promise;
         console.log("Heartbeat OK");
+        setFailed(0);
       } catch {
         console.error("Heartbeat timed out");
+        setFailed((x) => x + 1);
+        if (failed > 12) location.reload();
       }
     }, 10000);
     return () => {
