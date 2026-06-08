@@ -39,7 +39,8 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  if (!(await adminCheck())) redirect("/login");
+  if (!(await adminCheck()))
+    redirect(`/login?next=${encodeURIComponent("/artifact/admin")}`);
   const subs = await db
     .select({
       id: submissions.id,

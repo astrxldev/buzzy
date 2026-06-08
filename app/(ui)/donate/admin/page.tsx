@@ -6,7 +6,8 @@ import { adminCheck } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
 export default async function () {
-  if (!(await adminCheck())) redirect("/login");
+  if (!(await adminCheck())) 
+    redirect(`/login?next=${encodeURIComponent("/donate/admin")}`);
 
   const data = await db
     .select()

@@ -41,7 +41,8 @@ export default async function AdminLayout({
   children: React.ReactNode;
   modal: React.ReactNode;
 }) {
-  if (!(await adminCheck())) redirect("/login");
+  if (!(await adminCheck()))
+    redirect(`/login?next=${encodeURIComponent("/rubgram/admin")}`);
   const subs = await db
     .select({
       id: endgameSubmissions.id,
