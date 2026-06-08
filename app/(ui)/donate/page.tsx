@@ -196,6 +196,7 @@ export default async function () {
           message,
           image: image ? await fileToDataUrl(image) : undefined,
         });
+      else sse.donate.pub("update", null);
 
       return { toast: "ส่งเรียบร้อย", reset: true };
     });

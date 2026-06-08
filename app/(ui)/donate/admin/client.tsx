@@ -126,7 +126,10 @@ export function DonateAdminPage({
   const router = useRouter();
   useEffect(() => {
     if (!router) return;
-    return sse.donate.sub("ping", () => router.refresh()).clean;
+    return sse.donate.subMany({
+      ping: () => router.refresh(),
+      update: () => router.refresh(),
+    }).clean;
   }, [router]);
 
   return (
