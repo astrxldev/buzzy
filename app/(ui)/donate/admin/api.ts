@@ -18,6 +18,12 @@ export async function testPopup() {
   });
 }
 
+export async function reloadWidget() {
+  if (!(await adminCheck())) throw new Error("Unauthorized");
+
+  sse.donate.pub("refresh", null);
+}
+
 export async function resendPopup(id: string) {
   if (!(await adminCheck())) throw new Error("Unauthorized");
   const [sub] = await db

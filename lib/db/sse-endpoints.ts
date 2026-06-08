@@ -42,6 +42,7 @@ export const sse = sseEndpointMap({
     // roundtrip SSE system check
     heartbeat: z.number(),
     update: z.null(),
+    refresh: z.null(),
   },
   // Passive Update Checker
   active: {

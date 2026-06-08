@@ -75,6 +75,7 @@ export default function () {
     const { clean } = sse.donate.subMany({
       heartbeat: (tag) => pendingHeartbeat[tag]?.(),
       ping: enqueue,
+      refresh: () => location.reload(),
     });
 
     const interval = setInterval(async () => {

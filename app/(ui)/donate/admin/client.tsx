@@ -10,10 +10,16 @@ import {
 import { donations } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
 import type { ColumnDef } from "@tanstack/react-table";
-import { BitcoinIcon, BugPlay, Copy, MessageCircleWarning } from "lucide-react";
+import {
+  BitcoinIcon,
+  BugPlay,
+  ChevronsLeftRightEllipsis,
+  Copy,
+  MessageCircleWarning,
+} from "lucide-react";
 import { useEllipsisVisible } from "react-hook-text-overflow";
 import { ActionButton } from "../../../../components/action-button";
-import { resendPopup, testPopup } from "./api";
+import { reloadWidget, resendPopup, testPopup } from "./api";
 import { useEffect } from "react";
 import { sse } from "@/lib/db/sse-endpoints";
 import { useRouter } from "next/navigation";
@@ -57,11 +63,22 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
     accessorKey: "id",
     header() {
       return (
-        <SimpleTooltip text="Send test popup">
-          <ActionButton variant="outline" size="icon-sm" action={testPopup}>
-            <BugPlay />
-          </ActionButton>
-        </SimpleTooltip>
+        <div className="flex gap-1">
+          <SimpleTooltip text="Send test popup">
+            <ActionButton variant="outline" size="icon-sm" action={testPopup}>
+              <BugPlay />
+            </ActionButton>
+          </SimpleTooltip>
+          <SimpleTooltip text="Reload all widget">
+            <ActionButton
+              variant="outline"
+              size="icon-sm"
+              action={reloadWidget}
+            >
+              <ChevronsLeftRightEllipsis />
+            </ActionButton>
+          </SimpleTooltip>
+        </div>
       );
     },
     cell(row) {
