@@ -154,7 +154,7 @@ function HomeLink({
       <Link
         href={href}
         className={cn(
-          "flex flex-col p-8 text-center",
+          "flex flex-col p-8 md:p-10 text-center",
           disabled && "pointer-events-none brightness-50",
           className,
         )}
@@ -166,7 +166,9 @@ function HomeLink({
           width={200}
           height={200}
         />
-        <span className="md:hidden block visible text-lg">{name}</span>
+        <span className="md:hidden block visible text-lg md:text-xs">
+          {name}
+        </span>
       </Link>
     </SimpleTooltip>
   );
