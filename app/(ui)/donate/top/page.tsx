@@ -6,9 +6,15 @@ import { donations } from "@/lib/db/schema";
 import { fileToDataUrl } from "@/lib/utils";
 import { Podium } from "./podium";
 import { TopDonateTable } from "./table";
+import type { Metadata } from "next";
 
 type NumberString = `${number}`;
 type NumberLike = number | NumberString;
+
+export const metadata: Metadata = {
+  title: "โดเนทขึ้นจอ",
+  description: "ท็อป 10 อันดับคนโดเนท",
+};
 
 export default function Page() {
   return (

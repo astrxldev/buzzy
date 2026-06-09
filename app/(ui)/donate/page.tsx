@@ -41,7 +41,7 @@ const { TMN_DEST_PHONE_NUM, SASTIFY_API_PRIVKEY } = process.env as Record<
 >;
 
 export const metadata: Metadata = {
-  title: "โดเนท",
+  title: "โดเนทขึ้นจอ",
 };
 
 type SastifyApiResponse =
