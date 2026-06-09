@@ -6,7 +6,7 @@ import ArtifactLogo from "#/logos/artifact.webp";
 import GuideLogo from "#/logos/guide.webp";
 import RubgramLogo from "#/logos/rubgram.webp";
 import TierlistLogo from "#/logos/tierlist.webp";
-import DonateLogo from "#/logos/donate.svg";
+import DonateLogo from "#/logos/donate.webp";
 import Image from "@/components/image";
 import { SimpleTooltip } from "@/components/tooltip";
 import { cn } from "@/lib/utils";
