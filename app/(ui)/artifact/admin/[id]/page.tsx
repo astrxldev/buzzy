@@ -33,10 +33,10 @@ export default async function AdminSubmissionView({
   const { enka } = await getArtifactConfig();
   if (!sub) notFound();
   return (
-    <div className="p-2 h-full">
-      <div className="flex flex-col h-full w-full gap-2">
+    <div className="h-full p-2">
+      <div className="flex h-full w-full flex-col gap-2">
         <div className="flex w-full justify-between gap-2">
-          <Card className="w-full pb-1 rounded-md">
+          <Card className="w-full rounded-md pb-1">
             <CardHeader>
               <CardTitle className="font-bold">
                 {sub.queue}. {sub.name}
@@ -54,7 +54,7 @@ export default async function AdminSubmissionView({
           </Card>
           <Avatar char={char} />
         </div>
-        <div className="border rounded-md h-full overflow-hidden">
+        <div className="h-full overflow-hidden rounded-md border">
           {enka && <EnkaBrowser uid={sub.uid} sub={sub.id} />}
         </div>
       </div>

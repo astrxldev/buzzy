@@ -248,14 +248,14 @@ export default async function () {
 
   //#region TSX
   return (
-    <div className="flex items-center justify-center min-h-svh">
-      <div className="p-5 bg-card border rounded-md w-full max-w-md">
+    <div className="flex min-h-svh items-center justify-center">
+      <div className="w-full max-w-md rounded-md border bg-card p-5">
         <FormProvider id="tip" inDialog={false} onSubmit={submit}>
-          <div className="flex flex-col items-center sm:flex-row sm:items-end gap-2">
+          <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-end">
             <FormInput name="image" className="w-fit">
               <Cropper />
             </FormInput>
-            <div className="grid gap-4 [&>label]:-mb-2 grow w-full">
+            <div className="grid w-full grow gap-4 [&>label]:-mb-2">
               <FormInput name="name" label="ชื่อ" subLabel="ไม่จำเป็น">
                 <Input placeholder="Anonymous" />
               </FormInput>
@@ -274,7 +274,7 @@ export default async function () {
           {!artifactConfig.locked && (
             <>
               <FormInput name="artifact">
-                <FormWrapper className="flex gap-2 items-center">
+                <FormWrapper className="flex items-center gap-2">
                   <Checkbox />
                   ลัดคิวเสือกไอดีชาวบ้าน
                 </FormWrapper>
@@ -292,11 +292,11 @@ export default async function () {
             tabs={[
               {
                 label: (
-                  <span className="flex gap-1 items-center">
+                  <span className="flex items-center gap-1">
                     <Image
                       src={TruemoneyIcon}
                       alt="Truemoney"
-                      className="w-12 h-6 object-cover"
+                      className="h-6 w-12 object-cover"
                     />
                     TrueMoney
                   </span>
@@ -305,7 +305,7 @@ export default async function () {
               },
               {
                 label: (
-                  <span className="flex gap-1 items-center">
+                  <span className="flex items-center gap-1">
                     <QrCodeIcon className="size-6" />
                     PromptPay
                   </span>
@@ -320,14 +320,14 @@ export default async function () {
               </FormInput>
             </FormChoice>
             <FormChoice value="pp">
-              <div className="flex gap-2 w-full pb-2">
+              <div className="flex w-full gap-2 pb-2">
                 <Image
                   src={PromptpayImage}
                   alt="Promptpay QR Code"
-                  className="rounded max-w-32 shrink-0"
+                  className="max-w-32 shrink-0 rounded"
                 />
-                <div className="flex flex-col shrink-0 relative">
-                  <span className="font-bold text-sm">บัญชีรับโดเนท</span>
+                <div className="relative flex shrink-0 flex-col">
+                  <span className="text-sm font-bold">บัญชีรับโดเนท</span>
                   <span className="text-sm text-muted-foreground">
                     ผู้รับ: นาย พัชรพล พลพันธุ์
                   </span>

@@ -126,7 +126,7 @@ export default function AuditLogViewer({
   };
 
   return (
-    <div className="bg-[#2225] h-svh w-full flex flex-col items-center gap-2 p-2 overflow-hidden">
+    <div className="flex h-svh w-full flex-col items-center gap-2 overflow-hidden bg-[#2225] p-2">
       <SearchBox
         filters={filters}
         className="bg-input"
@@ -144,22 +144,22 @@ export default function AuditLogViewer({
                 if (el) entryRefs.current.set(log.id, el);
                 else entryRefs.current.delete(log.id);
               }}
-              className="group hover:bg-[#2225] transition-colors"
+              className="group transition-colors hover:bg-[#2225]"
             >
               <div
                 className={`flex gap-4 px-4 ${isGrouped ? "py-0.5" : "py-3.5"} pb-0.5`}
               >
-                <div className="w-min shrink-0 text-right pt-0.5">
+                <div className="w-min shrink-0 pt-0.5 text-right">
                   <span
-                    className={`text-xs whitespace-nowrap invisible ${isGrouped ? "group-hover:visible" : ""}`}
+                    className={`invisible text-xs whitespace-nowrap ${isGrouped ? "group-hover:visible" : ""}`}
                   >
                     {formatTime(log.time)}
                   </span>
                 </div>
 
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   {!isGrouped && (
-                    <div className="flex items-baseline gap-2 mb-0.5">
+                    <div className="mb-0.5 flex items-baseline gap-2">
                       <span className="font-semibold text-white">
                         {log.author || "System"}
                       </span>
@@ -174,11 +174,11 @@ export default function AuditLogViewer({
                     onClick={() => toggleExpand(log.id)}
                     role="tree"
                   >
-                    <span className="text-gray-300 leading-relaxed flex items-center gap-2">
+                    <span className="flex items-center gap-2 leading-relaxed text-gray-300">
                       {log.text}{" "}
                       {!isExpanded && log.details ? (
                         <SimpleTooltip text="Click to see details">
-                          <FormIcon className="opacity-80 size-4" />
+                          <FormIcon className="size-4 opacity-80" />
                         </SimpleTooltip>
                       ) : (
                         ""
@@ -188,7 +188,7 @@ export default function AuditLogViewer({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="shrink-0 h-6 w-6 text-gray-400 hover:text-gray-200 hover:bg-[#404249]"
+                        className="h-6 w-6 shrink-0 text-gray-400 hover:bg-[#404249] hover:text-gray-200"
                       >
                         {isExpanded ? (
                           <ChevronDown className="h-4 w-4" />
@@ -201,7 +201,7 @@ export default function AuditLogViewer({
 
                   {isExpanded && log.details ? (
                     <div className="mt-2 mb-1">
-                      <pre className="bg-[#1e1f2255] rounded p-3 text-sm text-gray-300 overflow-x-auto border border-[#27282c] font-mono">
+                      <pre className="overflow-x-auto rounded border border-[#27282c] bg-[#1e1f2255] p-3 font-mono text-sm text-gray-300">
                         {stringify(log.details)}
                       </pre>
                     </div>

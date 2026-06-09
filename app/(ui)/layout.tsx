@@ -16,7 +16,7 @@ export default async function UiLayout({
       <Image
         src={Background}
         alt="Background"
-        className="z-[-1] opacity-40 object-cover fixed top-0 left-0 w-full h-fit min-h-dvh"
+        className="fixed top-0 left-0 z-[-1] h-fit min-h-dvh w-full object-cover opacity-40"
       />
       <StarsRenderer />
       <Providers>

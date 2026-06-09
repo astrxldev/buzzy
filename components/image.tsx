@@ -17,7 +17,7 @@ export default function Image({
       src={src}
       alt={alt}
       className={cn(
-        "transition-opacity duration-600 opacity-0",
+        "opacity-0 transition-opacity duration-600",
         isLoaded && "opacity-100",
         className,
       )}

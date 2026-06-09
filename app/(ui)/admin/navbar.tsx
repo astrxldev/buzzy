@@ -45,7 +45,7 @@ function VersionBadge({
   className?: string;
 }) {
   return (
-    <span className={cn("text-[10px] font-bold leading-none", className)}>
+    <span className={cn("text-[10px] leading-none font-bold", className)}>
       {name?.match(/[0-9.]+$/)?.[1]}
     </span>
   );
@@ -88,8 +88,8 @@ function DropdownMenu({
   return (
     <div
       className={cn(
-        "flex flex-col gap-0.5 min-w-40",
-        depth > 0 && "ml-2 pl-2 border-l border-white/10",
+        "flex min-w-40 flex-col gap-0.5",
+        depth > 0 && "ml-2 border-l border-white/10 pl-2",
       )}
     >
       {items.map((item) => {
@@ -106,11 +106,11 @@ function DropdownMenu({
                   type="button"
                   onClick={() => setOpenSub(isOpen ? null : item.name)}
                   className={cn(
-                    "flex items-center gap-2 w-full px-2.5 py-2 rounded-md text-left",
-                    "transition-colors text-[13px]",
+                    "flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left",
+                    "text-[13px] transition-colors",
                     active
                       ? "bg-white/15 text-white"
-                      : "text-white/60 hover:text-white hover:bg-white/10",
+                      : "text-white/60 hover:bg-white/10 hover:text-white",
                   )}
                 >
                   <Icon size={16} name={item.name} className="shrink-0" />
@@ -137,11 +137,11 @@ function DropdownMenu({
                 href={item.href!}
                 onClick={onClose}
                 className={cn(
-                  "flex items-center gap-2 px-2.5 py-2 rounded-md",
-                  "transition-colors text-[13px]",
+                  "flex items-center gap-2 rounded-md px-2.5 py-2",
+                  "text-[13px] transition-colors",
                   active
                     ? "bg-white/15 text-white"
-                    : "text-white/60 hover:text-white hover:bg-white/10",
+                    : "text-white/60 hover:bg-white/10 hover:text-white",
                 )}
               >
                 <Icon size={16} name={item.name} className="shrink-0" />
@@ -255,8 +255,8 @@ export function AdminNavbar({
 
   return (
     <div ref={navRef} className="sticky top-0 z-49">
-      <div className="flex items-center gap-1 px-2 py-1.5 border-b border-white/10 bg-card/75 backdrop-blur-sm">
-        <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-1 border-b border-white/10 bg-card/75 px-2 py-1.5 backdrop-blur-sm">
+        <div className="flex shrink-0 items-center gap-1">
           {prefixParent && (
             <button
               type="button"
@@ -264,8 +264,8 @@ export function AdminNavbar({
                 setScopeOverride(scopeOverride === "root" ? null : "root")
               }
               className={cn(
-                "flex items-center justify-center w-6 h-8 rounded transition-colors opacity-50 hover:opacity-100",
-                scopeOverride === "root" && "opacity-100 bg-white/15",
+                "flex h-8 w-6 items-center justify-center rounded opacity-50 transition-colors hover:opacity-100",
+                scopeOverride === "root" && "bg-white/15 opacity-100",
               )}
             >
               <prefixParent.icon size={14} name={prefixParent.name} />
@@ -275,7 +275,7 @@ export function AdminNavbar({
             type="button"
             onClick={() => setShowLabels((v) => !v)}
             className={cn(
-              "flex items-center justify-center w-8 h-8 rounded transition-colors",
+              "flex h-8 w-8 items-center justify-center rounded transition-colors",
               showLabels
                 ? "bg-white/15 text-white"
                 : "text-white/40 hover:text-white/70",
@@ -283,10 +283,10 @@ export function AdminNavbar({
           >
             {showLabels ? <X size={16} /> : <AlignJustify size={16} />}
           </button>
-          <div className="w-px h-5 bg-white/10 mx-1" />
+          <div className="mx-1 h-5 w-px bg-white/10" />
         </div>
 
-        <div className="flex items-center gap-1 overflow-x-auto scrollbar-none flex-1 min-w-0">
+        <div className="flex min-w-0 flex-1 scrollbar-none items-center gap-1 overflow-x-auto">
           {(activeParent ? activeParent.sub! : items).map((item) => {
             const Icon = item.icon;
             const active = isActive(item, pathname);
@@ -297,7 +297,7 @@ export function AdminNavbar({
               <>
                 <Icon size={18} name={item.name} className="shrink-0" />
                 {showLabels && (
-                  <span className="text-[11px] whitespace-nowrap leading-none">
+                  <span className="text-[11px] leading-none whitespace-nowrap">
                     {item.name}
                   </span>
                 )}
@@ -305,10 +305,10 @@ export function AdminNavbar({
             );
 
             const buttonClass = cn(
-              "flex items-center gap-1.5 px-2.5 py-1.5 rounded transition-colors shrink-0",
+              "flex shrink-0 items-center gap-1.5 rounded px-2.5 py-1.5 transition-colors",
               active || isOpen
                 ? "bg-white/15 text-white"
-                : "text-white/50 hover:text-white hover:bg-white/10",
+                : "text-white/50 hover:bg-white/10 hover:text-white",
             );
 
             if (hasSub) {
@@ -340,8 +340,8 @@ export function AdminNavbar({
           );
           if (!entry || !("sub" in entry) || !entry.sub) return null;
           return (
-            <div className="absolute left-0 right-0 top-full mt-1 z-50">
-              <div className="rounded-lg border border-white/10 bg-card/95 backdrop-blur-sm p-2 shadow-xl">
+            <div className="absolute top-full right-0 left-0 z-50 mt-1">
+              <div className="rounded-lg border border-white/10 bg-card/95 p-2 shadow-xl backdrop-blur-sm">
                 <DropdownMenu
                   items={entry.sub}
                   showLabels={showLabels}

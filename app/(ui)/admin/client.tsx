@@ -97,7 +97,7 @@ export function RandomWelcomeMessage() {
 
   if (index === -1)
     return (
-      <div className="flex flex-col gap-0.5 mt-1 items-center">
+      <div className="mt-1 flex flex-col items-center gap-0.5">
         <Skeleton className="h-4 w-32" />
         <Skeleton className="h-4 w-64" />
       </div>
@@ -106,11 +106,11 @@ export function RandomWelcomeMessage() {
   const item = items[index];
 
   return (
-    <div className="flex flex-col gap-0.5 mt-1">
-      <div className="text-sm flex items-center justify-center">
+    <div className="mt-1 flex flex-col gap-0.5">
+      <div className="flex items-center justify-center text-sm">
         {item.header}
       </div>
-      <div className="opacity-60 text-xs ">{item.message}</div>
+      <div className="text-xs opacity-60 ">{item.message}</div>
     </div>
   );
 }

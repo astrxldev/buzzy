@@ -34,7 +34,7 @@ export function TierListCell({
     <SortableContext id={cellId} items={items} strategy={rectSortingStrategy}>
       <div
         ref={setNodeRef}
-        className="flex flex-wrap p-1 gap-2 items-start content-start"
+        className="flex flex-wrap content-start items-start gap-2 p-1"
         style={{
           minHeight: `${tileSize + 8}px`,
         }}

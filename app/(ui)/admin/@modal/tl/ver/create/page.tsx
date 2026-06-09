@@ -60,12 +60,12 @@ export default async function TlTypeCreatePage() {
     <ModalBase title="Create Tierlist Type">
       <FormProvider id="tl-type-create" onSubmit={submit}>
         <div className="flex gap-2">
-          <div className="flex flex-col gap-2 grow">
+          <div className="flex grow flex-col gap-2">
             <FormInput name="name" override={genId} label="Name">
               <Input placeholder="Abyss" autoFocus />
             </FormInput>
           </div>
-          <div className="flex flex-col gap-2 grow">
+          <div className="flex grow flex-col gap-2">
             <FormInput name="id" label="ID">
               <Input placeholder="aby" />
             </FormInput>

@@ -44,7 +44,7 @@ export default async function TierlistSelectionPage() {
     .orderBy(tierlistTypes.id);
 
   return (
-    <div className="max-w-full min-h-full flex flex-col justify-center gap-2 mx-2">
+    <div className="mx-2 flex min-h-full max-w-full flex-col justify-center gap-2">
       <center className="mb-2">
         <Link href="/">
           <Image
@@ -59,16 +59,16 @@ export default async function TierlistSelectionPage() {
       </center>
       {vers.map((t) => (
         <div className="flex flex-col gap-1" key={t.id}>
-          <Link href={`/tl/${t.id}`} className="font-bold text-4xl w-fit">
+          <Link href={`/tl/${t.id}`} className="w-fit text-4xl font-bold">
             <div className="flex items-center gap-2">
-              <div className="px-2 py-1 border rounded-md bg-[#2228]">
+              <div className="rounded-md border bg-[#2228] px-2 py-1">
                 {t.name}
-                <span className="text-sm text-muted-foreground ml-2">
+                <span className="ml-2 text-sm text-muted-foreground">
                   {t.mode}
                 </span>
               </div>
               <SimpleTooltip text="ดูเทียร์ลิสต์ของคอนเทนต์นี้ทั้งหมด">
-                <span className="absolute right-0 m-8 text-sm font-normal text-blue-400 ml-2 hover:underline ">
+                <span className="absolute right-0 m-8 ml-2 text-sm font-normal text-blue-400 hover:underline ">
                   ดูทั้งหมด
                   <ArrowRight className="inline-block size-4" />
                 </span>
@@ -76,7 +76,7 @@ export default async function TierlistSelectionPage() {
             </div>
           </Link>
           <HorizontalDiv>
-            <div className="flex gap-2 max-w-full">
+            <div className="flex max-w-full gap-2">
               {t.versions.map((e) => (
                 <Link href={`/tl/${t.id}/${e.id}`} key={e.id}>
                   {e.image ? (
@@ -85,14 +85,14 @@ export default async function TierlistSelectionPage() {
                         src={`/cdn/${e.image}`}
                         alt={e.name}
                         fill
-                        className="rounded-sm border object-cover bg-primary"
+                        className="rounded-sm border bg-primary object-cover"
                       />
-                      <div className="flex absolute w-full justify-center bottom-0 py-1 bg-black/50 rounded-b-sm">
+                      <div className="absolute bottom-0 flex w-full justify-center rounded-b-sm bg-black/50 py-1">
                         {e.name}
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center aspect-video w-60 border rounded-sm bg-[#1118] backdrop-blur-xl font-bold text-4xl">
+                    <div className="flex aspect-video w-60 items-center justify-center rounded-sm border bg-[#1118] text-4xl font-bold backdrop-blur-xl">
                       {e.name}
                     </div>
                   )}

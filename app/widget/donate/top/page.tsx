@@ -38,7 +38,7 @@ export default function TopDonateWidget() {
     return () => clearInterval(interval);
   }, [textRef, top]);
   return top ? (
-    <div className="grid grid-cols-[40px_minmax(0,1fr)_max-content] w-94.5 max-w-94.5 h-18.75 *:self-center gap-1 text-5xl font-semibold bg-black/75 rounded-full p-2 px-3 text-[#FFBA00] border-4 border-white">
+    <div className="grid h-18.75 w-94.5 max-w-94.5 grid-cols-[40px_minmax(0,1fr)_max-content] gap-1 rounded-full border-4 border-white bg-black/75 p-2 px-3 text-5xl font-semibold text-[#FFBA00] *:self-center">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         height="24px"

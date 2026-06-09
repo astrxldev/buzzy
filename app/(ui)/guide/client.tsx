@@ -38,19 +38,19 @@ export function GuideList({
   );
 
   return (
-    <div className="flex justify-center h-svh">
-      <div className="w-full xl:max-w-2/3 border flex flex-col">
+    <div className="flex h-svh justify-center">
+      <div className="flex w-full flex-col border xl:max-w-2/3">
         <div>
           <Link
             href="/"
-            className="border-b p-3 font-semibold leading-none flex items-center gap-2"
+            className="flex items-center gap-2 border-b p-3 leading-none font-semibold"
           >
             <Compass className="opacity-50" />
             ไกด์ตัวละคร
           </Link>
         </div>
         <div className="p-4 pb-2">
-          <InputGroup className="w-full h-10">
+          <InputGroup className="h-10 w-full">
             <InputGroupInput
               placeholder="ค้นหา..."
               onChange={(ev) => setSearch(ev.target.value)}
@@ -62,23 +62,23 @@ export function GuideList({
         </div>
         <div
           className={cn(
-            "grid gap-4 p-4 grid-cols-[repeat(auto-fill,minmax(min(300px,calc(100svw-2rem-2px)),1fr))] overflow-auto transition-opacity",
+            "grid grid-cols-[repeat(auto-fill,minmax(min(300px,calc(100svw-2rem-2px)),1fr))] gap-4 overflow-auto p-4 transition-opacity",
             loading === 1 && "opacity-50",
           )}
         >
           {list.length === 0 && loading === 0 ? (
             <div className="col-span-full flex flex-col items-center justify-center py-20 text-muted-foreground">
-              <SearchX className="w-16 h-16 mb-4 opacity-50" />
+              <SearchX className="mb-4 h-16 w-16 opacity-50" />
               <p className="text-2xl font-semibold">ไม่พบตัวละครที่ค้นหา</p>
               <p className="text-lg ">ลองคำอื่นที่ความหมายใกล้เคียงกันดูนะ</p>
             </div>
           ) : (
             list.map((card) => (
               <Link href={card.link} key={card.id} target="_blank">
-                <Card className="bg-card/50 hover:bg-border backdrop-blur-sm transition-colors py-3 sm:py-6 rounded-sm sm:rounded-xl">
+                <Card className="rounded-sm bg-card/50 py-3 backdrop-blur-sm transition-colors hover:bg-border sm:rounded-xl sm:py-6">
                   <CardHeader className="px-3 sm:px-6">
                     <CardTitle>{card.name}</CardTitle>
-                    <div className="relative w-full aspect-square mt-2 rounded-sm sm:rounded-lg border overflow-hidden">
+                    <div className="relative mt-2 aspect-square w-full overflow-hidden rounded-sm border sm:rounded-lg">
                       {card.image && (
                         <Image
                           src={`/cdn/${card.image}`}

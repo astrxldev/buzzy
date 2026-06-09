@@ -19,8 +19,8 @@ export default function ErrorPage({
   }, [error]);
 
   return (
-    <div className="h-full w-full m-2 ml-0 border bg-[#2225] backdrop-blur-md rounded-md flex flex-col gap-2 justify-center items-center">
-      <h2 className="font-bold text-2xl">Something went wrong!</h2>
+    <div className="m-2 ml-0 flex h-full w-full flex-col items-center justify-center gap-2 rounded-md border bg-[#2225] backdrop-blur-md">
+      <h2 className="text-2xl font-bold">Something went wrong!</h2>
       <Button
         onClick={
           // Attempt to recover by trying to re-render the segment

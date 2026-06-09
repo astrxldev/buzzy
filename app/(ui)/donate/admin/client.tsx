@@ -98,7 +98,7 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
           className={cn(
             "flex gap-1",
             row.row.original.uid ||
-              "opacity-0 group-hover:opacity-100 transition-opacity",
+              "opacity-0 transition-opacity group-hover:opacity-100",
           )}
         >
           <SimpleTooltip text="Re-send Popup">
@@ -149,8 +149,8 @@ export function DonateAdminPage({
   }, [router]);
 
   return (
-    <div className="mx-auto w-full max-w-[max(1280px,90%)] flex flex-col">
-      <span className="flex items-center text-3xl font-semibold gap-1 pt-1 pb-2">
+    <div className="mx-auto flex w-full max-w-[max(1280px,90%)] flex-col">
+      <span className="flex items-center gap-1 pt-1 pb-2 text-3xl font-semibold">
         <BitcoinIcon size={32} />
         Donate List
       </span>
@@ -158,7 +158,7 @@ export function DonateAdminPage({
         columns={columns}
         emptyDescription="No donation came in yet."
         data={data}
-        className="w-full max-h-[calc(100vh-93px)] overflow-y-auto backdrop-blur-sm bg-black/25"
+        className="max-h-[calc(100vh-93px)] w-full overflow-y-auto bg-black/25 backdrop-blur-sm"
       ></DataTable>
     </div>
   );

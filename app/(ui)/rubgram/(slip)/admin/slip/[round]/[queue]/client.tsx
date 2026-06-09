@@ -20,8 +20,8 @@ export function DataViewer({
   );
 
   return (
-    <div className="relative max-h-[60svh] overflow-auto rounded-xl border bg-black/40 p-4 text-xs font-mono leading-relaxed">
-      <div className="sticky -top-2 -mr-2 flex justify-end -mt-10">
+    <div className="relative max-h-[60svh] overflow-auto rounded-xl border bg-black/40 p-4 font-mono text-xs leading-relaxed">
+      <div className="sticky -top-2 -mt-10 -mr-2 flex justify-end">
         <Button
           variant="ghost"
           size="icon"
@@ -32,7 +32,7 @@ export function DataViewer({
         <CopyButton text={yaml} />
       </div>
 
-      <pre className="whitespace-pre-wrap wrap-break-word">{yaml}</pre>
+      <pre className="wrap-break-word whitespace-pre-wrap">{yaml}</pre>
     </div>
   );
 }

@@ -34,7 +34,7 @@ export function SettingsServicesSection({
 
   return (
     <Section title="บริการนอก">
-      <div className="flex flex-col gap-2 h-full">
+      <div className="flex h-full flex-col gap-2">
         <div className="flex items-center gap-2">
           <Switch checked={enka} onCheckedChange={setEnka} />
           เปิดใช้การดึงตัวละครใน Artifact
@@ -44,7 +44,7 @@ export function SettingsServicesSection({
           Sync Amber
         </Button>
         {debug && (
-          <div className="grid gap-1 rounded-sm border border-dashed p-1 w-fit">
+          <div className="grid w-fit gap-1 rounded-sm border border-dashed p-1">
             <span className="text-sm text-muted-foreground">
               Test file input
             </span>
@@ -52,7 +52,7 @@ export function SettingsServicesSection({
           </div>
         )}
         {syncResult && (
-          <pre className="border bg-muted rounded h-full p-2">{syncResult}</pre>
+          <pre className="h-full rounded border bg-muted p-2">{syncResult}</pre>
         )}
       </div>
     </Section>

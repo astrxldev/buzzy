@@ -83,7 +83,7 @@ export function SidebarLink({
             {children}
           </HoverCardTrigger>
           <HoverCardContent
-            className="flex flex-col gap-0.5 w-2xl"
+            className="flex w-2xl flex-col gap-0.5"
             side="right"
           >
             <div className="font-semibold">{submission.name}</div>

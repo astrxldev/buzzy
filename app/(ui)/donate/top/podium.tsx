@@ -36,7 +36,7 @@ export function Podium({ data }: { data: TopDonateRow[] }) {
   const order = [data[1], data[0], data[2]].filter(Boolean);
 
   return (
-    <div className="flex justify-center items-end gap-4 mt-6">
+    <div className="mt-6 flex items-end justify-center gap-4">
       {order.map((donor, index) => {
         const rank = index === 0 ? 1 : index === 1 ? 0 : 2;
         const s = styles[rank];
@@ -52,14 +52,14 @@ export function Podium({ data }: { data: TopDonateRow[] }) {
               )}
             </div>
             <Card
-              className={`${s.border} ${s.bg} ${s.height} w-36 flex flex-col items-center justify-end pb-0 backdrop-blur-md`}
+              className={`${s.border} ${s.bg} ${s.height} flex w-36 flex-col items-center justify-end pb-0 backdrop-blur-md`}
             >
               <CardContent className="flex flex-col items-center gap-2 p-4">
                 <Avatar className="size-10">
                   <AvatarImage src={donor.image} />
                   <AvatarFallback>{initial}</AvatarFallback>
                 </Avatar>
-                <span className="font-semibold text-sm truncate w-full text-center">
+                <span className="w-full truncate text-center text-sm font-semibold">
                   {donor.name}
                 </span>
                 <span className={`text-lg font-bold ${s.text}`}>

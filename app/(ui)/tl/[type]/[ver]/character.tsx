@@ -86,7 +86,7 @@ export function Draggable({
           >
             <div className="relative">
               <SimpleTooltip text="คลิกขวาเพื่อลบ">
-                <div className="absolute justify-center items-center top-0 left-0 bottom-0 right-0 rounded bg-[#0005] flex opacity-0 hover:opacity-100 transition-opacity text-red-500">
+                <div className="absolute top-0 right-0 bottom-0 left-0 flex items-center justify-center rounded bg-[#0005] text-red-500 opacity-0 transition-opacity hover:opacity-100">
                   <Trash />
                 </div>
               </SimpleTooltip>
@@ -157,7 +157,7 @@ export function Draggable({
                         <div
                           key={p}
                           style={{ width: badgeSize, height: badgeSize }}
-                          className={`bg-[#2228] ${p} absolute rounded border flex items-center justify-center`}
+                          className={`bg-[#2228] ${p} absolute flex items-center justify-center rounded border`}
                         >
                           <MessageSquareText
                             style={{
@@ -194,12 +194,12 @@ export function Draggable({
             </PopoverTrigger>
             <PopoverContent
               side="right"
-              className="bg-[#2225] backdrop-blur-md p-1"
+              className="bg-[#2225] p-1 backdrop-blur-md"
             >
               <div className="flex gap-2">
                 {editable && (
-                  <div className="flex flex-col justify-between shrink-0 gap-2">
-                    <div className="grid grid-cols-2 gap-1 h-min items-stretch">
+                  <div className="flex shrink-0 flex-col justify-between gap-2">
+                    <div className="grid h-min grid-cols-2 items-stretch gap-1">
                       {badges
                         .filter(
                           (b) =>
@@ -217,7 +217,7 @@ export function Draggable({
                               width={32}
                               height={32}
                               className={cn(
-                                "border rounded hover:brightness-110 hover:backdrop-brightness-300 cursor-pointer",
+                                "cursor-pointer rounded border hover:brightness-110 hover:backdrop-brightness-300",
                                 assignedBadges.includes(e.id) &&
                                   "backdrop-brightness-500",
                               )}
@@ -227,7 +227,7 @@ export function Draggable({
                             <button
                               key={`B${e.id}`}
                               className={cn(
-                                "border rounded hover:brightness-110 hover:backdrop-brightness-300 flex justify-center items-center font-bold cursor-pointer min-w-8 min-h-8",
+                                "flex min-h-8 min-w-8 cursor-pointer items-center justify-center rounded border font-bold hover:brightness-110 hover:backdrop-brightness-300",
                                 assignedBadges.includes(e.id) &&
                                   "backdrop-brightness-500",
                               )}
@@ -244,7 +244,7 @@ export function Draggable({
                       target="_blank"
                       rel="noreferrer noopener"
                     >
-                      <Button variant="outline" className="p-1 w-full">
+                      <Button variant="outline" className="w-full p-1">
                         <Image
                           src={AmberIcon}
                           alt="Amber"
@@ -261,7 +261,7 @@ export function Draggable({
                 )}
                 <Textarea
                   placeholder="Comment..."
-                  className="aspect-square bg-card resize-none disabled:opacity-90"
+                  className="aspect-square resize-none bg-card disabled:opacity-90"
                   value={comment}
                   onChange={(ev) => {
                     setDirty(500);

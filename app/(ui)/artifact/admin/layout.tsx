@@ -57,7 +57,7 @@ export default async function AdminLayout({
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <b>Admin</b>
             <div className="flex gap-1">
               <Button
@@ -111,7 +111,7 @@ export default async function AdminLayout({
       </Sidebar>
       <SidebarInset className="bg-transparent">
         {children}
-        <div className="absolute block md:hidden opacity-50 hover:opacity-100 bottom-15 left-4">
+        <div className="absolute bottom-15 left-4 block opacity-50 hover:opacity-100 md:hidden">
           <SidebarTrigger />
         </div>
         <Watcher />

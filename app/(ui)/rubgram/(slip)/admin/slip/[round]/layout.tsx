@@ -48,7 +48,7 @@ export default async function ({
       </Suspense>
       <SidebarInset className="bg-transparent">
         {children}
-        <div className="absolute block md:hidden opacity-50 hover:opacity-100 bottom-1 left-1">
+        <div className="absolute bottom-1 left-1 block opacity-50 hover:opacity-100 md:hidden">
           <SidebarTrigger />
         </div>
         <Watcher />
@@ -94,7 +94,7 @@ async function ThisSidebar({ round }: { round: number }) {
               <span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <div className="bg-sidebar-primary text-sidebar-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                    <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-foreground">
                       <ReceiptText className="size-4" />
                     </div>
                   </DropdownMenuTrigger>
@@ -122,14 +122,14 @@ async function ThisSidebar({ round }: { round: number }) {
                   <span className="font-medium">ประวัติสลิปรายได้</span>
                   <span>รอบที่ {round}</span>
                 </div>
-                <div className="flex ml-auto h-full justify-evenly items-center">
+                <div className="ml-auto flex h-full items-center justify-evenly">
                   {round <= min ? (
                     <ChevronLeft className="size-4 text-muted-foreground" />
                   ) : (
                     <SimpleTooltip text="รอบก่อนหน้า" side="right">
                       <Link
                         href={`/rubgram/admin/slip/${round - 1}`}
-                        className="h-full flex items-center"
+                        className="flex h-full items-center"
                       >
                         <ChevronLeft className="size-4" />
                       </Link>
@@ -141,7 +141,7 @@ async function ThisSidebar({ round }: { round: number }) {
                     <SimpleTooltip text="รอบถัดไป" side="right">
                       <Link
                         href={`/rubgram/admin/slip/${round + 1}`}
-                        className="h-full flex items-center"
+                        className="flex h-full items-center"
                       >
                         <ChevronRight className="size-4" />
                       </Link>

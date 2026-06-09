@@ -36,7 +36,7 @@ export function NavUser() {
     return (
       <div className="flex w-full gap-2 p-2">
         <Skeleton className="h-8 w-8 rounded-lg" />
-        <div className="grid flex-1 text-left text-sm leading-tight gap-1">
+        <div className="grid flex-1 gap-1 text-left text-sm leading-tight">
           <Skeleton className="h-4" />
           <Skeleton className="h-3" />
         </div>

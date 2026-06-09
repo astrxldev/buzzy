@@ -14,7 +14,7 @@ export function TlStatusOverlay({
 }) {
   return (
     <div
-      className="absolute top-0 right-0 m-1 rounded bg-[#2225] backdrop-blur-sm border px-1 py-0.5 text-sm transition-colors z-30 pointer-events-none flex gap-1 items-center"
+      className="pointer-events-none absolute top-0 right-0 z-30 m-1 flex items-center gap-1 rounded border bg-[#2225] px-1 py-0.5 text-sm backdrop-blur-sm transition-colors"
       style={{
         color:
           ev.upload || ev.download

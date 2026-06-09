@@ -2,9 +2,10 @@ import { RandomWelcomeMessage } from "./client";
 
 export default function AdminPage() {
   return (
-    <div className="flex h-full w-full justify-center items-center">
+    <div className="flex h-full w-full items-center justify-center">
       <div className="flex flex-col items-center">
-        <span className="text-4xl font-bold no-translate">ยินดีต้อนรับกลับ!</span>
+        {/* oxlint-disable-next-line tailwindcss/no-unknown-classes */}
+        <span className="no-translate text-4xl font-bold">ยินดีต้อนรับกลับ!</span>
         <div className="mt-1">
           <RandomWelcomeMessage />
         </div>

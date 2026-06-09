@@ -122,18 +122,18 @@ export default async function EndgamePage() {
     : [];
 
   return (
-    <div className="flex flex-col justify-center gap-2 items-center h-svh">
+    <div className="flex h-svh flex-col items-center justify-center gap-2">
       <Card className="w-full max-w-md">
         {q ? (
           !q.paid ? (
             ""
           ) : (
             <Blocker>
-              <div className="flex gap-1 flex-col items-center">
-                <span className="font-bold text-3xl">คิวของคุณคือหมายเลข</span>
-                <span className="font-bold text-5xl">{q.queue}</span>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-3xl font-bold">คิวของคุณคือหมายเลข</span>
+                <span className="text-5xl font-bold">{q.queue}</span>
                 {canExpire && (
-                  <span className="text-muted-foreground flex gap-1 items-center">
+                  <span className="flex items-center gap-1 text-muted-foreground">
                     <SimpleTooltip text="มีบางคิวก่อนหน้าของคุณยังไม่ได้ชำระเงิน">
                       <AlertCircle size={16} />
                     </SimpleTooltip>
@@ -145,12 +145,12 @@ export default async function EndgamePage() {
           )
         ) : config.locked ? (
           <Blocker>
-            <span className="font-bold text-3xl">ยังไม่เปิดรับคิว</span>
+            <span className="text-3xl font-bold">ยังไม่เปิดรับคิว</span>
           </Blocker>
         ) : config.full ? (
           <Blocker>
-            <div className="flex gap-1 flex-col items-center">
-              <span className="font-bold text-3xl">คิวเต็มแล้ว</span>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-3xl font-bold">คิวเต็มแล้ว</span>
             </div>
           </Blocker>
         ) : (
@@ -177,15 +177,15 @@ export default async function EndgamePage() {
         <CardContent>
           {q ? (
             <EndgameFormWrapper id="mainform" type="payment">
-              <div className="flex flex-col gap-2 items-center">
-                <div className="flex gap-2 w-full">
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex w-full gap-2">
                   <Image
                     src={PromptpayImage}
                     alt="Promptpay QR Code"
-                    className="rounded max-w-32 shrink-0"
+                    className="max-w-32 shrink-0 rounded"
                   />
-                  <div className="flex flex-col shrink-0 relative">
-                    <span className="font-bold text-lg">
+                  <div className="relative flex shrink-0 flex-col">
+                    <span className="text-lg font-bold">
                       ยอดชำระ {q.price} บาท{" "}
                       {q.expires && (
                         <Kbd suppressHydrationWarning>
@@ -249,7 +249,7 @@ export default async function EndgamePage() {
             </EndgameFormWrapper>
           )}
         </CardContent>
-        <CardFooter className="flex gap-2 justify-between">
+        <CardFooter className="flex justify-between gap-2">
           <div className="flex gap-2">
             <SimpleTooltip text="ลัดคิว 50 บาท (ไม่รวมยอดที่ต้องจ่าย)">
               <Link
@@ -261,7 +261,7 @@ export default async function EndgamePage() {
                   variant="outline"
                   className={
                     config.limit >= 0 && count >= config.limit
-                      ? "bg-emerald-600! border-white! animate-pulse"
+                      ? "animate-pulse border-white! bg-emerald-600!"
                       : ""
                   }
                   type="button"
@@ -307,7 +307,7 @@ export default async function EndgamePage() {
               <LiveButton />
             </Suspense>
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex items-center gap-2">
             {!q && <PriceEstimation />}
             <Kbd>
               {count} / {config.limit < 0 ? "∞" : config.limit} คิว
@@ -328,11 +328,11 @@ export default async function EndgamePage() {
           </div>
         </CardFooter>
       </Card>
-      <span className="p-1 text-xs m-1 border rounded-sm">
+      <span className="m-1 rounded-sm border p-1 text-xs">
         หากติดปัญหา โปรดแจ้งผ่านทาง
         <a
           href="https://discord.gg/HQwDXNhxuK"
-          className="underline text-green-200"
+          className="text-green-200 underline"
         >
           ช่องดิสคอร์ด
         </a>

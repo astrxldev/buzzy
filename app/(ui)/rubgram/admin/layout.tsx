@@ -68,7 +68,7 @@ export default async function AdminLayout({
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <b>Admin</b>
             <div className="flex gap-1">
               <Button variant="ghost" size="icon" className="size-8" asChild>
@@ -132,7 +132,7 @@ export default async function AdminLayout({
       <SidebarInset className="bg-transparent">
         <ErrorBoundary errorComponent={ErrorModal}>{modal}</ErrorBoundary>
         {children}
-        <div className="absolute block md:hidden opacity-50 hover:opacity-100 bottom-1 left-1">
+        <div className="absolute bottom-1 left-1 block opacity-50 hover:opacity-100 md:hidden">
           <SidebarTrigger />
         </div>
         <Watcher />

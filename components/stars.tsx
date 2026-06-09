@@ -122,7 +122,7 @@ export function StarsRenderer() {
     <canvas
       ref={cv}
       className={cn(
-        "z-[-1] object-cover fixed top-0 left-0 w-full h-fit min-h-dvh mask-[url('/mask.webp')] mask-cover mask-center mask-no-repeat transition-opacity duration-5000 opacity-0",
+        "fixed top-0 left-0 z-[-1] h-fit min-h-dvh w-full mask-[url('/mask.webp')] mask-cover mask-center mask-no-repeat object-cover opacity-0 transition-opacity duration-5000",
         loaded && "opacity-40",
       )}
     ></canvas>

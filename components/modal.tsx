@@ -27,7 +27,7 @@ export function ModalBase({
       <DialogContent
         className={cn(
           wrap && "p-0",
-          full && "h-full max-w-dvw! flex flex-col lg:max-w-[90%]! lg:h-[90%]",
+          full && "flex h-full max-w-dvw! flex-col lg:h-[90%] lg:max-w-[90%]!",
         )}
       >
         <DialogHeader className={cn(wrap && "sr-only hidden")}>

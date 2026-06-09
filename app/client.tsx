@@ -94,7 +94,7 @@ export function VersionCheck({ headless = false }: { headless?: boolean }) {
   }, [headless, setConnected, setUpdated, readyForUpdate, emit]);
 
   return debug ? (
-    <div className="absolute bottom-0 right-0 m-2 px-1 rounded flex flex-col gap-2 bg-card border active:pointer-events-none opacity-20 hover:opacity-100 transition-opacity">
+    <div className="absolute right-0 bottom-0 m-2 flex flex-col gap-2 rounded border bg-card px-1 opacity-20 transition-opacity hover:opacity-100 active:pointer-events-none">
       Buzz ({ver.current.split("-")[0] || "..."})
       <pre>{stringify(debugData, null, 2)}</pre>
     </div>

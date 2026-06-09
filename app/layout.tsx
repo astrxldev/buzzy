@@ -31,9 +31,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full dark">
+    <html lang="en" className="dark h-full">
       <body
-        className={`${anuphan.variable} ${geistMono.variable} font-sans antialiased h-full`}
+        className={`${anuphan.variable} ${geistMono.variable} h-full font-sans antialiased`}
       >
         {children}
       </body>

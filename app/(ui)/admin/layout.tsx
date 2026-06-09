@@ -278,7 +278,7 @@ async function HealthStatus() {
     <SidebarMenu>
       <SidebarMenuItem>
         <SidebarMenuButton>
-          <div className="flex justify-between w-full">
+          <div className="flex w-full justify-between">
             <div className="flex gap-1 [&>svg]:size-4 [&>svg]:shrink-0">
               {/* Database */}
               <SimpleTooltip text="Database">

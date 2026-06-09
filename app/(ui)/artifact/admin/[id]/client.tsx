@@ -43,11 +43,11 @@ export function EnkaBrowser({ sub, uid }: { sub: string; uid: string }) {
     });
   }, [sub, uid, t]);
   return (
-    <div className="h-full w-full relative">
+    <div className="relative h-full w-full">
       {!ready && !error && (isCached || useWeb) && (
         <div
           className={cn(
-            "flex flex-col items-center gap-2 absolute left-1/2 -translate-x-1/2 -translate-y-1/2 z-40",
+            "absolute left-1/2 z-40 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2",
             useWeb ? "top-[calc(50%+80px)]" : "top-1/2",
           )}
         >
@@ -56,7 +56,7 @@ export function EnkaBrowser({ sub, uid }: { sub: string; uid: string }) {
         </div>
       )}
       {error && (
-        <div className="flex flex-col items-center gap-2 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40">
+        <div className="absolute top-1/2 left-1/2 z-40 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2">
           {error.includes("ใหม่") ? (
             <SquircleDashed className="size-8 text-orange-500" />
           ) : (
@@ -69,7 +69,7 @@ export function EnkaBrowser({ sub, uid }: { sub: string; uid: string }) {
       {!error && !ready && !isCached && !useWeb && (
         <div
           className={cn(
-            "flex flex-col items-center gap-2 absolute left-1/2 -translate-x-1/2 -translate-y-1/2 z-40",
+            "absolute left-1/2 z-40 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2",
             useWeb ? "top-[calc(50%+80px)]" : "top-1/2",
           )}
         >
@@ -80,7 +80,7 @@ export function EnkaBrowser({ sub, uid }: { sub: string; uid: string }) {
 
       <div
         className={cn(
-          "absolute left-1 z-45 opacity-70 md:opacity-50 hover:opacity-100 flex gap-1",
+          "absolute left-1 z-45 flex gap-1 opacity-70 hover:opacity-100 md:opacity-50",
           useWeb ? "-bottom-19" : "bottom-1",
         )}
       >
@@ -117,8 +117,8 @@ export function EnkaBrowser({ sub, uid }: { sub: string; uid: string }) {
         <iframe
           src={`https://enka.network/u/${uid}?t=${t}`}
           className={cn(
-            "w-full border-0 bg-card -mt-20 h-[calc(100%+5rem)]",
-            !ready && "grayscale blur-md brightness-50 pointer-events-none",
+            "-mt-20 h-[calc(100%+5rem)] w-full border-0 bg-card",
+            !ready && "pointer-events-none blur-md brightness-50 grayscale",
           )}
           title="Enka Network"
           onLoad={() => setReady(true)}
@@ -126,9 +126,9 @@ export function EnkaBrowser({ sub, uid }: { sub: string; uid: string }) {
       ) : (
         <div
           className={cn(
-            "w-full h-full border-0 bg-card transition-[filter] portrait:rotate-90 portrait:scale-175",
+            "h-full w-full border-0 bg-card transition-[filter] portrait:scale-175 portrait:rotate-90",
             (!ready || error) &&
-              "grayscale blur-md brightness-50 pointer-events-none",
+              "pointer-events-none blur-md brightness-50 grayscale",
           )}
         >
           <Image

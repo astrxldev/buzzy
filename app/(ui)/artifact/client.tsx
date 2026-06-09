@@ -179,7 +179,7 @@ export function CharacterChooser({
               <Loader2 className="animate-spin" /> กำลังโหลดตัวละคร...
             </Placeholder>
           ) : !chars.length ? (
-            <div className="flex gap-2 mb-2">
+            <div className="mb-2 flex gap-2">
               <Placeholder />
               <Placeholder />
               <Placeholder />
@@ -187,7 +187,7 @@ export function CharacterChooser({
               <Placeholder />
             </div>
           ) : (
-            <div className="flex gap-2 mb-2">
+            <div className="mb-2 flex gap-2">
               <SimpleTooltip text="ค้นหาด้วยตัวเอง">
                 <Placeholder
                   className="w-[76.8px] cursor-pointer rounded-sm"
@@ -224,7 +224,7 @@ function Placeholder({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "w-full h-[100.8px] flex gap-2 justify-center items-center rounded-md bg-muted",
+        "flex h-[100.8px] w-full items-center justify-center gap-2 rounded-md bg-muted",
         className,
       )}
       {...props}
@@ -417,7 +417,7 @@ export function WarningDialog() {
             width={500}
             height={200}
             alt="Guide Image 1"
-            className="border-2 border-foreground rounded-md"
+            className="rounded-md border-2 border-foreground"
           />
 
           <center>
@@ -429,7 +429,7 @@ export function WarningDialog() {
             width={500}
             height={200}
             alt="Guide Image 2"
-            className="border-2 border-foreground rounded-md"
+            className="rounded-md border-2 border-foreground"
           />
 
           <span className="ml-[60%] md:ml-[65%]">

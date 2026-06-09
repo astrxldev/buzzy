@@ -286,11 +286,11 @@ export default function SearchBox({
     <div className="w-full max-w-2xl">
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 z-10" />
+          <Search className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
           {/* Highlighted overlay */}
-          <div className="absolute inset-0 flex items-center pl-9 pr-9 pointer-events-none overflow-hidden">
-            <div className="whitespace-pre text-sm">
+          <div className="pointer-events-none absolute inset-0 flex items-center overflow-hidden pr-9 pl-9">
+            <div className="text-sm whitespace-pre">
               {renderHighlightedInput()}
             </div>
           </div>
@@ -332,7 +332,7 @@ export default function SearchBox({
               }
             }}
             className={cn(
-              "relative w-full h-10 pl-9 pr-9 rounded-md border bg-transparent text-sm text-transparent caret-black ring-offset-gray-400 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+              "relative h-10 w-full rounded-md border bg-transparent pr-9 pl-9 text-sm text-transparent caret-black ring-offset-gray-400 placeholder:text-slate-500 focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50",
               className,
             )}
             placeholder={`Search...${Object.keys(filters).length ? " Try: " : ""}${Object.keys(
@@ -352,7 +352,7 @@ export default function SearchBox({
                 setParsedQuery({ search: "", filters: {} });
                 inputRef.current?.focus();
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors z-10"
+              className="absolute top-1/2 right-3 z-10 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
             >
               <X className="h-4 w-4" />
             </button>
@@ -360,10 +360,10 @@ export default function SearchBox({
         </div>
 
         {isOpen && (suggestions.length > 0 || suggestionLoading) && (
-          <div className="absolute z-50 w-full mt-1 rounded-md border bg-card shadow-lg overflow-hidden">
+          <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border bg-card shadow-lg">
             <ul className="max-h-64 overflow-auto py-1">
               {suggestionLoading ? (
-                <li className="relative flex cursor-pointer select-none items-center rounded-sm px-3 py-2 text-sm outline-none mx-1 hover:brightness-125 gap-2">
+                <li className="relative mx-1 flex cursor-pointer items-center gap-2 rounded-sm px-3 py-2 text-sm outline-none select-none hover:brightness-125">
                   <Spinner /> Loading...
                 </li>
               ) : (
@@ -373,7 +373,7 @@ export default function SearchBox({
                     onClick={() => applySuggestion(s)}
                     onMouseEnter={() => setHighlight(i)}
                     className={`
-                    relative flex cursor-pointer select-none items-center rounded-sm px-3 py-2 text-sm outline-none mx-1
+                    relative mx-1 flex cursor-pointer items-center rounded-sm px-3 py-2 text-sm outline-none select-none
                     ${i === highlight ? "bg-muted" : "hover:brightness-125"}
                   `}
                   >

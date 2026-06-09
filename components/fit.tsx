@@ -42,7 +42,7 @@ export default function AutoFitText({
   return (
     <div
       ref={containerRef}
-      className="w-full h-full grid place-content-center overflow-hidden"
+      className="grid h-full w-full place-content-center overflow-hidden"
     >
       <div
         ref={textRef}

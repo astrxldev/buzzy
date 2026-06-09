@@ -67,7 +67,7 @@ export default async function ArtifactFormPage({
   const editing = q && searchEdit === q.editToken && q.edits < 5;
 
   return (
-    <div className="flex justify-around items-center h-svh">
+    <div className="flex h-svh items-center justify-around">
       {/*
       <div className="hidden md:block p-5">
         <div className="aspect-video w-110"></div>
@@ -78,14 +78,14 @@ export default async function ArtifactFormPage({
           ""
         ) : q ? (
           <Blocker>
-            <div className="flex gap-1 flex-col items-center">
-              <span className="font-bold text-3xl">คิวของคุณคือหมายเลข</span>
-              <span className="font-bold text-5xl">{q.queue}</span>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-3xl font-bold">คิวของคุณคือหมายเลข</span>
+              <span className="text-5xl font-bold">{q.queue}</span>
             </div>
             {q.edits < 5 && !q.checked ? (
               <SimpleTooltip text="แก้ไข">
                 <Button
-                  className="absolute bottom-0 right-0 m-2"
+                  className="absolute right-0 bottom-0 m-2"
                   variant="outline"
                   size="icon"
                   asChild
@@ -97,7 +97,7 @@ export default async function ArtifactFormPage({
               </SimpleTooltip>
             ) : (
               <Button
-                className="absolute bottom-0 right-0 m-2 bg-red-500/50!"
+                className="absolute right-0 bottom-0 m-2 bg-red-500/50!"
                 variant="outline"
                 disabled
               >
@@ -108,13 +108,13 @@ export default async function ArtifactFormPage({
           </Blocker>
         ) : config.locked ? (
           <Blocker>
-            <span className="font-bold text-3xl">ยังไม่เปิดรับคิว</span>
+            <span className="text-3xl font-bold">ยังไม่เปิดรับคิว</span>
           </Blocker>
         ) : config.limit >= 0 && count >= config.limit ? (
           <Blocker>
-            <div className="flex gap-1 flex-col items-center">
-              <span className="font-bold text-3xl">คิวเต็มแล้ว</span>
-              <span className="font-bold text-2xl">ต้องโดเนทลัดคิวแล้วล่ะ</span>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-3xl font-bold">คิวเต็มแล้ว</span>
+              <span className="text-2xl font-bold">ต้องโดเนทลัดคิวแล้วล่ะ</span>
               <SimpleTooltip text="โดเนทลัดคิว ขั้นต่ำ 10 บาท" side="bottom">
                 <Link
                   href="https://tipme.in.th/536d969652666273c2fa85ad"
@@ -122,7 +122,7 @@ export default async function ArtifactFormPage({
                   rel="noreferrer"
                 >
                   <Button
-                    className="bg-emerald-600! border-white! animate-pulse"
+                    className="animate-pulse border-white! bg-emerald-600!"
                     type="button"
                   >
                     <CircleDollarSign />
@@ -223,7 +223,7 @@ export default async function ArtifactFormPage({
             </div>
           </ArtifactFormWrapper>
         </CardContent>
-        <CardFooter className="flex gap-2 justify-between">
+        <CardFooter className="flex justify-between gap-2">
           <div className="flex gap-2">
             <SimpleTooltip text="โดเนทลัดคิว ขั้นต่ำ 10 บาท">
               <Link
@@ -256,7 +256,7 @@ export default async function ArtifactFormPage({
               </Suspense>
             )}
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex items-center gap-2">
             <Kbd>
               {count} / {config.limit < 0 ? "∞" : config.limit} คิว
             </Kbd>

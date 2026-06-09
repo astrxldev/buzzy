@@ -64,8 +64,8 @@ export default async function ({
     );
 
   return (
-    <div className="flex flex-col sm:flex-row h-full p-2">
-      <div className="flex flex-1 justify-center items-center p-5">
+    <div className="flex h-full flex-col p-2 sm:flex-row">
+      <div className="flex flex-1 items-center justify-center p-5">
         <div className="relative rounded border border-dashed border-white">
           <Image
             src={`/api/slip/${entry.slip?.id}`}
@@ -74,10 +74,10 @@ export default async function ({
             width={1000}
             height={1000}
           />
-          <div className="absolute top-0 left-0 bottom-0 right-0 backdrop-blur-lg hover:opacity-0 transition-opacity" />
+          <div className="absolute top-0 right-0 bottom-0 left-0 backdrop-blur-lg transition-opacity hover:opacity-0" />
         </div>
       </div>
-      <div className="flex justify-center items-center flex-1">
+      <div className="flex flex-1 items-center justify-center">
         <Card>
           <CardHeader>
             <CardTitle>จ่าย {entry.price} บาท</CardTitle>

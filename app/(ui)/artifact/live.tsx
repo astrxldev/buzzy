@@ -20,12 +20,12 @@ export async function LiveButton() {
       <TooltipTrigger asChild>
         <Link href={url}>
           <Button variant="outline" type="button">
-            <TvMinimalPlay className="text-red-500 animate-pulse" /> LIVE
+            <TvMinimalPlay className="animate-pulse text-red-500" /> LIVE
           </Button>
         </Link>
       </TooltipTrigger>
       <TooltipContent>
-        <div className="m-2 p-2 flex flex-col gap-2 rounded border bg-card">
+        <div className="m-2 flex flex-col gap-2 rounded border bg-card p-2">
           <Image
             height={thumbnails.height * (targetWidth / thumbnails.width)}
             width={targetWidth}
@@ -34,7 +34,8 @@ export async function LiveButton() {
             className="rounded border"
           />
           <div
-            className="truncate line-clamp-2"
+            // oxlint-disable-next-line tailwindcss/no-conflicting-classes
+            className="line-clamp-2 truncate"
             style={{ maxWidth: targetWidth }}
           >
             {title}

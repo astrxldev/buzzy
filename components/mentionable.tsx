@@ -49,7 +49,7 @@ export function DiscordMentionable({
             setCopied(2);
           }
         }}
-        className="px-0.5 rounded-[3px] cursor-pointer transition-[background-color,color] duration-50 ease-out font-medium bg-mention-background text-mention-foreground hover:text-white hover:bg-mention-hover"
+        className="cursor-pointer rounded-[3px] bg-mention-background px-0.5 font-medium text-mention-foreground transition-[background-color,color] duration-50 ease-out hover:bg-mention-hover hover:text-white"
       >
         {type === "channel" ? "#" : "@"}
         {name}

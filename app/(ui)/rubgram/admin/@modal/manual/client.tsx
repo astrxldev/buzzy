@@ -39,7 +39,7 @@ export function CurrencyInput(props: ComponentProps<typeof Input>) {
 export function PriceInput() {
   const { values, setValue } = useFormContext();
   return (
-    <div className="flex flex-col gap-2 grow">
+    <div className="flex grow flex-col gap-2">
       <Label htmlFor="rg-price">Price</Label>
       <InputGroup>
         <InputGroupInput
@@ -135,7 +135,7 @@ export function SlipUpload({
         {isSelected ? (
           <SimpleTooltip text="Unselect">
             <X
-              className="hover:text-red-500 pointer-events-auto!"
+              className="pointer-events-auto! hover:text-red-500"
               onClick={() => {
                 setValue(null);
                 onValueChange?.(null);
@@ -183,7 +183,7 @@ export function UserSelect({
   }, [bump]);
 
   return (
-    <div className="flex gap-1 w-full">
+    <div className="flex w-full gap-1">
       <VirtualizedComboBox
         onValueSelect={onValueChange}
         defaultValue={value}

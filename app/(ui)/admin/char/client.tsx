@@ -40,11 +40,11 @@ export function CharManager({
   }, [query, chars]);
 
   return (
-    <div className="flex flex-col w-full">
-      <div className="flex gap-2 justify-center p-2">
+    <div className="flex w-full flex-col">
+      <div className="flex justify-center gap-2 p-2">
         <SearchBox
           filters={filters}
-          className="bg-input sticky top-2"
+          className="sticky top-2 bg-input"
           onQueryChange={setQuery}
         />
         <SimpleTooltip text="เพิ่มตัวละคร" side="right">
@@ -55,7 +55,7 @@ export function CharManager({
           </Button>
         </SimpleTooltip>
       </div>
-      <div className="flex flex-wrap gap-4 justify-center">
+      <div className="flex flex-wrap justify-center gap-4">
         {filteredChars.map((char) => (
           <Link href={`/admin/char/${char.id}`} key={char.id}>
             <Avatar char={char} />

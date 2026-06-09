@@ -127,10 +127,10 @@ export default function () {
     <>
       <AnimatePresence>
         {mounted && (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex h-full items-center justify-center">
             <div className="relative w-162.5 overflow-hidden">
               <motion.div
-                className="absolute left-1/2 top-1/2 z-10 -translate-1/2"
+                className="absolute top-1/2 left-1/2 z-10 -translate-1/2"
                 initial={{ top: "200%", rotateZ: "600deg" }}
                 animate={{ top: "50%", rotateZ: "0deg" }}
                 exit={{ opacity: 0, transition: { delay: 0, duration: 1 } }}
@@ -152,16 +152,16 @@ export default function () {
                 </motion.div>
               </motion.div>
               <motion.div
-                className="rounded-4xl bg-black/80 p-5 flex gap-3 max-w-162.5 h-39 overflow-hidden mx-auto"
+                className="mx-auto flex h-39 max-w-162.5 gap-3 overflow-hidden rounded-4xl bg-black/80 p-5"
                 initial={{ width: 0, padding: 0 }}
                 animate={{ width: "100%", padding: "20px" }}
                 exit={{ opacity: 0, transition: { delay: 0, duration: 1 } }}
                 transition={{ delay: 1, duration: 1, ease: "circOut" }}
               >
                 <div className="aspect-square size-32 shrink-0 rounded-2xl" />
-                <div className="flex flex-col font-semibold text-3xl min-w-0">
+                <div className="flex min-w-0 flex-col text-3xl font-semibold">
                   <motion.span
-                    className="text-[#CB5959] whitespace-nowrap"
+                    className="whitespace-nowrap text-[#CB5959]"
                     initial={{ paddingTop: "20px" }}
                     animate={{ paddingTop: 0 }}
                     transition={{ delay: 1, duration: 1, ease: "circOut" }}
@@ -171,10 +171,10 @@ export default function () {
                   </motion.span>
                   <motion.span
                     className={cn(
-                      "whitespace-break-spaces wrap-break-word h-20 w-full",
+                      "h-20 w-full wrap-break-word whitespace-break-spaces",
                       (message ?? "").length > 80
-                        ? "text-xl line-clamp-3"
-                        : "text-3xl line-clamp-2",
+                        ? "line-clamp-3 text-xl"
+                        : "line-clamp-2 text-3xl",
                     )}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}

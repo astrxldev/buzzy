@@ -21,13 +21,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { actionLog } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
-import type {
-  element} from "@/lib/db/schema";
-import {
-  characters,
-  element as elementEnum,
-  versions,
-} from "@/lib/db/schema";
+import type { element } from "@/lib/db/schema";
+import { characters, element as elementEnum, versions } from "@/lib/db/schema";
 
 export default async function CharacterEditPage({
   params,
@@ -112,19 +107,19 @@ export default async function CharacterEditPage({
         values={{ ...char, stars: char.stars.toString(), element: char.vision }}
       >
         <div className="flex gap-2">
-          <div className="flex flex-col gap-2 grow">
+          <div className="flex grow flex-col gap-2">
             <FormInput name="name" label="Name">
               <Input placeholder="Traveler (Electro)" autoFocus />
             </FormInput>
           </div>
-          <div className="flex flex-col gap-2 grow">
+          <div className="flex grow flex-col gap-2">
             <FormInput name="id" label="ID (change = break)">
               <Input placeholder="traveler_electro" disabled />
             </FormInput>
           </div>
         </div>
         <div className="flex gap-2">
-          <div className="flex flex-col gap-2 grow">
+          <div className="flex grow flex-col gap-2">
             <FormInput name="element" label="Element">
               <Select>
                 <SelectTrigger className="w-full">
@@ -185,7 +180,7 @@ export default async function CharacterEditPage({
         </FormInput>
         <Separator />
         <div className="flex gap-2">
-          <div className="flex flex-col gap-2 grow">
+          <div className="flex grow flex-col gap-2">
             <FormInput name="weapon" label="Weapon" subLabel="(for Amber)">
               <Select>
                 <SelectTrigger className="w-full">
@@ -207,7 +202,7 @@ export default async function CharacterEditPage({
               </Select>
             </FormInput>
           </div>
-          <div className="flex flex-col gap-2 grow">
+          <div className="flex grow flex-col gap-2">
             <FormInput name="amber" label="Amber ID">
               <Input placeholder="10000005-electro" />
             </FormInput>

@@ -15,7 +15,7 @@ export default async function () {
   const enka = await getEnka();
 
   return (
-    <div className="grid gap-8 h-full w-full p-2 pl-0">
+    <div className="grid h-full w-full gap-8 p-2 pl-0">
       <Tabs defaultValue="external">
         <TabsList className="w-full">
           <TabsTrigger value="external">บริการนอก</TabsTrigger>

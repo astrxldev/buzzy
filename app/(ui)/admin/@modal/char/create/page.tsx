@@ -21,13 +21,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { actionLog } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
-import type {
-  element} from "@/lib/db/schema";
-import {
-  characters,
-  element as elementEnum,
-  versions,
-} from "@/lib/db/schema";
+import type { element } from "@/lib/db/schema";
+import { characters, element as elementEnum, versions } from "@/lib/db/schema";
 import { genId } from "./overrides";
 
 export default async function CharacterCreatePage() {
@@ -94,19 +89,19 @@ export default async function CharacterCreatePage() {
     <ModalBase title="Create Character">
       <FormProvider id="char-create" onSubmit={submit}>
         <div className="flex gap-2">
-          <div className="flex flex-col gap-2 grow">
+          <div className="flex grow flex-col gap-2">
             <FormInput name="name" override={genId} label="Name">
               <Input placeholder="Traveler (Electro)" autoFocus />
             </FormInput>
           </div>
-          <div className="flex flex-col gap-2 grow">
+          <div className="flex grow flex-col gap-2">
             <FormInput name="id" label="ID">
               <Input placeholder="traveler_electro (Automatic)" />
             </FormInput>
           </div>
         </div>
         <div className="flex gap-2">
-          <div className="flex flex-col gap-2 grow">
+          <div className="flex grow flex-col gap-2">
             <FormInput name="element" label="Element">
               <Select>
                 <SelectTrigger className="w-full">
@@ -167,7 +162,7 @@ export default async function CharacterCreatePage() {
         </FormInput>
         <Separator />
         <div className="flex gap-2">
-          <div className="flex flex-col gap-2 grow">
+          <div className="flex grow flex-col gap-2">
             <FormInput name="weapon" label="Weapon" subLabel="(for Amber)">
               <Select>
                 <SelectTrigger className="w-full">
@@ -189,7 +184,7 @@ export default async function CharacterCreatePage() {
               </Select>
             </FormInput>
           </div>
-          <div className="flex flex-col gap-2 grow">
+          <div className="flex grow flex-col gap-2">
             <FormInput name="amber" label="Amber ID">
               <Input placeholder="10000005-electro" />
             </FormInput>

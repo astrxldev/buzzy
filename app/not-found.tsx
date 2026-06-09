@@ -31,19 +31,19 @@ export default function ErrorPage() {
       <Image
         src={Background}
         alt="Background"
-        className="z-[-1] opacity-20 object-cover fixed top-0 left-0 w-full h-full"
+        className="fixed top-0 left-0 z-[-1] h-full w-full object-cover opacity-20"
       />
-      <div className="h-full w-full bg-[#2225] backdrop-grayscale backdrop-blur-md flex flex-col gap-2 justify-center items-center">
-        <div className="p-4 pb-12 bg-white shadow-lg rounded-sm max-sm:landscape:hidden">
+      <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#2225] backdrop-blur-md backdrop-grayscale">
+        <div className="rounded-sm bg-white p-4 pb-12 shadow-lg max-sm:landscape:hidden">
           <Image
             src={Dottore}
             alt="Dottore"
-            className="bg-gray-300 w-64 h-64 vintage-filter"
+            className="vintage-filter h-64 w-64 bg-gray-300"
             width={256}
             height={256}
           />
         </div>
-        <h2 className="font-bold text-2xl">404 ไม่พบหน้านี้</h2>
+        <h2 className="text-2xl font-bold">404 ไม่พบหน้านี้</h2>
         <span>{message || <Skeleton className="h-6 w-40" />}</span>
         <div className="flex gap-2">
           <Link href="/">

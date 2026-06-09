@@ -83,7 +83,7 @@ export default function LoginPage({
     setLoading(false);
   }
   return (
-    <div className="bg-[#1117] backdrop-blur-lg flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-[#1117] p-6 backdrop-blur-lg md:p-10">
       <div className="w-full max-w-sm">
         <div className="flex flex-col gap-6">
           <form onSubmit={submit} method="POST">
@@ -147,7 +147,7 @@ export default function LoginPage({
               </div>
             </div>
           </form>
-          <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
+          <div className="text-center text-xs text-balance text-muted-foreground *:[a]:underline *:[a]:underline-offset-4 *:[a]:hover:text-primary">
             Any attempts to bruteforce the system
             <br />
             will result in consequences.

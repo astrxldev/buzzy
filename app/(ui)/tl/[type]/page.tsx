@@ -46,40 +46,40 @@ export default async function TierlistSelectionPage({
     .where(eq(tierlistTypes.id, typeId));
 
   return (
-    <div className="max-w-7xl min-h-full flex flex-col gap-6 mx-auto py-8 px-4">
+    <div className="mx-auto flex min-h-full max-w-7xl flex-col gap-6 px-4 py-8">
       {vers.map((t) => (
         <div className="flex flex-col gap-1" key={t.id}>
           <Link
             href="/tl"
-            className="flex hover:underline cursor-default text-muted-foreground"
+            className="flex cursor-default text-muted-foreground hover:underline"
           >
             <ArrowLeft /> กลับไปหน้าแรก
           </Link>
-          <div className="font-bold text-4xl">
-            <div className="px-2 py-1 border w-fit rounded-md bg-[#2228]">
+          <div className="text-4xl font-bold">
+            <div className="w-fit rounded-md border bg-[#2228] px-2 py-1">
               {t.name}
-              <span className="text-sm text-muted-foreground ml-2">
+              <span className="ml-2 text-sm text-muted-foreground">
                 {t.mode}
               </span>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {t.versions.map((e) => (
               <Link href={`/tl/${t.id}/${e.id}`} key={e.id}>
                 {e.image ? (
-                  <div className="relative aspect-video w-full rounded-lg border overflow-hidden">
+                  <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
                     <Image
                       src={`/cdn/${e.image}`}
                       alt={e.name}
                       fill
-                      className="rounded-sm border object-cover bg-primary"
+                      className="rounded-sm border bg-primary object-cover"
                     />
-                    <div className="flex absolute w-full justify-center bottom-0 py-1 bg-black/50 rounded-b-sm">
+                    <div className="absolute bottom-0 flex w-full justify-center rounded-b-sm bg-black/50 py-1">
                       {e.name}
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center aspect-video border rounded-sm bg-[#1118] backdrop-blur-xl font-bold text-5xl">
+                  <div className="flex aspect-video items-center justify-center rounded-sm border bg-[#1118] text-5xl font-bold backdrop-blur-xl">
                     {e.name}
                   </div>
                 )}

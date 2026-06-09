@@ -1,6 +1,12 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["nextjs", "react", "import", "typescript"],
+  "jsPlugins": ["oxlint-tailwindcss"],
+  "settings": {
+    "tailwindcss": {
+      "entryPoint": "app/globals.css"
+    }
+  },
   "rules": {
     "nextjs/no-html-link-for-pages": "error",
     "nextjs/next-script-for-ga": "error",
@@ -9,9 +15,14 @@
     "typescript/restrict-template-expressions": "off",
     "typescript/no-floating-promises": "off",
     "typescript/no-base-to-string": "off",
-    "typescript/unbound-method": "off"
+    "typescript/unbound-method": "off",
+    "tailwindcss/no-unknown-classes": "error",
+    "tailwindcss/no-conflicting-classes": "error",
+    "tailwindcss/enforce-sort-order": "warn",
+    "tailwindcss/no-unnecessary-arbitrary-value": "warn"
   },
   "options": {
     "typeAware": true
-  }
+  },
+  "ignorePatterns": ["./components/ui/**/*"]
 }

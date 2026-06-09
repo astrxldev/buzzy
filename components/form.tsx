@@ -366,7 +366,7 @@ export function FormInput({
   return (
     <>
       {label ? (
-        <div className={cn("flex flex-col gap-2 grow", className)}>
+        <div className={cn("flex grow flex-col gap-2", className)}>
           <Label htmlFor={`forminput-${name}`}>
             {label}{" "}
             {subLabel && (
@@ -375,14 +375,14 @@ export function FormInput({
           </Label>
           {React.cloneElement(children || Divide, nextProps)}
           {errors[name] && (
-            <span className="text-destructive text-sm">{errors[name]}</span>
+            <span className="text-sm text-destructive">{errors[name]}</span>
           )}
         </div>
       ) : (
         <div className={cn(className)}>
           {React.cloneElement(children || Divide, nextProps)}
           {errors[name] && (
-            <span className="text-destructive text-sm">{errors[name]}</span>
+            <span className="text-sm text-destructive">{errors[name]}</span>
           )}
         </div>
       )}
@@ -494,7 +494,7 @@ export function FormAction({
 export function FormRow({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      className={cn("flex gap-2 flex-wrap items-end", className)}
+      className={cn("flex flex-wrap items-end gap-2", className)}
       {...props}
     />
   );
@@ -523,7 +523,7 @@ export function FormTab({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex w-full justify-between items-end">
+      <div className="flex w-full items-end justify-between">
         {label}
         <Tabs value={active} onValueChange={(v) => setValue(name, v)}>
           <TabsList>
@@ -535,7 +535,7 @@ export function FormTab({
           </TabsList>
         </Tabs>
       </div>
-      <div className="bg-muted-foreground/10 p-3 rounded-md">
+      <div className="rounded-md bg-muted-foreground/10 p-3">
         {React.Children.map(children, (child) => {
           if (!React.isValidElement(child)) return null;
           const childValue = (child.props as Record<string, unknown>).value;

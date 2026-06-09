@@ -48,10 +48,10 @@ export default async function AdminSubmissionView({
   const typesMap = Object.fromEntries(types.map((v) => [v.id, v.display]));
 
   return (
-    <div className="p-2 h-full">
-      <div className="flex flex-col h-full w-full gap-2">
+    <div className="h-full p-2">
+      <div className="flex h-full w-full flex-col gap-2">
         <div className="flex w-full justify-between gap-2">
-          <Card className="w-full pb-1 rounded-md">
+          <Card className="w-full rounded-md pb-1">
             <CardHeader>
               <CardTitle>
                 {sub.queue}. {sub.name}
@@ -80,23 +80,23 @@ export default async function AdminSubmissionView({
           {sub.slip ? (
             <Dialog>
               <DialogTrigger asChild>
-                <div className="border rounded-md w-40 relative overflow-hidden hover:opacity-100 opacity-80 transition-opacity cursor-pointer">
+                <div className="relative w-40 cursor-pointer overflow-hidden rounded-md border opacity-80 transition-opacity hover:opacity-100">
                   <Image
                     src={`/api/slip/${sub.slip}`}
                     alt="Slip"
                     fill
                     className="blur-md brightness-50"
                   />
-                  <div className="flex flex-col justify-center items-center absolute top-0 left-0 right-0 bottom-0">
+                  <div className="absolute top-0 right-0 bottom-0 left-0 flex flex-col items-center justify-center">
                     <ExternalLink />
                     เปิดสลิป
                   </div>
                 </div>
               </DialogTrigger>
-              <DialogContent className="h-full max-w-dvw! flex flex-col bg-[#2225] backdrop-blur-xs">
+              <DialogContent className="flex h-full max-w-dvw! flex-col bg-[#2225] backdrop-blur-xs">
                 <DialogTitle className="h-min">สลิป</DialogTitle>
                 <DialogClose asChild>
-                  <div className="h-full w-full flex grow justify-center relative">
+                  <div className="relative flex h-full w-full grow justify-center">
                     <Image
                       src={`/api/slip/${sub.slip}`}
                       alt="Slip"
@@ -120,7 +120,7 @@ export default async function AdminSubmissionView({
               </DialogContent>
             </Dialog>
           ) : sub.price <= 0 ? (
-            <div className="flex flex-col justify-center items-center border rounded-md w-40 bg-card">
+            <div className="flex w-40 flex-col items-center justify-center rounded-md border bg-card">
               <BadgeDollarSign />
               ฟรี
             </div>
@@ -128,7 +128,7 @@ export default async function AdminSubmissionView({
             <DebugSlipUpload sid={sub.id} />
           )}
         </div>
-        <div className="border rounded-md h-full overflow-hidden">
+        <div className="h-full overflow-hidden rounded-md border">
           <Evernight />
         </div>
       </div>

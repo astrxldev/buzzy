@@ -157,11 +157,11 @@ export function CdnTable({
   }
 
   return (
-    <div className="flex flex-col gap-2 w-full">
+    <div className="flex w-full flex-col gap-2">
       <div
         className={cn(
           onChoose ? "h-[calc(70svh-60px)] w-full" : "h-[calc(100svh-60px)]",
-          "overflow-auto rounded-md bg-[#2225] backdrop-blur-sm border",
+          "overflow-auto rounded-md border bg-[#2225] backdrop-blur-sm",
         )}
       >
         <DataTable
@@ -240,7 +240,7 @@ export function CdnTable({
         />
       </div>
 
-      <div className="flex justify-between h-9">
+      <div className="flex h-9 justify-between">
         <div className="flex gap-2">
           <SimpleTooltip text="Upload...">
             <Button size="icon" onClick={() => fileInputRef.current?.click()}>

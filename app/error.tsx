@@ -59,18 +59,18 @@ export default function ErrorPage({
       <Image
         src={Background}
         alt="Background"
-        className="z-[-1] opacity-20 object-cover fixed top-0 left-0 w-full h-full"
+        className="fixed top-0 left-0 z-[-1] h-full w-full object-cover opacity-20"
       />
-      <div className="h-full w-full bg-[#8225] backdrop-hue-rotate-60 backdrop-blur-md flex flex-col gap-2 justify-center items-center">
-        <div className="h-full flex flex-col gap-2 justify-center items-center">
-          <div className="p-4 pb-12 bg-white shadow-lg rounded-sm rotate-1 max-sm:landscape:hidden">
+      <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#8225] backdrop-blur-md backdrop-hue-rotate-60">
+        <div className="flex h-full flex-col items-center justify-center gap-2">
+          <div className="rotate-1 rounded-sm bg-white p-4 pb-12 shadow-lg max-sm:landscape:hidden">
             <Image
               src={Dottore}
               alt="Dottore"
-              className="bg-gray-300 w-64 h-64 vintage-filter"
+              className="vintage-filter h-64 w-64 bg-gray-300"
             />
           </div>
-          <h2 className="font-bold text-2xl">เกิดข้อผิดพลาดขึ้น</h2>
+          <h2 className="text-2xl font-bold">เกิดข้อผิดพลาดขึ้น</h2>
           <span>{message || <Skeleton className="h-6 w-40" />}</span>
           <div className="flex gap-2">
             <Link href="/">
@@ -101,16 +101,16 @@ export default function ErrorPage({
             </Button>
           </div>
         </div>
-        <div className="flex gap-1 items-center">
+        <div className="flex items-center gap-1">
           <Link href="https://status.sudloh.com" className="m-2 mr-0">
             <Button variant="link" className="text-secondary-foreground">
               <Activity />
               สถานะเว็บไซต์
             </Button>
           </Link>
-          <div className="h-6/10 w-px bg-border mr-2"></div>
+          <div className="mr-2 h-6/10 w-px bg-border"></div>
           {health ? (
-            <div className="flex gap-1 [&>svg]:size-4 [&>svg]:shrink-0 items-center">
+            <div className="flex items-center gap-1 [&>svg]:size-4 [&>svg]:shrink-0">
               <SimpleTooltip text="ฐานข้อมูล">
                 <Database
                   className={
@@ -135,7 +135,7 @@ export default function ErrorPage({
               </SimpleTooltip>
             </div>
           ) : (
-            <div className="flex gap-1 items-center">
+            <div className="flex items-center gap-1">
               <Skeleton className="size-4 rounded-xs" />
               <Skeleton className="size-4 rounded-xs" />
               <Skeleton className="size-4 rounded-xs" />

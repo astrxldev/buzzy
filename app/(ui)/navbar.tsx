@@ -27,8 +27,8 @@ export function Navbar() {
   return (
     <div
       className={cn(
-        "flex gap-2 p-2 rounded-lg absolute border bg-card",
-        mobile && pathname === "/guide" ? "right-2 top-2" : "left-3 top-3",
+        "absolute flex gap-2 rounded-lg border bg-card p-2",
+        mobile && pathname === "/guide" ? "top-2 right-2" : "top-3 left-3",
       )}
     >
       <Item icon={<Home size={16} />} name="หน้าหลัก" href="/" divide />
@@ -65,20 +65,20 @@ function Item({
   return (
     <Link
       className={cn(
-        "group transition-[width] flex gap-1",
-        divide && "border-r-2 -mr-1 pr-1",
+        "group flex gap-1 transition-[width]",
+        divide && "-mr-1 border-r-2 pr-1",
       )}
       href={href}
     >
       {icon}{" "}
       <span
         className={cn(
-          "overflow-hidden whitespace-nowrap text-xs",
+          "overflow-hidden text-xs whitespace-nowrap",
           "max-w-0 opacity-0",
           "group-hover:max-w-40 group-hover:opacity-100",
-          "transition-all duration-300 ease-out delay-200",
+          "transition-all delay-200 duration-300 ease-out",
           "-mr-1",
-          divide || last || "border-r-2 -mr-3 pr-1",
+          divide || last || "-mr-3 border-r-2 pr-1",
           divide && "group-hover:mr-0",
         )}
       >

@@ -12,14 +12,14 @@ export function Blocker({
   return (
     <div
       className={cn(
-        "blocker backdrop-blur-sm bg-[#2225] flex justify-center items-center absolute top-[-5px] left-[-5px] bottom-[-5px] right-[-5px] rounded-sm z-45 border-t-gray-700 border-l-gray-600 border-1",
-        inner && "rounded-none top-0 left-0 bottom-0 right-0",
+        "blocker absolute top-[-5px] right-[-5px] bottom-[-5px] left-[-5px] z-45 flex items-center justify-center rounded-sm border-1 border-t-gray-700 border-l-gray-600 bg-[#2225] backdrop-blur-sm",
+        inner && "top-0 right-0 bottom-0 left-0 rounded-none",
         className,
       )}
       {...props}
     >
       {fail ? (
-        <div className="bg-[#2222] p-2 rounded border flex items-center gap-2">
+        <div className="flex items-center gap-2 rounded border bg-[#2222] p-2">
           <CircleX size={24} className="text-red-400" />
           <div>{children}</div>
         </div>

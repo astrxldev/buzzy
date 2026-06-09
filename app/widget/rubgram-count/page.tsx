@@ -1,3 +1,4 @@
+// oxlint-disable tailwindcss/no-unknown-classes
 import { Kanit } from "next/font/google";
 import { Watcher } from "@/app/(ui)/rubgram/admin/client";
 import { VersionCheck } from "@/app/client";
@@ -20,7 +21,7 @@ export default async function ArtifactCountWidget() {
 
   return (
     <div
-      className={`${kanit.variable} w-screen h-screen font-medium`}
+      className={`${kanit.variable} h-screen w-screen font-medium`}
       style={{
         fontFamily: "Kanit",
       }}

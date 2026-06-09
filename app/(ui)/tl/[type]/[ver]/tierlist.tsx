@@ -99,7 +99,7 @@ function Untiered({
     <div ref={ref}>
       <div
         ref={setNodeRef}
-        className={`flex flex-wrap ${open ? "p-1" : ""} gap-2 bg-[#0005] overflow-auto`}
+        className={`flex flex-wrap ${open ? "p-1" : ""} gap-2 overflow-auto bg-[#0005]`}
         style={{
           maxHeight: `${(tileSize + 4) * 3 + 4}px`,
         }}
@@ -403,7 +403,7 @@ export function TierList({
         onDragStart={(e) => setDragging(e.active.id as string)}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex flex-col justify-between h-full">
+        <div className="flex h-full flex-col justify-between">
           {/*}<Blocker inner className="not-portrait:hidden md:hidden">
             <div className="flex flex-col items-center font-bold text-2xl gap-16">
               <Smartphone size={128} className="animate-phonerotate" />
@@ -417,7 +417,7 @@ export function TierList({
                 alt="Disclaimer"
                 fill
                 priority
-                className="object-contain bg-[#000A]"
+                className="bg-[#000A] object-contain"
               />
               <Button
                 variant="outline"
@@ -432,7 +432,7 @@ export function TierList({
           ) : (
             ""
           )}
-          <div className="flex-1 min-h-0 overflow-auto">
+          <div className="min-h-0 flex-1 overflow-auto">
             <div
               className={`grid w-full *:border`}
               style={{
@@ -442,7 +442,7 @@ export function TierList({
             >
               <div
                 className={cn(
-                  "text-center font-semibold py-1 relative transition-colors duration-200",
+                  "relative py-1 text-center font-semibold transition-colors duration-200",
                   deleteMode ? "bg-red-500/30" : "bg-[#0005]",
                 )}
                 style={{ gridColumn: "1 / -1" }}
@@ -454,21 +454,21 @@ export function TierList({
                 </span>
                 <span className="text-green-400">{version.deprecates}</span>
                 {deleteMode && (
-                  <span className="text-red-500 font-semibold ml-2">
+                  <span className="ml-2 font-semibold text-red-500">
                     <TriangleAlert className="inline" /> (คุณอยู่ในโหมดลบตัวละคร)
                   </span>
                 )}
-                <span className="font-normal absolute right-0">
+                <span className="absolute right-0 font-normal">
                   {user && !editable && (
                     <SimpleTooltip text="ไปหน้าแก้ไข (Admin)">
                       <Link href={`/tl/${type.id}/${version.id}/admin`}>
-                        <Pencil className="text-gray-400 size-4" />
+                        <Pencil className="size-4 text-gray-400" />
                       </Link>
                     </SimpleTooltip>
                   )}
                 </span>
               </div>
-              <div className="grid place-items-center bg-[#2225] cursor-pointer">
+              <div className="grid cursor-pointer place-items-center bg-[#2225]">
                 <Dialog>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -509,10 +509,10 @@ export function TierList({
                     </DialogHeader>
                     <div className="flex justify-between">
                       <div className="flex flex-col gap-2">
-                        <div className="grid gap-2 group">
+                        <div className="group grid gap-2">
                           <span className="flex gap-1">
                             ขนาดตัวละคร{" "}
-                            <span className="flex gap-1 text-muted-foreground md:opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="flex gap-1 text-muted-foreground transition-opacity group-hover:opacity-100 md:opacity-0">
                               (px){" "}
                               {tileSizeSetting ? (
                                 ""
@@ -556,10 +556,10 @@ export function TierList({
                             </Button>
                           </div>
                         </div>
-                        <div className="grid gap-2 group">
+                        <div className="group grid gap-2">
                           <span>
                             ขนาดเครื่องหมาย{" "}
-                            <span className="text-muted-foreground md:opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="text-muted-foreground transition-opacity group-hover:opacity-100 md:opacity-0">
                               (px)
                             </span>
                           </span>
@@ -599,18 +599,18 @@ export function TierList({
                               "rgba(200,124,36) linear-gradient(136deg,rgba(49,43,71,.5294117647058824),transparent)",
                             width: tileSize,
                           }}
-                          className="rounded aspect-square relative"
+                          className="relative aspect-square rounded"
                         >
                           <Image src={Qiqi} alt="Qiqi" fill />
                           <Image
-                            className="bg-[#2225] backdrop-blur-sm bottom-0.5 left-0.5 absolute rounded border"
+                            className="absolute bottom-0.5 left-0.5 rounded border bg-[#2225] backdrop-blur-sm"
                             src={BadgeSSS}
                             alt="Test Badge"
                             width={badgeSize}
                             height={badgeSize}
                           />
                           <Image
-                            className="bg-[#2225] backdrop-blur-sm bottom-0.5 right-0.5 absolute border rounded"
+                            className="absolute right-0.5 bottom-0.5 rounded border bg-[#2225] backdrop-blur-sm"
                             src={BadgeSP}
                             alt="Test Badge"
                             width={badgeSize}
@@ -626,7 +626,7 @@ export function TierList({
               {columns.map((c) => (
                 <div
                   key={`C${c.id}`}
-                  className="bg-[#0005] text-2xl font-bold flex items-center justify-center relative"
+                  className="relative flex items-center justify-center bg-[#0005] text-2xl font-bold"
                   ref={colRef}
                 >
                   {c.image ? (
@@ -635,7 +635,7 @@ export function TierList({
                       alt={c.name}
                       width={200}
                       height={100}
-                      className="p-2 object-contain w-full h-auto max-h-13"
+                      className="h-auto max-h-13 w-full object-contain p-2"
                     />
                   ) : (
                     c.name
@@ -644,14 +644,14 @@ export function TierList({
               ))}
               {tiers.map((t) => (
                 <Fragment key={`T${t.id}`}>
-                  <div className="bg-[#0005] text-4xl font-bold flex items-center justify-center">
+                  <div className="flex items-center justify-center bg-[#0005] text-4xl font-bold">
                     {t.image ? (
                       <Image
                         src={`/cdn/${t.image}`}
                         alt={t.name}
                         height={100}
                         width={100}
-                        className="object-contain max-w-12"
+                        className="max-w-12 object-contain"
                         sizes="4"
                       />
                     ) : (
@@ -696,10 +696,10 @@ export function TierList({
             <Button
               onClick={() => setUntieredOpen(!untieredOpen)}
               variant="outline"
-              className="rounded-none flex"
+              className="flex rounded-none"
             >
-              {editable && untieredOpen && <div className="w-9 h-4" />}
-              <span className="w-full flex gap-1 items-center justify-center">
+              {editable && untieredOpen && <div className="h-4 w-9" />}
+              <span className="flex w-full items-center justify-center gap-1">
                 ({placements.untiered.length}) ตัวละครที่ไม่ได้อยู่ในเทียร์
                 {untieredOpen ? (
                   <ChevronDown className="ml-1" />
@@ -709,7 +709,7 @@ export function TierList({
               </span>
               {editable && untieredOpen && (
                 <div
-                  className="flex gap-2 items-center justify-center"
+                  className="flex items-center justify-center gap-2"
                   onClick={(ev) => ev.stopPropagation()}
                 >
                   <SimpleTooltip text="เพิ่มตัวละคร">
@@ -723,7 +723,7 @@ export function TierList({
                           .sort((a, b) => a.label.localeCompare(b.label))}
                         className="w-full bg-transparent! hover:bg-accent!"
                         trigger={
-                          <CopyPlus className="text-emerald-400 pointer-events-auto!" />
+                          <CopyPlus className="pointer-events-auto! text-emerald-400" />
                         }
                         onValueSelect={(v) => {
                           setPlacements((x) => ({

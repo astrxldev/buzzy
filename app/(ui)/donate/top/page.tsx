@@ -26,9 +26,9 @@ export default function Page() {
 
 function PageSkeleton() {
   return (
-    <div className="min-h-svh flex flex-col justify-center">
-      <div className="max-w-4xl w-full mx-auto flex flex-col gap-4 p-4">
-        <div className="flex justify-center items-end gap-4 mt-6">
+    <div className="flex min-h-svh flex-col justify-center">
+      <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 p-4">
+        <div className="mt-6 flex items-end justify-center gap-4">
           <Skeleton className="h-36 w-36 rounded-xl" />
           <Skeleton className="h-48 w-36 rounded-xl" />
           <Skeleton className="h-32 w-36 rounded-xl" />
@@ -73,8 +73,8 @@ async function Content() {
     );
 
   return (
-    <div className="min-h-svh flex flex-col justify-center">
-      <div className="max-w-4xl mx-auto flex flex-col gap-4 p-4">
+    <div className="flex min-h-svh flex-col justify-center">
+      <div className="mx-auto flex max-w-4xl flex-col gap-4 p-4">
         <Podium data={podium} />
         <TopDonateTable data={list} />
       </div>

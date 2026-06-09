@@ -9,6 +9,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
+      // oxlint-disable-next-line tailwindcss/no-unknown-classes
       className="toaster group"
       style={
         {

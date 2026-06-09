@@ -21,7 +21,7 @@ export default async function TierlistManagerPage() {
   }));
 
   return (
-    <div className="grow-0 flex flex-col pt-5 gap-2 mx-2">
+    <div className="mx-2 flex grow-0 flex-col gap-2 pt-5">
       <Button className="w-fit" asChild>
         <Link href={`/admin/tl/ver/create`}>
           <PlusIcon />
@@ -29,16 +29,16 @@ export default async function TierlistManagerPage() {
         </Link>
       </Button>
       {vers.map((t) => (
-        <div className="flex flex-col gap-1 group/type" key={t.id}>
-          <div className="font-semibold text-4xl flex flex-wrap items-center gap-2 w-fit">
-            <div className="px-2 py-1 border rounded-md bg-[#2228] flex-auto flex flex-wrap items-baseline gap-x-2">
+        <div className="group/type flex flex-col gap-1" key={t.id}>
+          <div className="flex w-fit flex-wrap items-center gap-2 text-4xl font-semibold">
+            <div className="flex flex-auto flex-wrap items-baseline gap-x-2 rounded-md border bg-[#2228] px-2 py-1">
               <span className="text-nowrap">{t.name}</span>
               <span className="flex items-center gap-1">
                 <Kbd>{t.id}</Kbd>
                 <span className="text-xs text-muted-foreground">{t.mode}</span>
               </span>
             </div>
-            <div className="md:opacity-0 group-hover/type:opacity-100 transition-opacity flex gap-1">
+            <div className="flex gap-1 transition-opacity group-hover/type:opacity-100 md:opacity-0">
               <SimpleTooltip text="Add version">
                 <Button asChild>
                   <Link href={`/admin/tl/ver/${t.id}/create`}>
@@ -57,14 +57,14 @@ export default async function TierlistManagerPage() {
               </SimpleTooltip>
             </div>
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex flex-wrap gap-2">
             {t.versions.map((e) => (
               <div
                 key={e.id}
                 className={cn(
                   e.image
-                    ? "relative aspect-video w-[calc(100svw-16px)] md:w-60 rounded-sm border group/ver"
-                    : "relative flex items-center justify-center aspect-video w-[calc(100svw-16px)] md:w-60 border rounded-sm bg-[#1118] backdrop-blur-xl font-bold text-4xl group/ver",
+                    ? "group/ver relative aspect-video w-[calc(100svw-16px)] rounded-sm border md:w-60"
+                    : "group/ver relative flex aspect-video w-[calc(100svw-16px)] items-center justify-center rounded-sm border bg-[#1118] text-4xl font-bold backdrop-blur-xl md:w-60",
                   e.hidden && "opacity-50",
                 )}
               >
@@ -74,16 +74,16 @@ export default async function TierlistManagerPage() {
                       src={`/cdn/${e.image}`}
                       alt={e.name}
                       fill
-                      className="rounded-sm border object-cover bg-primary -z-1"
+                      className="-z-1 rounded-sm border bg-primary object-cover"
                     />
-                    <div className="flex absolute w-full justify-center bottom-0 py-1 bg-card rounded-b-sm gap-1">
+                    <div className="absolute bottom-0 flex w-full justify-center gap-1 rounded-b-sm bg-card py-1">
                       {e.name} <Kbd>{e.id}</Kbd>
                     </div>
                   </>
                 ) : (
                   e.name
                 )}
-                <div className="md:opacity-0 group-hover/ver:opacity-100 transition-opacity flex gap-1 absolute top-1 right-1">
+                <div className="absolute top-1 right-1 flex gap-1 transition-opacity group-hover/ver:opacity-100 md:opacity-0">
                   <SimpleTooltip text="Open in admin">
                     <Button variant="outline" asChild className="bg-card!">
                       <Link href={`/tl/${t.id}/${e.id}/admin`} target="_blank">

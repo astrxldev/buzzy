@@ -80,8 +80,8 @@ export function CdnChooserProvider({
           setOpen(o);
         }}
       >
-        <DialogContent className="max-h-[85vh] flex flex-col gap-4 md:max-w-[50svw]">
-          <DialogTitle className="px-6 flex justify-between items-center">
+        <DialogContent className="flex max-h-[85vh] flex-col gap-4 md:max-w-[50svw]">
+          <DialogTitle className="flex items-center justify-between px-6">
             Choose File{" "}
             <InputGroup className="max-w-xs">
               <InputGroupInput
@@ -97,7 +97,7 @@ export function CdnChooserProvider({
             </InputGroup>
           </DialogTitle>
           {files ? (
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="min-h-0 flex-1 overflow-y-auto">
               <CdnTable
                 files={filtered || []}
                 onChoose={(value) => callback.current?.(value)}
@@ -105,7 +105,7 @@ export function CdnChooserProvider({
               />
             </div>
           ) : (
-            <div className="flex h-[calc(70svh-60px)] w-full justify-center items-center">
+            <div className="flex h-[calc(70svh-60px)] w-full items-center justify-center">
               <Spinner />
             </div>
           )}
@@ -180,7 +180,7 @@ export function CdnChooser({
         {value ? (
           <SimpleTooltip text="Unselect">
             <X
-              className="hover:text-red-500 pointer-events-auto!"
+              className="pointer-events-auto! hover:text-red-500"
               onClick={() => {
                 setValue("");
                 setMeta(undefined);

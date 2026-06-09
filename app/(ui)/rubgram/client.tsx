@@ -48,10 +48,10 @@ export function WelcomeScreening({
             </Button>
           </RulesDialog>
 
-          <span className="text-gray-600 text-xs">
+          <span className="text-xs text-gray-600">
             กำลังล็อกอินในฐานะ <b className="text-gray-300">{session.display}</b>{" "}
             <button
-              className="text-gray-400 hover:text-gray-300 underline cursor-pointer"
+              className="cursor-pointer text-gray-400 underline hover:text-gray-300"
               onClick={loginDiscord}
               type="button"
             >
@@ -68,7 +68,7 @@ export function WelcomeScreening({
               loginDiscord();
             }}
           >
-            <span className="flex justify-between w-full items-center">
+            <span className="flex w-full items-center justify-between">
               ล็อคอินผ่าน Discord
               <LogIn />
             </span>
@@ -119,7 +119,7 @@ export function ServiceSelector({
           </MultiSelectGroup>
         </MultiSelectContent>
       </MultiSelect>
-      <span className="text-xs text-muted-foreground -mt-1">
+      <span className="-mt-1 text-xs text-muted-foreground">
         เลือกทั้ง {types.length} อย่าง ลดให้ {allDiscount} บาท
       </span>
       <select

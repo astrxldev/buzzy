@@ -13,7 +13,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { debugUploadSlip, discordCall } from "../../api";
 
 export function Evernight() {
-  return <div className="h-full w-full relative"></div>;
+  return <div className="relative h-full w-full"></div>;
 }
 
 export function CopyButton({ text }: { text: string }) {
@@ -73,7 +73,7 @@ export function DebugSlipUpload({ sid }: { sid: string }) {
   return (
     <>
       <button
-        className="flex flex-col justify-center items-center border rounded-md w-40 bg-card cursor-pointer"
+        className="flex w-40 cursor-pointer flex-col items-center justify-center rounded-md border bg-card"
         onClick={() => ref.current?.click()}
         type="button"
       >

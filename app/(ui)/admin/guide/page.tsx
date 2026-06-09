@@ -11,23 +11,23 @@ export default async function AdminGuidePage() {
   const list = await searchGuide("", true);
 
   return (
-    <div className="grow-0 flex flex-col pt-5 gap-2 mx-4">
+    <div className="mx-4 flex grow-0 flex-col gap-2 pt-5">
       <Button className="w-fit" asChild>
         <Link href={`/admin/guide/create`}>
           <PlusIcon />
           <span>Add guide</span>
         </Link>
       </Button>
-      <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(300px,calc(100svw-2rem-2px)),1fr))]">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(min(300px,calc(100svw-2rem-2px)),1fr))] gap-4">
         {list.map((card) => (
           <Card
             key={card.id}
             className={cn(
-              "bg-card/50 hover:bg-border backdrop-blur-sm transition-colors py-3 sm:py-6 rounded-sm sm:rounded-xl group relative",
+              "group relative rounded-sm bg-card/50 py-3 backdrop-blur-sm transition-colors hover:bg-border sm:rounded-xl sm:py-6",
               card.hidden && "opacity-70",
             )}
           >
-            <div className="flex gap-1 absolute opacity-0 group-hover:opacity-100 transition-opacity top-0 right-0 m-2">
+            <div className="absolute top-0 right-0 m-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
               <Button
                 size="icon"
                 variant="outline"
@@ -43,7 +43,7 @@ export default async function AdminGuidePage() {
             </div>
             <CardHeader className="px-3 sm:px-6">
               <CardTitle>{card.name}</CardTitle>
-              <div className="relative w-full aspect-square mt-2 rounded-sm sm:rounded-lg border overflow-hidden">
+              <div className="relative mt-2 aspect-square w-full overflow-hidden rounded-sm border sm:rounded-lg">
                 {card.image && (
                   <Image
                     src={`/cdn/${card.image}`}
