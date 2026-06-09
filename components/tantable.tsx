@@ -48,6 +48,7 @@ export function DataTable<TData, TValue>({
   emptyDescription,
   rowSelection,
   setRowSelection,
+  home,
   context,
   onClick,
 }: DataTableProps<TData, TValue> & {
@@ -58,6 +59,7 @@ export function DataTable<TData, TValue>({
   setRowSelection?: (
     state: RowSelectionState | ((old: RowSelectionState) => RowSelectionState),
   ) => void;
+  home?: string;
   context?: (row: TData) => {
     label: string;
     onClick?: MouseEventHandler<HTMLDivElement>;
@@ -171,7 +173,7 @@ export function DataTable<TData, TValue>({
                           Create
                         </Button>
                       )}
-                      <Link href="/admin">
+                      <Link href={home ?? "/admin"}>
                         <Button variant="outline">Home</Button>
                       </Link>
                     </div>

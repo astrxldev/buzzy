@@ -33,6 +33,7 @@ const columns: ColumnDef<TopDonateRow>[] = [
 export function TopDonateTable({ data }: { data: TopDonateRow[] }) {
   return (
     <DataTable
+      home="/donate"
       columns={columns}
       data={data}
       emptyDescription="No donations yet."
