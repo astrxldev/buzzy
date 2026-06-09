@@ -21,9 +21,10 @@ import { Spinner } from "@/components/ui/spinner";
 import { actionLog } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
+import type {
+  element} from "@/lib/db/schema";
 import {
   characters,
-  element,
   element as elementEnum,
   versions,
 } from "@/lib/db/schema";

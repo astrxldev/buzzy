@@ -35,6 +35,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { getArtifactConfig } from "@/lib/api";
 import { setLimit, toggleCheck, toggleLock } from "@/lib/api";
 import { shared } from "@/lib/comms";
 import { sse } from "@/lib/db/sse-endpoints";
@@ -139,7 +140,7 @@ export function LimitManager({
   length,
   ...props
 }: React.ComponentProps<typeof SidebarMenu> & {
-  config: Awaited<ReturnType<typeof import("@/lib/api").getArtifactConfig>>;
+  config: Awaited<ReturnType<typeof getArtifactConfig>>;
   length: number;
 }) {
   return (

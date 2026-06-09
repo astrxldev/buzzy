@@ -38,6 +38,7 @@ import {
 import { shared } from "@/lib/comms";
 import { sse } from "@/lib/db/sse-endpoints";
 import { cn } from "@/lib/utils";
+import type { getEndgameConfig } from "../api";
 import { setFree, setLimit, toggleCheck, toggleLock } from "../api";
 
 export function SidebarLink({
@@ -92,7 +93,7 @@ export function LimitManager({
   length,
   ...props
 }: React.ComponentProps<typeof SidebarMenu> & {
-  config: Awaited<ReturnType<typeof import("../api").getEndgameConfig>>;
+  config: Awaited<ReturnType<typeof getEndgameConfig>>;
   length: number;
 }) {
   const [dialog, setDialog] = useState(1);

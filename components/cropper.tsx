@@ -224,6 +224,7 @@ export default function Component({
       setZoom(1);
     }
     previousValueRef.current = value;
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   return (

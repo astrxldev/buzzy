@@ -66,6 +66,7 @@ export function ComboBox({
           </CommandItem>
         ),
       })),
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [data],
   );
   const queryLower = query.toLowerCase();

@@ -3,7 +3,7 @@ import { donations } from "@/lib/db/schema";
 import { sse } from "@/lib/db/sse-endpoints";
 import { fileToDataUrl } from "@/lib/utils";
 import { and, asc, not, sql } from "drizzle-orm";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function PATCH(req: NextRequest) {
@@ -24,7 +24,11 @@ export async function PATCH(req: NextRequest) {
       .limit(1)
       .orderBy(asc(donations.id));
     if (!havent) return;
-    getPostHogClient().capture({ distinctId: String(havent.id), event: "donation_resent", properties: { donation_id: havent.id, amount: havent.amount } });
+    getPostHogClient().capture({
+      distinctId: String(havent.id),
+      event: "donation_resent",
+      properties: { donation_id: havent.id, amount: havent.amount },
+    });
     sse.donate.pub("ping", {
       ...havent,
       message: havent.message ?? "",

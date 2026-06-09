@@ -146,6 +146,7 @@ export function CdnChooser({
       if (!file) return setValue("");
       setMeta(file);
     })();
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [externalValue]);
 
   async function choose() {

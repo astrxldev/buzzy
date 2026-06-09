@@ -7,7 +7,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { donations } from "@/lib/db/schema";
+import type { donations } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
@@ -66,16 +66,26 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
       return (
         <div className="flex gap-1">
           <SimpleTooltip text="Send test popup">
-              <ActionButton variant="outline" size="icon-sm" action={() => { posthog.capture("donation_admin_test_popup"); return testPopup(); }}>
+            <ActionButton
+              variant="outline"
+              size="icon-sm"
+              action={() => {
+                posthog.capture("donation_admin_test_popup");
+                return testPopup();
+              }}
+            >
               <BugPlay />
             </ActionButton>
           </SimpleTooltip>
           <SimpleTooltip text="Reload all widget">
-              <ActionButton
-                variant="outline"
-                size="icon-sm"
-                action={() => { posthog.capture("donation_admin_widget_reload"); return reloadWidget(); }}
-              >
+            <ActionButton
+              variant="outline"
+              size="icon-sm"
+              action={() => {
+                posthog.capture("donation_admin_widget_reload");
+                return reloadWidget();
+              }}
+            >
               <ChevronsLeftRightEllipsis />
             </ActionButton>
           </SimpleTooltip>
@@ -92,11 +102,16 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
           )}
         >
           <SimpleTooltip text="Re-send Popup">
-              <ActionButton
-                variant="outline"
-                size="icon-sm"
-                action={() => { posthog.capture("donation_admin_resend", { id: row.row.original.id }); return resendPopup(row.row.original.id); }}
-              >
+            <ActionButton
+              variant="outline"
+              size="icon-sm"
+              action={() => {
+                posthog.capture("donation_admin_resend", {
+                  id: row.row.original.id,
+                });
+                return resendPopup(row.row.original.id);
+              }}
+            >
               <MessageCircleWarning />
             </ActionButton>
           </SimpleTooltip>

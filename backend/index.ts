@@ -343,4 +343,4 @@ process
   .addListener("uncaughtException", console.error)
   .addListener("unhandledRejection", console.error);
 
-process.on(15 as unknown as "SIGTERM", process.exit);
+process.on(15 as unknown as "SIGTERM", () => process.exit());

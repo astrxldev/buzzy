@@ -26,6 +26,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
 export function VersionCheck({ headless = false }: { headless?: boolean }) {
   const ver = useRef<string>("");
+  // oxlint-disable-next-line typescript/unbound-method
   const { emit } = use(IccContext);
   const [debug, setDebug] = shared.state("debug");
   const [, setConnected] = shared.state("connected");

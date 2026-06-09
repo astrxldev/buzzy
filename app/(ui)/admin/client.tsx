@@ -93,7 +93,7 @@ export function RandomWelcomeMessage() {
 
   useEffect(() => {
     setIndex(Math.floor(Math.random() * items.length));
-  }, []);
+  }, [items.length]);
 
   if (index === -1)
     return (

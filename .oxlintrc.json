@@ -1,10 +1,17 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["nextjs"],
+  "plugins": ["nextjs", "react", "import", "typescript"],
   "rules": {
     "nextjs/no-html-link-for-pages": "error",
     "nextjs/next-script-for-ga": "error",
     "typescript/no-import-type-side-effects": "error",
-    "typescript/consistent-type-imports": "error"
+    "typescript/consistent-type-imports": "error",
+    "typescript/restrict-template-expressions": "off",
+    "typescript/no-floating-promises": "off",
+    "typescript/no-base-to-string": "off",
+    "typescript/unbound-method": "off"
+  },
+  "options": {
+    "typeAware": true
   }
 }

@@ -11,7 +11,10 @@ import { getPostHogClient } from "@/lib/posthog-server";
 export async function testPopup() {
   if (!(await adminCheck())) throw new Error("Unauthorized");
 
-  getPostHogClient().capture({ distinctId: "admin", event: "donation_admin_test_popup" });
+  getPostHogClient().capture({
+    distinctId: "admin",
+    event: "donation_admin_test_popup",
+  });
 
   sse.donate.pub("ping", {
     id: "test",
@@ -24,7 +27,10 @@ export async function testPopup() {
 export async function reloadWidget() {
   if (!(await adminCheck())) throw new Error("Unauthorized");
 
-  getPostHogClient().capture({ distinctId: "admin", event: "donation_admin_widget_reload" });
+  getPostHogClient().capture({
+    distinctId: "admin",
+    event: "donation_admin_widget_reload",
+  });
 
   sse.donate.pub("refresh", null);
 }
@@ -38,7 +44,11 @@ export async function resendPopup(id: string) {
     .returning();
   if (!sub) throw new Error("not found");
 
-  getPostHogClient().capture({ distinctId: "admin", event: "donation_admin_resend", properties: { id } });
+  getPostHogClient().capture({
+    distinctId: "admin",
+    event: "donation_admin_resend",
+    properties: { id },
+  });
 
   sse.donate.pub("ping", {
     ...sub,

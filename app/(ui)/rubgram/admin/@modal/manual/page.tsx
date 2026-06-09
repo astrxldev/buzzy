@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SlipokResponse } from "../../../api";
+import type { SlipokResponse } from "../../../api";
 import { getDiscordUsers } from "@/app/api/discord/users/api";
 import { th } from "zod/v4/locales";
 

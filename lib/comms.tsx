@@ -108,6 +108,7 @@ export default function IccProvider({
         (l) => l !== listener,
       );
     },
+    // oxlint-disable-next-line typescript/no-useless-default-assignment
     emit(k, value = undefined) {
       (listeners.current[k] || []).map((l) =>
         l(...([value] as Parameters<typeof l>)),
@@ -188,6 +189,7 @@ export const shared = {
         const { [k]: _, ...rest } = comms.get("inspect") || {};
         comms.set("inspect", rest);
       },
+      // oxlint-disable-next-line react-hooks/exhaustive-deps
       [],
     );
     // value updater
@@ -197,6 +199,7 @@ export const shared = {
         ...obj,
         [k]: typeof v === "string" ? v : JSON.stringify(v),
       });
+      // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [v]);
   },
   emit<K extends keyof SharedSignals>(

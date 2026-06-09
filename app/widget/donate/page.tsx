@@ -48,10 +48,15 @@ export default function () {
         (tts.onerror = () => r(false))
       ),
     );
-    if (!ttsAvailable) posthog.capture("donation_widget_tts_failed", { amount: data.amount });
+    if (!ttsAvailable)
+      posthog.capture("donation_widget_tts_failed", { amount: data.amount });
     console.log("Transitioning in");
     setMounted(true);
-    posthog.capture("donation_widget_displayed", { amount: data.amount, name_length: data.name.length, has_image: !!data.image });
+    posthog.capture("donation_widget_displayed", {
+      amount: data.amount,
+      name_length: data.name.length,
+      has_image: !!data.image,
+    });
     console.log("Running SFX");
     if (sfx.current) {
       const player = sfx.current;
@@ -64,7 +69,10 @@ export default function () {
     if (ttsAvailable) await new Promise((r) => (tts.onended = r));
     console.log("Done");
     markDone(data.id);
-    posthog.capture("donation_widget_animation_end", { amount: data.amount, tts_available: ttsAvailable });
+    posthog.capture("donation_widget_animation_end", {
+      amount: data.amount,
+      tts_available: ttsAvailable,
+    });
     await new Promise((r) => setTimeout(r, 3000));
     setMounted(false);
     await new Promise((r) => setTimeout(r, 1200));
@@ -98,7 +106,9 @@ export default function () {
       } catch {
         console.error("Heartbeat timed out");
         setFailed((x) => x + 1);
-        posthog.capture("donation_widget_heartbeat_failure", { fail_count: failed + 1 });
+        posthog.capture("donation_widget_heartbeat_failure", {
+          fail_count: failed + 1,
+        });
         if (failed > 12) location.reload();
       }
     }, 10000);
@@ -111,7 +121,7 @@ export default function () {
     //   amount: 1,
     //   message: `เสื้อดำเด้าหน่อย`,
     // });
-  }, []);
+  }, [failed]);
 
   return (
     <>

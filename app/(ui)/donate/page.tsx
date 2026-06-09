@@ -113,7 +113,15 @@ export default async function () {
         const buffer = Buffer.from(arrayBuffer);
         const processed = await checkSlip(buffer, $.slip.type, $.amount);
         if (!processed.success) {
-          ph.capture({ distinctId, event: "donation_slip_check_failed", properties: { amount: $.amount, code: processed.code, message: processed.message } });
+          ph.capture({
+            distinctId,
+            event: "donation_slip_check_failed",
+            properties: {
+              amount: $.amount,
+              code: processed.code,
+              message: processed.message,
+            },
+          });
           return {
             error: {
               where: "slip",
@@ -135,7 +143,11 @@ export default async function () {
             return [{ id: "conflict" }];
           });
         if (check.id === "conflict") {
-          ph.capture({ distinctId, event: "donation_slip_conflict", properties: { amount: $.amount } });
+          ph.capture({
+            distinctId,
+            event: "donation_slip_conflict",
+            properties: { amount: $.amount },
+          });
           return { error: { where: "slip", what: "สลิปนี้ถูกใช้ไปแล้ว" } };
         }
       } else {
@@ -158,7 +170,11 @@ export default async function () {
           .then((r) => r.json())
           .catch((e) => e);
         if (!res.success) {
-          ph.capture({ distinctId, event: "donation_payment_failed", properties: { amount: $.amount, message: res.message } });
+          ph.capture({
+            distinctId,
+            event: "donation_payment_failed",
+            properties: { amount: $.amount, message: res.message },
+          });
           return { error: { where: "link", what: res.message } };
         }
       }
@@ -196,7 +212,11 @@ export default async function () {
           .catch(() => "conflict");
         if (res === "conflict") {
           tx.rollback();
-          ph.capture({ distinctId, event: "donation_artifact_conflict", properties: { amount: $.amount, uid: $.uid } });
+          ph.capture({
+            distinctId,
+            event: "donation_artifact_conflict",
+            properties: { amount: $.amount, uid: $.uid },
+          });
           return { error: { where: "uid", what: "ไม่สามารถสร้างคิวลัดได้" } };
         }
       }
