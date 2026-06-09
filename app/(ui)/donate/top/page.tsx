@@ -40,7 +40,6 @@ async function Content() {
         (ORDER BY ${desc(donations.amount)}, ${asc(donations.id)})`,
       name: donations.name,
       amount: donations.amount,
-      image: donations.image,
     })
     .from(donations)
     .offset(3)
