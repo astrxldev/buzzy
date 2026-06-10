@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { donations } from "@/lib/db/schema";
-import { asc, desc, sum } from "drizzle-orm";
+import { asc, desc, max, sum } from "drizzle-orm";
 
 export async function getTopDonate() {
   const [top] = await db
@@ -13,6 +13,6 @@ export async function getTopDonate() {
     .from(donations)
     .limit(1)
     .groupBy(donations.name)
-    .orderBy(desc(sum(donations.amount)), asc(donations.id));
+    .orderBy(desc(sum(donations.amount)), asc(max(donations.id)));
   return top;
 }

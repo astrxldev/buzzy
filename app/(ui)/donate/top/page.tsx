@@ -1,5 +1,5 @@
 import type { SQL } from "drizzle-orm";
-import { asc, desc, sql, sum } from "drizzle-orm";
+import { asc, desc, max, sql, sum } from "drizzle-orm";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/lib/db";
@@ -52,7 +52,7 @@ async function Content() {
     .offset(3)
     .limit(7)
     .groupBy(donations.name)
-    .orderBy(desc(sum(donations.amount)), asc(donations.id));
+    .orderBy(desc(sum(donations.amount)), asc(max(donations.id)));
 
   const podium = await db
     .select({
