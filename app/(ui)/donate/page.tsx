@@ -201,7 +201,8 @@ export default async function () {
         })
         .returning({ id: donations.id });
       if ($.artifact === "true") {
-        const res = await tx
+        // const res = await tx
+        await tx
           .insert(submissions)
           .values({
             name,
@@ -215,17 +216,17 @@ export default async function () {
           //     queue: null as unknown as undefined,
           //   },
           // })
-          .onConflictDoNothing()
-          .catch(() => "conflict");
-        if (res === "conflict") {
-          tx.rollback();
-          ph.capture({
-            distinctId,
-            event: "donation_artifact_conflict",
-            properties: { amount: $.amount, uid: $.uid },
-          });
-          return { error: { where: "uid", what: "ไม่สามารถสร้างคิวลัดได้" } };
-        }
+          .onConflictDoNothing();
+        // .catch(() => "conflict");
+        // if (res === "conflict") {
+        //   tx.rollback();
+        //   ph.capture({
+        //     distinctId,
+        //     event: "donation_artifact_conflict",
+        //     properties: { amount: $.amount, uid: $.uid },
+        //   });
+        //   return { error: { where: "uid", what: "ไม่สามารถสร้างคิวลัดได้" } };
+        // }
       }
       if ($.amount >= 10)
         sse.donate.pub("ping", {
