@@ -10,7 +10,10 @@ export default async function () {
     redirect(`/login?next=${encodeURIComponent("/donate/admin")}`);
 
   const data = await db
-    .select({ ...getTableColumns(donations), image: sql<Buffer>`NULL` })
+    .select({
+      ...getTableColumns(donations),
+      image: sql<Buffer>`${donations.image} IS NOT NULL`,
+    })
     .from(donations)
     .limit(100)
     .orderBy(desc(donations.id));

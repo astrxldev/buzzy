@@ -58,3 +58,15 @@ export async function resendPopup(id: string) {
       : undefined,
   });
 }
+
+export async function getImage(id: string) {
+  if (!(await adminCheck())) throw new Error("Unauthorized");
+  const [sub] = await db
+    .select({ image: donations.image })
+    .from(donations)
+    .where(eq(donations.id, id));
+  if (!sub) throw new Error("not found");
+  if (!sub.image) throw new Error("no image");
+
+  return new Blob([Buffer.from(sub.image)], { type: "image/jpeg" });
+}

@@ -15,11 +15,12 @@ import {
   BugPlay,
   ChevronsLeftRightEllipsis,
   Copy,
+  ImageIcon,
   MessageCircleWarning,
 } from "lucide-react";
 import { useEllipsisVisible } from "react-hook-text-overflow";
 import { ActionButton } from "../../../../components/action-button";
-import { reloadWidget, resendPopup, testPopup } from "./api";
+import { getImage, reloadWidget, resendPopup, testPopup } from "./api";
 import { useEffect } from "react";
 import posthog from "posthog-js";
 import { sse } from "@/lib/db/sse-endpoints";
@@ -98,6 +99,7 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
           className={cn(
             "flex gap-1",
             row.row.original.uid ||
+              row.row.original.image ||
               "opacity-0 transition-opacity group-hover:opacity-100",
           )}
         >
@@ -124,6 +126,26 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
                 }
               >
                 <Copy />
+              </ActionButton>
+            </SimpleTooltip>
+          )}
+          {row.row.original.image && (
+            <SimpleTooltip text="Open Image">
+              <ActionButton
+                size="icon-sm"
+                variant="outline"
+                action={async () => {
+                  await getImage(row.row.original.id).then((blob) => {
+                    const url = URL.createObjectURL(blob);
+
+                    const tab = window.open("about:blank", "_blank");
+                    if (tab) {
+                      tab.location.href = url;
+                    }
+                  });
+                }}
+              >
+                <ImageIcon />
               </ActionButton>
             </SimpleTooltip>
           )}
