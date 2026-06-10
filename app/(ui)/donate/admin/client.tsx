@@ -28,6 +28,11 @@ import { useRouter } from "next/navigation";
 const columns: ColumnDef<typeof donations.$inferSelect>[] = [
   { accessorKey: "name", header: "Name", meta: { className: "w-50 truncate" } },
   {
+    accessorFn: (row) => `${row.amount}฿`,
+    header: "Amount",
+    meta: { className: "w-24" },
+  },
+  {
     accessorKey: "message",
     cell(props) {
       const [overflow, ref] = useEllipsisVisible();
@@ -54,11 +59,6 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
     },
     header: "Message",
     meta: { className: "w-full" },
-  },
-  {
-    accessorFn: (row) => `${row.amount}฿`,
-    header: "Amount",
-    meta: { className: "w-24" },
   },
   {
     accessorKey: "id",
@@ -109,7 +109,7 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
               <MessageCircleWarning />
             </ActionButton>
           </SimpleTooltip>
-          {row.row.original.uid && (
+          {row.row.original.uid ? (
             <SimpleTooltip text="Copy Artifact UID">
               <ActionButton
                 size="icon-sm"
@@ -120,6 +120,8 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
                 <Copy />
               </ActionButton>
             </SimpleTooltip>
+          ) : (
+            <div className="size-8" />
           )}
           {row.row.original.image && (
             <SimpleTooltip text="Open Image">
@@ -144,7 +146,7 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
         </div>
       );
     },
-    meta: { className: "w-24 p-0" },
+    meta: { className: "w-27 p-0" },
   },
 ];
 
