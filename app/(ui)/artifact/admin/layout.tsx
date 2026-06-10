@@ -27,8 +27,9 @@ import {
 import { getArtifactConfig, random, wipe } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { submissions } from "@/lib/db/schema";
 import { LimitManager, SubmissionList, Watcher } from "./client";
+import { sql } from "drizzle-orm";
+import type { submissions } from "@/lib/db/schema";
 
 export const metadata = {
   title: "เสือกไอดีชาวบ้าน (แอดมิน)",
@@ -41,17 +42,27 @@ export default async function AdminLayout({
 }) {
   if (!(await adminCheck()))
     redirect(`/login?next=${encodeURIComponent("/artifact/admin")}`);
-  const subs = await db
-    .select({
-      id: submissions.id,
-      name: submissions.name,
-      checked: submissions.checked,
-      queue: submissions.queue,
-      comment: submissions.comment,
-      uid: submissions.uid,
-    })
-    .from(submissions)
-    .orderBy(submissions.id);
+  const subs = (await db.execute(sql`
+    WITH max_checked AS (
+      SELECT MAX(queue) AS max_queue
+      FROM artifact.submissions
+      WHERE checked = TRUE
+        AND queue IS NOT NULL
+    )
+    SELECT *
+    FROM artifact.submissions s
+    CROSS JOIN max_checked m
+    ORDER BY
+      CASE
+        WHEN s.queue IS NULL AND s.checked = TRUE
+          THEN -1
+    
+        WHEN s.queue IS NULL AND s.checked = FALSE
+          THEN m.max_queue + 0.5
+    
+        ELSE s.queue
+      END,
+  s.id;`)) as (typeof submissions.$inferSelect)[];
   const config = await getArtifactConfig();
   return (
     <SidebarProvider>
