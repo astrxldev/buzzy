@@ -75,7 +75,8 @@ export function SidebarLink({
       wrapper={({ children }) => (
         <HoverCard openDelay={150} closeDelay={0}>
           <HoverCardTrigger
-            onClick={() => {
+            onClick={(ev) => {
+              if ((ev.target as HTMLButtonElement).type === "button") return;
               navigator.clipboard.writeText(submission.uid);
               toast.success("คัดลอก UID แล้ว");
             }}
