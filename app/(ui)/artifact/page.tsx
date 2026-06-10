@@ -120,11 +120,7 @@ export default async function ArtifactFormPage({
               <span className="text-3xl font-bold">คิวเต็มแล้ว</span>
               <span className="text-2xl font-bold">ต้องโดเนทลัดคิวแล้วล่ะ</span>
               <SimpleTooltip text="โดเนทลัดคิว ขั้นต่ำ 10 บาท" side="bottom">
-                <Link
-                  href="/donate"
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                <Link href="/donate" target="_blank" rel="noreferrer">
                   <Button
                     className="animate-pulse border-white! bg-emerald-600!"
                     type="button"
@@ -230,11 +226,7 @@ export default async function ArtifactFormPage({
         <CardFooter className="flex justify-between gap-2">
           <div className="flex gap-2">
             <SimpleTooltip text="โดเนทลัดคิว ขั้นต่ำ 10 บาท">
-              <Link
-                href="/donate"
-                target="_blank"
-                rel="noreferrer"
-              >
+              <Link href="/donate" target="_blank" rel="noreferrer">
                 <Button variant="outline" type="button">
                   <CircleDollarSign />
                 </Button>

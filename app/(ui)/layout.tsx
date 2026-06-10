@@ -30,7 +30,12 @@ export default async function UiLayout({
         <VersionCheck />
         <Navbar />
       </Providers>
-      <Toaster theme="dark" richColors closeButton toastOptions={{ className: anuphan.className }} />
+      <Toaster
+        theme="dark"
+        richColors
+        closeButton
+        toastOptions={{ className: anuphan.className }}
+      />
     </>
   );
 }

@@ -252,11 +252,7 @@ export default async function EndgamePage() {
         <CardFooter className="flex justify-between gap-2">
           <div className="flex gap-2">
             <SimpleTooltip text="ลัดคิว 50 บาท (ไม่รวมยอดที่ต้องจ่าย)">
-              <Link
-                href="/donate"
-                target="_blank"
-                rel="noreferrer"
-              >
+              <Link href="/donate" target="_blank" rel="noreferrer">
                 <Button
                   variant="outline"
                   className={

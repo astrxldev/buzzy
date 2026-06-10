@@ -3,9 +3,10 @@
 
 import {
   ArrowLeftIcon,
-  ImageUpIcon, XIcon,
+  ImageUpIcon,
+  XIcon,
   ZoomInIcon,
-  ZoomOutIcon
+  ZoomOutIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
