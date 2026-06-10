@@ -9,6 +9,7 @@ type Data = Awaited<ReturnType<typeof getTopDonate>>;
 export default function TopDonateWidget() {
   const [top, setTop] = useState<Data>();
   const textRef = useRef<HTMLDivElement | null>(null);
+  const stableSize = useRef<Record<string, number>>({});
 
   useEffect(() => {
     async function update() {
@@ -27,13 +28,21 @@ export default function TopDonateWidget() {
     if (!textRef.current) return;
     var fontSize = 48,
       count = 0;
-    const el = textRef.current;
+    const el = textRef.current,
+      key = `${top?.name}${top?.amount}`;
+    if (stableSize.current[key]) {
+      el.style.fontSize = `${stableSize.current[key]}px`;
+      return;
+    }
     const interval = setInterval(() => {
       console.log(el.scrollWidth, el.clientWidth);
       fontSize = (fontSize * el.clientWidth) / el.scrollWidth;
       el.style.fontSize = `${fontSize}px`;
       count++;
-      if (count > 20) clearInterval(interval);
+      if (count > 20) {
+        stableSize.current[key] = fontSize;
+        clearInterval(interval);
+      }
     }, 100);
     return () => clearInterval(interval);
   }, [textRef, top]);
