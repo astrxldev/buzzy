@@ -44,7 +44,7 @@ async function Content() {
   const list = await db
     .select({
       i: sql<NumberLike>`ROW_NUMBER() OVER
-        (ORDER BY ${desc(donations.amount)}, ${asc(donations.id)})`,
+        (ORDER BY ${desc(sum(donations.amount))}, ${asc(max(donations.id))})`,
       name: donations.name,
       amount: sum(donations.amount) as unknown as SQL<number>,
     })
