@@ -253,7 +253,7 @@ export default async function EndgamePage() {
           <div className="flex gap-2">
             <SimpleTooltip text="ลัดคิว 50 บาท (ไม่รวมยอดที่ต้องจ่าย)">
               <Link
-                href="https://tipme.in.th/536d969652666273c2fa85ad"
+                href="/donate"
                 target="_blank"
                 rel="noreferrer"
               >

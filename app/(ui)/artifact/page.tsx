@@ -121,7 +121,7 @@ export default async function ArtifactFormPage({
               <span className="text-2xl font-bold">ต้องโดเนทลัดคิวแล้วล่ะ</span>
               <SimpleTooltip text="โดเนทลัดคิว ขั้นต่ำ 10 บาท" side="bottom">
                 <Link
-                  href="https://tipme.in.th/536d969652666273c2fa85ad"
+                  href="/donate"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -231,7 +231,7 @@ export default async function ArtifactFormPage({
           <div className="flex gap-2">
             <SimpleTooltip text="โดเนทลัดคิว ขั้นต่ำ 10 บาท">
               <Link
-                href="https://tipme.in.th/536d969652666273c2fa85ad"
+                href="/donate"
                 target="_blank"
                 rel="noreferrer"
               >
