@@ -19,7 +19,8 @@
     "tailwindcss/no-unknown-classes": "error",
     "tailwindcss/no-conflicting-classes": "error",
     "tailwindcss/enforce-sort-order": "warn",
-    "tailwindcss/no-unnecessary-arbitrary-value": "warn"
+    "tailwindcss/no-unnecessary-arbitrary-value": "warn",
+    "tailwindcss/enforce-canonical": "warn"
   },
   "options": {
     "typeAware": true

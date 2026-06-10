@@ -12,7 +12,7 @@ export function Blocker({
   return (
     <div
       className={cn(
-        "blocker absolute top-[-5px] right-[-5px] bottom-[-5px] left-[-5px] z-45 flex items-center justify-center rounded-sm border-1 border-t-gray-700 border-l-gray-600 bg-[#2225] backdrop-blur-sm",
+        "blocker absolute -top-1.25 -right-1.25 -bottom-1.25 -left-1.25 z-45 flex items-center justify-center rounded-sm border border-t-gray-700 border-l-gray-600 bg-[#2225] backdrop-blur-sm",
         inner && "top-0 right-0 bottom-0 left-0 rounded-none",
         className,
       )}
