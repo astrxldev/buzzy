@@ -6,6 +6,7 @@ import AutoFitText from "@/components/fit";
 import { getArtifactConfig } from "@/lib/api";
 import { db } from "@/lib/db";
 import { submissions } from "@/lib/db/schema";
+import { isNotNull, sql } from "drizzle-orm";
 
 const kanit = Kanit({
   variable: "--font-kanit",
@@ -15,7 +16,11 @@ const kanit = Kanit({
 
 export default async function ArtifactCountWidget() {
   const config = await getArtifactConfig();
-  const count = await db.$count(submissions);
+  const count = await db
+    .select({ a: sql`NULL` })
+    .from(submissions)
+    .where(isNotNull(submissions.queue))
+    .then((e) => e.length);
 
   const display = `${count} / ${config.limit < 0 ? "∞" : config.limit}`;
 
