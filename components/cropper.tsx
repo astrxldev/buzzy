@@ -3,10 +3,9 @@
 
 import {
   ArrowLeftIcon,
-  PlusIcon,
-  XIcon,
+  ImageUpIcon, XIcon,
   ZoomInIcon,
-  ZoomOutIcon,
+  ZoomOutIcon
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -253,7 +252,7 @@ export default function Component({
             />
           ) : (
             <div aria-hidden="true">
-              <PlusIcon className="size-8 opacity-60" />
+              <ImageUpIcon className="size-8 opacity-60" />
             </div>
           )}
         </button>
