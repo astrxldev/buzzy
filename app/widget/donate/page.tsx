@@ -27,6 +27,7 @@ export default function () {
   const queue = useRef<Promise<void>>(Promise.resolve());
 
   function enqueue(data: DonateData) {
+    if (!data) return;
     if (onQueue.current.includes(data.id)) return;
     onQueue.current.push(data.id);
     queue.current = queue.current.then(() => ping(data).catch(console.error));
@@ -45,7 +46,9 @@ export default function () {
     const ttsAvailable = await new Promise(
       (r) => (
         (tts.onloadeddata = () => r(true)),
-        (tts.onerror = () => r(false))
+        (tts.onerror = () => r(false)),
+        // longest and most complex text takes at most a minute and a half to generate
+        setTimeout(() => r(false), 120000)
       ),
     );
     if (!ttsAvailable)
@@ -96,10 +99,16 @@ export default function () {
       const promise = new Promise(
         (r, j) => ((pendingHeartbeat[tag] = r), setTimeout(j, 30000)),
       );
-      await fetch(`/api/donate/hb?tag=${tag}`, {
-        method: "PATCH",
-      }).catch(() => {});
       try {
+        const res = await fetch(
+          `/api/donate/hb?tag=${tag}${failed > 6 ? "&resume=true" : ""}`,
+          {
+            method: "PATCH",
+            signal: AbortSignal.timeout(15000),
+          },
+        ).catch(() => {});
+        if (failed > 6 && res)
+          queueMicrotask(() => res.status === 302 && res.json().then(enqueue));
         await promise;
         console.log("Heartbeat OK");
         setFailed(0);
@@ -109,7 +118,18 @@ export default function () {
         posthog.capture("donation_widget_heartbeat_failure", {
           fail_count: failed + 1,
         });
-        if (failed > 12) location.reload();
+        if (failed > 12)
+          fetch("/widget/donate", {
+            signal: AbortSignal.timeout(30000),
+            method: "HEAD",
+          })
+            .then(({ ok }) => {
+              if (!ok) throw "NOT OK";
+              location.reload();
+            })
+            .catch(() =>
+              console.warn("Wants to reload, but not safe. Retrying later."),
+            );
       }
     }, 10000);
     return () => {
