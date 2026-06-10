@@ -5,6 +5,12 @@ import Image from "@/components/image";
 import { StarsRenderer } from "@/components/stars";
 import Providers, { VersionCheck } from "../client";
 import { Navbar } from "./navbar";
+import { Anuphan } from "next/font/google";
+
+const anuphan = Anuphan({
+  variable: "--font-anuphan",
+  subsets: ["latin", "thai"],
+});
 
 export default async function UiLayout({
   children,
@@ -24,7 +30,7 @@ export default async function UiLayout({
         <VersionCheck />
         <Navbar />
       </Providers>
-      <Toaster theme="dark" richColors closeButton />
+      <Toaster theme="dark" richColors closeButton toastOptions={{ className: anuphan.className }} />
     </>
   );
 }
