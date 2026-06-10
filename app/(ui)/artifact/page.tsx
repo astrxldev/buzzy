@@ -1,5 +1,5 @@
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
-import { eq } from "drizzle-orm";
+import { eq, isNotNull, sql } from "drizzle-orm";
 import {
   BookAlert,
   CircleDollarSign,
@@ -62,7 +62,11 @@ export default async function ArtifactFormPage({
     .from(characters)
     .orderBy(characters.name);
   const config = await getArtifactConfig();
-  const count = await db.$count(submissions);
+  const count = await db
+    .select({ a: sql`NULL` })
+    .from(submissions)
+    .where(isNotNull(submissions.queue))
+    .then((e) => e.length);
   const { edit: searchEdit } = await searchParams;
   const editing = q && searchEdit === q.editToken && q.edits < 5;
 

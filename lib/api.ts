@@ -87,7 +87,11 @@ export async function submitArtifact(
 ) {
   const config = await getArtifactConfig();
   if (config.locked) return "ปิดรับลงทะเบียนชั่วคราว เนื่องจากมีผู้ลงจำนวนมาก";
-  const count = await db.$count(submissions);
+  const count = await db
+    .select({ a: sql`NULL` })
+    .from(submissions)
+    .where(isNotNull(submissions.queue))
+    .then((e) => e.length);
   if (config.limit !== -1 && count >= config.limit)
     return `คิวลงทะเบียนเต็มแล้ว (${config.limit} ครั้ง)`;
   const { success, data, error } = await ArtifactSubmission(
