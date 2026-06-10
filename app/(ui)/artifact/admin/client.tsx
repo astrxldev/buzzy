@@ -58,6 +58,7 @@ export function SidebarLink({
     queue: number | null;
     comment: string;
     uid: string;
+    promoted: boolean;
   };
   className?: string;
 }) {
@@ -103,7 +104,8 @@ export function SidebarLink({
         className={cn(
           className,
           id === submission.id && "bg-accent text-accent-foreground",
-          submission.queue === null && "border-2 border-yellow-400",
+          (submission.queue === null || submission.promoted) &&
+            "border-2 border-yellow-400",
         )}
         prefetch
         onClick={(ev) => {
@@ -250,6 +252,7 @@ export function SubmissionList({
     queue: number | null;
     comment: string;
     uid: string;
+    promoted: boolean;
   }[];
 }) {
   const [query, setQuery] = useState("");

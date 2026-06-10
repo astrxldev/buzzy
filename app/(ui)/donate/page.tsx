@@ -210,13 +210,13 @@ export default async function () {
             uid: $.uid,
             queue: null as unknown as undefined,
           })
-          // .onConflictDoUpdate({
-          //   target: submissions.uid,
-          //   set: {
-          //     queue: null as unknown as undefined,
-          //   },
-          // })
-          .onConflictDoNothing();
+          .onConflictDoUpdate({
+            target: submissions.uid,
+            set: {
+              promoted: true,
+            },
+          });
+        // .onConflictDoNothing();
         // .catch(() => "conflict");
         // if (res === "conflict") {
         //   tx.rollback();

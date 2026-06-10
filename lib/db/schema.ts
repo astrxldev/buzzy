@@ -81,6 +81,8 @@ export const settings = pgTable("settings", {
 
 //#region Artifact
 export const artifact = pgSchema("artifact");
+const nullableSerial = serial();
+(nullableSerial as any).config.notNull = false;
 
 export const submissions = artifact.table("submissions", {
   id: text().primaryKey().$defaultFn(uuidv7),
@@ -93,10 +95,11 @@ export const submissions = artifact.table("submissions", {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
-  queue: serial(), // NULL for Spacial Queue
+  queue: nullableSerial, // NULL for Spacial Queue
   editToken: text().notNull().$defaultFn(uuidv7),
   edits: integer().notNull().default(0),
   checked: boolean().notNull().default(false),
+  promoted: boolean().notNull().default(false),
 });
 
 export const cards = artifact.table("cards", {
