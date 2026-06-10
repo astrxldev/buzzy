@@ -4,6 +4,7 @@ import {
   AlignJustify,
   Badge,
   BadgeDollarSign,
+  BitcoinIcon,
   ChevronRight,
   Columns3Cog,
   Compass,
@@ -209,6 +210,7 @@ export function AdminNavbar({
           sub: [
             { name: "Artifact", icon: IdCard, href: "/artifact/admin" },
             { name: "Rubgram", icon: BadgeDollarSign, href: "/rubgram/admin" },
+            { name: "Donate", icon: BitcoinIcon, href: "/donate/admin" },
             {
               name: "Tierlist",
               icon: Grid3x3,

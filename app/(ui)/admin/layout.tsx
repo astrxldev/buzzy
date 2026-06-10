@@ -3,6 +3,7 @@ import {
   ArrowLeftRight,
   Badge,
   BadgeDollarSign,
+  BitcoinIcon,
   BookUser,
   Columns3Cog,
   Compass,
@@ -400,6 +401,12 @@ async function AdminShortcuts({
               <Link href="/rubgram/admin">
                 <BadgeDollarSign />
                 Rubgram
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/donate/admin">
+                <BitcoinIcon />
+                Donate
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSub>
