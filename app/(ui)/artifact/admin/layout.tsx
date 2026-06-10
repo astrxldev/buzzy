@@ -28,8 +28,8 @@ import { getArtifactConfig, random, wipe } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { LimitManager, SubmissionList, Watcher } from "./client";
-import { sql } from "drizzle-orm";
-import type { submissions } from "@/lib/db/schema";
+import { isNotNull, sql } from "drizzle-orm";
+import { submissions } from "@/lib/db/schema";
 
 export const metadata = {
   title: "เสือกไอดีชาวบ้าน (แอดมิน)",
@@ -64,6 +64,11 @@ export default async function AdminLayout({
       END,
   s.id;`)) as (typeof submissions.$inferSelect)[];
   const config = await getArtifactConfig();
+  const count = await db
+    .select({ a: sql`NULL` })
+    .from(submissions)
+    .where(isNotNull(submissions.queue))
+    .then((e) => e.length);
   return (
     <SidebarProvider>
       <Sidebar>
@@ -116,7 +121,7 @@ export default async function AdminLayout({
         <SidebarFooter>
           <SidebarGroup>
             <SidebarGroupLabel>การตั้งค่า</SidebarGroupLabel>
-            <LimitManager config={config} length={subs.length} />
+            <LimitManager config={config} length={count} />
           </SidebarGroup>
         </SidebarFooter>
       </Sidebar>

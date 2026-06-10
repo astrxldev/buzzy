@@ -102,7 +102,10 @@ export const submissions = artifact.table("submissions", {
 export const cards = artifact.table("cards", {
   id: text().primaryKey().$defaultFn(uuidv7),
   submission: text()
-    .references(() => submissions.id, { onDelete: "cascade" })
+    .references(() => submissions.id, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    })
     .notNull()
     .unique(),
   tries: integer().notNull().default(0),
