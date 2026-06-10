@@ -44,7 +44,7 @@ export default async function AdminLayout({
     redirect(`/login?next=${encodeURIComponent("/artifact/admin")}`);
   const subs = (await db.execute(sql`
     WITH max_checked AS (
-      SELECT COALESCE(MAX(queue), 0) AS max_queue
+      SELECT MAX(queue) AS max_queue
       FROM artifact.submissions
       WHERE checked = TRUE
         AND queue IS NOT NULL
@@ -58,7 +58,7 @@ export default async function AdminLayout({
           THEN -1
     
         WHEN s.queue IS NULL AND s.checked = FALSE
-          THEN m.max_queue + 0.5
+          THEN COALESCE(m.max_queue, 0)::numeric + 0.5
     
         ELSE s.queue
       END,
