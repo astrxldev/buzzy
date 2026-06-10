@@ -4,7 +4,7 @@ import { donations } from "@/lib/db/schema";
 import { desc, getTableColumns, sql } from "drizzle-orm";
 import { adminCheck } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 
 export default async function () {
   if (!(await adminCheck()))

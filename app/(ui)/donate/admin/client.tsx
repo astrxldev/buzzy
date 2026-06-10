@@ -8,7 +8,6 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import type { donations } from "@/lib/db/schema";
-import { cn } from "@/lib/utils";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   BitcoinIcon,
@@ -95,14 +94,7 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
     },
     cell(row) {
       return (
-        <div
-          className={cn(
-            "flex gap-1",
-            row.row.original.uid ||
-              row.row.original.image ||
-              "opacity-0 transition-opacity group-hover:opacity-100",
-          )}
-        >
+        <div className="flex gap-1">
           <SimpleTooltip text="Re-send Popup">
             <ActionButton
               variant="outline"
