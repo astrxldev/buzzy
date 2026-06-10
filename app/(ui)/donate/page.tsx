@@ -72,16 +72,21 @@ const Schema = z
     image: z.file().optional(),
   })
   .and(
-    z.discriminatedUnion("type", [
-      z.object({
-        type: z.literal("tmn").optional(),
-        link: z.httpUrl(),
-      }),
-      z.object({
-        type: z.literal("pp"),
-        slip: z.file(),
-      }),
-    ]),
+    z.discriminatedUnion(
+      "type",
+      [
+        z.object({
+          type: z.literal("tmn").optional(),
+          link: z.httpUrl("ใส่ลิ้งค์อั่งเปา TrueMoney ก่อน"),
+        }),
+        z.object({
+          type: z.literal("pp"),
+          slip: z.file("อัพโหลดสลิปโอนเงินด้วย"),
+        }),
+      ],
+      // impossible but edge case
+      "internal: ประเภท donate ไม่ถูกต้อง",
+    ),
   )
   .and(
     z.discriminatedUnion("artifact", [
@@ -90,7 +95,9 @@ const Schema = z
       }),
       z.object({
         artifact: z.literal("true"),
-        uid: z.string().regex(uidRegex, "รูปแบบ UID ไม่ถูกต้อง"),
+        uid: z
+          .string("ใส่ UID สำหรับการดูแฟกต์ด้วย")
+          .regex(uidRegex, "รูปแบบ UID ไม่ถูกต้อง"),
       }),
     ]),
   );
