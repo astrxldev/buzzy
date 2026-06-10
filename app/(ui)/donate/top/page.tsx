@@ -1,4 +1,5 @@
-import { asc, desc, sql } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
+import { asc, desc, sql, sum } from "drizzle-orm";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/lib/db";
@@ -45,12 +46,13 @@ async function Content() {
       i: sql<NumberLike>`ROW_NUMBER() OVER
         (ORDER BY ${desc(donations.amount)}, ${asc(donations.id)})`,
       name: donations.name,
-      amount: donations.amount,
+      amount: sum(donations.amount) as unknown as SQL<number>,
     })
     .from(donations)
     .offset(3)
     .limit(7)
-    .orderBy(desc(donations.amount), asc(donations.id));
+    .groupBy(donations.name)
+    .orderBy(desc(sum(donations.amount)), asc(donations.id));
 
   const podium = await db
     .select({
