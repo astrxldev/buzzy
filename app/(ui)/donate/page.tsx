@@ -41,7 +41,7 @@ const { TMN_DEST_PHONE_NUM, SASTIFY_API_PRIVKEY } = process.env as Record<
 >;
 
 export const metadata: Metadata = {
-  title: "โดเนทขึ้นจอ",
+  title: "โดเนท",
 };
 
 type SastifyApiResponse =
@@ -276,7 +276,7 @@ export default async function () {
               </FormInput>
             </div>
           </div>
-          <FormInput name="message" label="ข้อความ" subLabel="max. 500 ตัวอักษร">
+          <FormInput name="message" label="ข้อความ" subLabel="สูงสุด 500 ตัวอักษร">
             <Textarea placeholder="ข้อความ" />
           </FormInput>
           {!artifactConfig.locked && (
@@ -361,12 +361,12 @@ export default async function () {
                 loading={
                   <>
                     <Spinner />
-                    Creating...
+                    กำลังโดเนท
                   </>
                 }
               >
                 <SendIcon />
-                ส่งเลยจัฟลูกพี่
+                โดเนท
               </FormAction>
             </Button>
           </div>

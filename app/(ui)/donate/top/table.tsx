@@ -36,7 +36,7 @@ export function TopDonateTable({ data }: { data: TopDonateRow[] }) {
       home="/donate"
       columns={columns}
       data={data}
-      emptyDescription="No donations yet."
+      emptyDescription="ยังไม่มีโดเนท"
       className="h-full max-h-[calc(100svh-264px)] w-full overflow-y-auto backdrop-blur-md"
     />
   );

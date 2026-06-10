@@ -4,6 +4,7 @@ import { donations } from "@/lib/db/schema";
 import { desc, getTableColumns, sql } from "drizzle-orm";
 import { adminCheck } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { Metadata } from "next";
 
 export default async function () {
   if (!(await adminCheck()))
@@ -19,5 +20,10 @@ export default async function () {
     .orderBy(desc(donations.id));
   return <DonateAdminPage data={data} />;
 }
+
+export const metadata: Metadata = {
+  title: "โดเนททั้งหมด",
+  description: "ดูโดเนททั้งหมด",
+};
 
 export const dynamic = "force-dynamic";

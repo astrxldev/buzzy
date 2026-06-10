@@ -77,7 +77,7 @@ export function SidebarLink({
           <HoverCardTrigger
             onClick={() => {
               navigator.clipboard.writeText(submission.uid);
-              toast("คัดลอก UID แล้ว");
+              toast.success("คัดลอก UID แล้ว");
             }}
           >
             {children}
@@ -89,7 +89,7 @@ export function SidebarLink({
             <div className="font-semibold">{submission.name}</div>
             <div className="line-clamp-3">{submission.comment}</div>
             <div className="mt-1 text-xs text-muted-foreground">
-              คิวลัด - UID {submission.uid} (คลิ๊กเพื่อคัดลอก)
+              ลัดคิว - UID {submission.uid} (คลิ๊กเพื่อคัดลอก)
             </div>
           </HoverCardContent>
         </HoverCard>
@@ -102,7 +102,7 @@ export function SidebarLink({
         className={cn(
           className,
           id === submission.id && "bg-accent text-accent-foreground",
-          submission.queue === null && "border border-yellow-400",
+          submission.queue === null && "border-2 border-yellow-400",
         )}
         prefetch
         onClick={(ev) => {
