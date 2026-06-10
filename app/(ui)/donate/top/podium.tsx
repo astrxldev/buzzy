@@ -27,7 +27,7 @@ const styles = [
 
 interface TopDonateRow {
   name: string;
-  amount: number;
+  amount: string | null;
   image?: string;
 }
 

@@ -55,24 +55,31 @@ async function Content() {
     .orderBy(desc(sum(donations.amount)), asc(max(donations.id)));
 
   const podium = await db
-    .select({
-      name: donations.name,
-      amount: donations.amount,
-      image: donations.image,
-    })
-    .from(donations)
-    .limit(3)
-    .orderBy(desc(donations.amount), asc(donations.id))
-    .then((r) =>
-      Promise.all(
-        r.map(async (d) => ({
-          ...d,
-          image: d.image
-            ? await fileToDataUrl(new File([Buffer.from(d.image)], "image.jpg"))
-            : undefined,
-        })),
-      ),
-    );
+  .select({
+    name: donations.name,
+    amount: sum(donations.amount).as("amount"),
+    image: sql<Buffer | null>`
+      (
+        array_agg(${donations.image}
+          ORDER BY ${donations.id} DESC
+        )
+      )[1]
+    `,
+  })
+  .from(donations)
+  .groupBy(donations.name)
+  .orderBy(desc(sum(donations.amount)), asc(max(donations.id)))
+  .limit(3)
+  .then((r) =>
+    Promise.all(
+      r.map(async (d) => ({
+        ...d,
+        image: d.image
+          ? await fileToDataUrl(new File([Buffer.from(d.image)], "image.jpg"))
+          : undefined,
+      })),
+    ),
+  );
 
   return (
     <div className="flex min-h-svh flex-col justify-center">
