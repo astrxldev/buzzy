@@ -37,6 +37,16 @@ export function RulesDialog({
           <span className="text-blue-500 underline">
             <Link href="https://sudloh.com/privacy">Privacy policy</Link>
           </span>
+          <br />
+          5. ถ้าจะลัดคิวให้โดเนทผ่าน{" "}
+          <Link
+            href="/donate"
+            className="text-blue-500 underline"
+            target="_blank"
+          >
+            ตรงนี้
+          </Link>{" "}
+          เพื่อลัดคิว
         </p>
         <DialogFooter>
           <DialogClose asChild>
