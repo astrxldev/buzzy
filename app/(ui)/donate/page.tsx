@@ -34,6 +34,7 @@ import {
 } from "../rubgram/admin/@modal/manual/client";
 import { DownloadButton } from "../rubgram/client";
 import { getPostHogClient } from "@/lib/posthog-server";
+import { sql } from "drizzle-orm";
 
 const { TMN_DEST_PHONE_NUM, SASTIFY_API_PRIVKEY } = process.env as Record<
   string,
@@ -213,6 +214,7 @@ export default async function () {
           .onConflictDoUpdate({
             target: submissions.uid,
             set: {
+              comment: sql`CONCAT(${submissions.comment}, ${"\n"}, ${message})`,
               promoted: true,
             },
           });
