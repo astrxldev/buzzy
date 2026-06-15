@@ -22,10 +22,11 @@ export default function TopDonateWidget() {
       refresh: () => location.reload(),
     });
 
-    setInterval(update, 300000);
+    const backupInterval = setInterval(update, 300000);
 
     return () => {
       clean();
+      clearInterval(backupInterval);
     };
   }, []);
 

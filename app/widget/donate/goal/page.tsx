@@ -3,6 +3,7 @@
 import { sse } from "@/lib/db/sse-endpoints";
 import { useEffect, useRef, useState } from "react";
 import { getDonateBar } from "./api";
+import { motion } from "motion/react";
 
 type Data = Awaited<ReturnType<typeof getDonateBar>>;
 
@@ -23,10 +24,11 @@ export default function TopDonateWidget() {
       refresh: () => location.reload(),
     });
 
-    setInterval(update, 300000);
+    const backupInterval = setInterval(update, 300000);
 
     return () => {
       clean();
+      clearInterval(backupInterval);
     };
   }, []);
 
@@ -39,22 +41,28 @@ export default function TopDonateWidget() {
       count = 0;
     const el = textRef.current,
       parent = el.parentElement!,
-      key = `${bar?.goal}${bar?.amount}`;
+      key = `${bar?.goal}`;
     if (stableSize.current[key]) {
+      el.classList.add("opacity-100");
       el.style.fontSize = `${stableSize.current[key]}px`;
       return;
     }
+    el.classList.remove("opacity-100");
     const interval = setInterval(() => {
       console.log(el.scrollHeight, parent.clientHeight);
       fontSize = (fontSize * parent.clientHeight) / el.scrollHeight;
       el.style.fontSize = `${fontSize}px`;
       count++;
-      if (count > 20) {
+      if (count > 10) {
         stableSize.current[key] = fontSize;
+        el.classList.add("opacity-100");
         clearInterval(interval);
       }
     }, 100);
-    return () => clearInterval(interval);
+    return () => {
+      el.classList.add("opacity-100");
+      clearInterval(interval);
+    };
   }, [bar, resizeTick]);
 
   useEffect(() => {
@@ -68,17 +76,20 @@ export default function TopDonateWidget() {
   }, [bar]);
 
   return bar && bar.amount !== null && bar.goal ? (
-    <div className="relative h-full w-full rounded-full bg-[#252525]">
+    <div className="relative h-full max-h-[20svw] w-full rounded-full bg-[#252525]">
       <div className="absolute inset-2 rounded-full bg-black" />
-      <div
+      <motion.div
         className="absolute inset-1.5 rounded-full bg-linear-to-b from-[#FD0000] to-[#830000]"
-        style={{
-          right: `${100 - Math.min(1, Number(bar.amount) / bar.goal) * 100}%`,
+        animate={{
+          width: `calc(${Math.min(1, Number(bar.amount) / bar.goal) * 100}% - 12px)`,
+        }}
+        initial={{
+          width: 0,
         }}
       />
       <div
         ref={textRef}
-        className="absolute top-1/2 right-8 -translate-y-1/2 pb-1 font-bold"
+        className="absolute top-1/2 right-8 -translate-y-1/2 pb-1 font-bold opacity-0 transition-opacity"
       >
         {bar.goal}฿
       </div>
