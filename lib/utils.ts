@@ -68,3 +68,7 @@ export function parseSearchString(
   if (Array.isArray(param)) return parseSearchString(param[0], def);
   return param ?? def;
 }
+
+export function pausePass<R>(time: number): (res: R) => Promise<R> {
+  return (res) => new Promise((r) => setTimeout(() => r(res), time));
+}

@@ -4,6 +4,7 @@ import { sse } from "@/lib/db/sse-endpoints";
 import { useEffect, useRef, useState } from "react";
 import { getDonateBar } from "./api";
 import { motion } from "motion/react";
+import { pausePass } from "@/lib/utils";
 
 type Data = Awaited<ReturnType<typeof getDonateBar>>;
 
@@ -15,7 +16,9 @@ export default function TopDonateWidget() {
 
   useEffect(() => {
     async function update() {
-      void getDonateBar().then(setBar);
+      if (textRef.current)
+        void getDonateBar().then(pausePass(10000)).then(setBar);
+      else void getDonateBar().then(setBar);
     }
     queueMicrotask(update);
     const { clean } = sse.donate.subMany({
@@ -74,13 +77,14 @@ export default function TopDonateWidget() {
     return () => window.removeEventListener("resize", onResize);
   }, [bar]);
 
-  return bar && bar.amount !== null && bar.goal ? (
+  return bar ? (
     <div className="relative h-full max-h-[20svw] w-full rounded-full bg-[#252525]">
       <div className="absolute inset-2 rounded-full bg-black" />
       <motion.div
         className="absolute inset-1.5 rounded-full bg-linear-to-b from-[#FD0000] to-[#830000]"
         animate={{
-          width: `calc(6px + ${Math.min(1, Number(bar.amount) / bar.goal)} * (100% - 12px))`,
+          width: `calc(${Math.min(1, Number(bar.amount ?? "0") / (bar.goal ?? 1)) * 100}% - ${Math.min(1, Number(bar.amount ?? "0") / (bar.goal ?? 1)) * 12}px)`,
+          // width: `calc(6px + ${Math.min(1, Number(bar.amount) / bar.goal)} * (100% - 12px))`,
         }}
         initial={{
           width: 0,

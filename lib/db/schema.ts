@@ -76,6 +76,7 @@ export const settings = pgTable("settings", {
   id: boolean().primaryKey().default(true),
   enka: boolean().notNull().default(false), // Turn this off when Enka is on maintenance
   donateGoal: numeric({ mode: "number" }),
+  donateGoalStarting: timestamp(),
 });
 
 //#endregion

@@ -14,6 +14,8 @@ import { db } from "@/lib/db";
 import { settings } from "@/lib/db/schema";
 import { formParse } from "@/components/form-submit";
 import { sse } from "@/lib/db/sse-endpoints";
+import { ActionButton } from "@/components/action-button";
+import { resetGoal } from "../../api";
 
 const Schema = z.object({
   goal: z.coerce.number().nonnegative().nullable().optional().default(null),
@@ -61,6 +63,9 @@ export default async function RgManualCreateModal() {
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
+          <ActionButton action={resetGoal} type="button" variant="destructive">
+            Reset Goal
+          </ActionButton>
           <Button asChild>
             <FormAction
               type="submit"
