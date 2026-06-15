@@ -67,8 +67,7 @@ export default function TopDonateWidget() {
 
   useEffect(() => {
     const onResize = () => {
-      const key = `${bar?.goal}${bar?.amount}`;
-      delete stableSize.current[key];
+      stableSize.current = {};
       setResizeTick((t) => t + 1);
     };
     window.addEventListener("resize", onResize);
