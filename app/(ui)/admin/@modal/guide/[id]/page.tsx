@@ -127,3 +127,5 @@ export default async function GuideEditPage({
     </ModalBase>
   );
 }
+
+export const dynamic = "force-dynamic";

@@ -133,3 +133,5 @@ export default async function TlTypeEditPage({
     </ModalBase>
   );
 }
+
+export const dynamic = "force-dynamic";
