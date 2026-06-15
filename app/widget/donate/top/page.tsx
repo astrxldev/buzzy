@@ -16,11 +16,17 @@ export default function TopDonateWidget() {
       void getTopDonate().then(setTop);
     }
     queueMicrotask(update);
-    return sse.donate.subMany({
+    const { clean } = sse.donate.subMany({
       update,
       ping: update,
       refresh: () => location.reload(),
-    }).clean;
+    });
+
+    setInterval(update, 300000);
+
+    return () => {
+      clean();
+    };
   }, []);
 
   // the most idiomatic way possible but it works
