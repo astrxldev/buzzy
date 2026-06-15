@@ -284,23 +284,23 @@ graph TB
 
 ## Real-Time System (SSE)
 
-| Endpoint | Events | Clients |
-|---|---|---|
-| `artifact` | submit, toggleCheck, toggleLock, setLimit, wipe | Admin panel, artifact widget |
-| `rubgram` | submit, paid, toggleCheck, toggleLock, setLimit, setFree, cancel, uploadSlip | Admin panel, rubgram widget |
-| `donate` | ping, heartbeat, update, refresh | Donate widget, top widget, admin |
-| `active` | version (deploy), live (YouTube status) | All pages |
-| `log` | update (audit log) | Admin log viewer |
-| `tl.{name}` | update_states, update_placements | Tierlist per-type |
+| Endpoint    | Events                                                                       | Clients                          |
+| ----------- | ---------------------------------------------------------------------------- | -------------------------------- |
+| `artifact`  | submit, toggleCheck, toggleLock, setLimit, wipe                              | Admin panel, artifact widget     |
+| `rubgram`   | submit, paid, toggleCheck, toggleLock, setLimit, setFree, cancel, uploadSlip | Admin panel, rubgram widget      |
+| `donate`    | ping, heartbeat, update, refresh                                             | Donate widget, top widget, admin |
+| `active`    | version (deploy), live (YouTube status)                                      | All pages                        |
+| `log`       | update (audit log)                                                           | Admin log viewer                 |
+| `tl.{name}` | update_states, update_placements                                             | Tierlist per-type                |
 
 ## Embeddable Widgets (OBS Browser Source)
 
-| Widget | Route | Description |
-|---|---|---|
-| Donation alert | `/widget/donate` | Full-screen animated popup with SFX + TTS |
-| Top donor | `/widget/donate/top` | Compact real-time #1 donor bar |
-| Artifact queue | `/widget/artifact-count` | Submission count / capacity |
-| Rubgram queue | `/widget/rubgram-count` | Submission count / capacity |
+| Widget         | Route                    | Description                               |
+| -------------- | ------------------------ | ----------------------------------------- |
+| Donation alert | `/widget/donate`         | Full-screen animated popup with SFX + TTS |
+| Top donor      | `/widget/donate/top`     | Compact real-time #1 donor bar            |
+| Artifact queue | `/widget/artifact-count` | Submission count / capacity               |
+| Rubgram queue  | `/widget/rubgram-count`  | Submission count / capacity               |
 
 All widgets are SSE-driven, auto-updating, and designed for streaming overlays.
 
@@ -318,34 +318,36 @@ All widgets are SSE-driven, auto-updating, and designed for streaming overlays.
 
 ## External APIs
 
-| API | Usage | Endpoint |
-|---|---|---|
-| Project Amber | Character and version data, synced every 14 days | gi.yatta.moe |
-| Enka Network | Character showcase auto-fetch | enka.network |
-| Astral/Enka Embed | Character card rendering | git.dgnr.us/astral/api |
-| SlipOK | PromptPay slip verification | configurable |
-| Sastify | TrueMoney voucher redemption | api.sastify.xyz |
-| Google Gemini | TTS for donation announcements | gemini-2.5-flash-preview-tts |
-| Discord API | OAuth2, guild member list, webhook pings | discord.com |
-| YouTube API | Live stream status | googleapis.com |
-| PostHog Cloud | Analytics and error tracking | us.i.posthog.com |
+| API               | Usage                                            | Endpoint                     |
+| ----------------- | ------------------------------------------------ | ---------------------------- |
+| Project Amber     | Character and version data, synced every 14 days | gi.yatta.moe                 |
+| Enka Network      | Character showcase auto-fetch                    | enka.network                 |
+| Astral/Enka Embed | Character card rendering                         | git.dgnr.us/astral/api       |
+| SlipOK            | PromptPay slip verification                      | configurable                 |
+| Sastify           | TrueMoney voucher redemption                     | api.sastify.xyz              |
+| Google Gemini     | TTS for donation announcements                   | gemini-2.5-flash-preview-tts |
+| Discord API       | OAuth2, guild member list, webhook pings         | discord.com                  |
+| YouTube API       | Live stream status                               | googleapis.com               |
+| PostHog Cloud     | Analytics and error tracking                     | us.i.posthog.com             |
 
 ## Database Schemas (PostgreSQL)
 
-| Schema | Tables | Domain |
-|---|---|---|
-| `public` | characters, versions, settings, guides, cdn, auditLog, user, session, account, verification | Core data (characters, auth, CDN, settings) |
-| `artifact` | submissions, cards, settings | Artifact review queue |
-| `endgame` | submissions, sarchive, expired, slips, settings, discord, types | Rubgram service ordering |
-| `tierlist` | types, tiers, columns, badges, versions, states | Tier rankings |
-| `donate` | donations | Donation records |
+| Schema     | Tables                                                                                      | Domain                                      |
+| ---------- | ------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `public`   | characters, versions, settings, guides, cdn, auditLog, user, session, account, verification | Core data (characters, auth, CDN, settings) |
+| `artifact` | submissions, cards, settings                                                                | Artifact review queue                       |
+| `endgame`  | submissions, sarchive, expired, slips, settings, discord, types                             | Rubgram service ordering                    |
+| `tierlist` | types, tiers, columns, badges, versions, states                                             | Tier rankings                               |
+| `donate`   | donations                                                                                   | Donation records                            |
 
 ## Contributing
 
 ### Prerequisites
+
 - Bun, Docker & Docker Compose
 
 ### Setup
+
 1. Clone the repo.
 2. Copy `.env.example` to `.env` and fill in secrets (or use `dev/.env.development` for local defaults).
 3. Start the dev environment:
@@ -357,32 +359,35 @@ All widgets are SSE-driven, auto-updating, and designed for streaming overlays.
 5. Seeded admin account: `admin@dgnr.us` / `youshallnotpass` (set via `INITIAL_ADMIN_PWD`).
 
 ### Useful commands
-| Command | What it does |
-|---|---|
-| `bun dev` | Start full dev environment |
-| `bun ds` | Open devshell |
-| `bun run lint` | oxlint |
-| `bun run format` | oxfmt |
-| `bun run build` | Production build (Turbopack) |
-| `bun dr` | drizzle-kit (generate, push, studio) |
-| `bun ba` | better-auth CLI |
+
+| Command          | What it does                         |
+| ---------------- | ------------------------------------ |
+| `bun dev`        | Start full dev environment           |
+| `bun ds`         | Open devshell                        |
+| `bun run lint`   | oxlint                               |
+| `bun run format` | oxfmt                                |
+| `bun run build`  | Production build (Turbopack)         |
+| `bun dr`         | drizzle-kit (generate, push, studio) |
+| `bun ba`         | better-auth CLI                      |
 
 ### Code style
+
 - Linting: oxlint (with tailwind and tsgo plugins), oxfmt
 - All row IDs are UUIDv7
 - PostgreSQL schemas for domain separation (`public`, `artifact`, `endgame`, `tierlist`, `donate`)
 - New features should follow existing patterns: SSE for real-time, Zod for validation, server actions for mutations
 
 ### Project structure
-| Path | Contents |
-|---|---|
-| `app/(ui)/` | Public pages (donate, artifact, rubgram, tierlist, guide, admin, login) |
-| `app/api/` | API routes (auth, payments, TTS, Amber sync, card rendering) |
-| `app/widget/` | Embeddable OBS overlays |
-| `app/sse/` | Server-Sent Events streaming endpoints |
-| `backend/` | Standalone Bun backend (cron jobs, Discord webhooks, DB seeding) |
-| `lib/db/` | Database schema, SSE endpoint definitions, Redis client |
-| `components/` | Shared UI primitives (shadcn/ui) |
+
+| Path          | Contents                                                                |
+| ------------- | ----------------------------------------------------------------------- |
+| `app/(ui)/`   | Public pages (donate, artifact, rubgram, tierlist, guide, admin, login) |
+| `app/api/`    | API routes (auth, payments, TTS, Amber sync, card rendering)            |
+| `app/widget/` | Embeddable OBS overlays                                                 |
+| `app/sse/`    | Server-Sent Events streaming endpoints                                  |
+| `backend/`    | Standalone Bun backend (cron jobs, Discord webhooks, DB seeding)        |
+| `lib/db/`     | Database schema, SSE endpoint definitions, Redis client                 |
+| `components/` | Shared UI primitives (shadcn/ui)                                        |
 
 ## Deployment
 
@@ -397,12 +402,13 @@ Push to `main` or `dev` triggers `.github/workflows/build.yml`:
 
 ### Production stack (Docker Swarm)
 
-| Service | Replicas | Resources | Notes |
-|---|---|---|---|
-| Frontend | 2 | 1 CPU / 1 GB RAM | Healthcheck on `:3000`, autoscaling label |
-| Backend | 1 | 1 CPU / 512 MB RAM | `NO_AUTH_CHECK=true` env, auto-rollback on failure |
+| Service  | Replicas | Resources          | Notes                                              |
+| -------- | -------- | ------------------ | -------------------------------------------------- |
+| Frontend | 2        | 1 CPU / 1 GB RAM   | Healthcheck on `:3000`, autoscaling label          |
+| Backend  | 1        | 1 CPU / 512 MB RAM | `NO_AUTH_CHECK=true` env, auto-rollback on failure |
 
 Infrastructure dependencies:
+
 - PostgreSQL database (managed externally)
 - Redis instance for SSE pub/sub and caching
 - Nginx reverse proxy with SSE optimizations (buffering off, 200s read timeout)
@@ -412,17 +418,17 @@ Infrastructure dependencies:
 
 Required variables (~30 total, see `.env.example`):
 
-| Category | Variables |
-|---|---|
-| Database | `DATABASE_URL`, `REDIS_URL` |
-| Auth | `BETTER_AUTH_SECRET` |
-| Rubgram payments | `SLIPOK_API_URL`, `SLIPOK_API_KEY` |
-| Donation payments | `TMN_DEST_PHONE_NUM`, `SASTIFY_API_PRIVKEY` |
-| TTS | `GEMINI_TTS_API_KEY` |
-| Widget | `DONATE_WIDGET_KEY` |
-| Discord | `DISCORD_BOT_TOKEN`, `DISCORD_CLIENT_*`, `DISCORD_GUILD_ID`, `DISCORD_WEBHOOK_URL` |
-| YouTube | `YOUTUBE_CHANNEL_ID`, `YOUTUBE_API_KEY` |
-| Analytics | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` |
+| Category          | Variables                                                                          |
+| ----------------- | ---------------------------------------------------------------------------------- |
+| Database          | `DATABASE_URL`, `REDIS_URL`                                                        |
+| Auth              | `BETTER_AUTH_SECRET`                                                               |
+| Rubgram payments  | `SLIPOK_API_URL`, `SLIPOK_API_KEY`                                                 |
+| Donation payments | `TMN_DEST_PHONE_NUM`, `SASTIFY_API_PRIVKEY`                                        |
+| TTS               | `GEMINI_TTS_API_KEY`                                                               |
+| Widget            | `DONATE_WIDGET_KEY`                                                                |
+| Discord           | `DISCORD_BOT_TOKEN`, `DISCORD_CLIENT_*`, `DISCORD_GUILD_ID`, `DISCORD_WEBHOOK_URL` |
+| YouTube           | `YOUTUBE_CHANNEL_ID`, `YOUTUBE_API_KEY`                                            |
+| Analytics         | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`                                                |
 
 ## Developers
 
