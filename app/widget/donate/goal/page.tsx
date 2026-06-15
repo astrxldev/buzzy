@@ -80,7 +80,7 @@ export default function TopDonateWidget() {
       <motion.div
         className="absolute inset-1.5 rounded-full bg-linear-to-b from-[#FD0000] to-[#830000]"
         animate={{
-          width: `calc(${Math.min(1, Number(bar.amount) / bar.goal) * 100}% - 12px)`,
+          width: `calc(6px + ${Math.min(1, Number(bar.amount) / bar.goal)} * (100% - 12px))`,
         }}
         initial={{
           width: 0,
