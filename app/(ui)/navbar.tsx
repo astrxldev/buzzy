@@ -44,7 +44,7 @@ export function Navbar() {
       />
       <Item icon={<Table size={16} />} name="จัดเทียร์ลิสต์" href="/tl" />
       <Item icon={<StickyNote size={16} />} name="ไกด์ตัวละคร" href="/guide" />
-      <Item icon={<Bitcoin size={16} />} name="โดเนทขึ้นจอ" href="/donate" last />
+      <Item icon={<Bitcoin size={16} />} name="โดเนท" href="/donate" last />
     </div>
   );
 }

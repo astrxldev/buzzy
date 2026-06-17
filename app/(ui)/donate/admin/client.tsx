@@ -26,10 +26,10 @@ import { sse } from "@/lib/db/sse-endpoints";
 import { useRouter } from "next/navigation";
 
 const columns: ColumnDef<typeof donations.$inferSelect>[] = [
-  { accessorKey: "name", header: "Name", meta: { className: "w-50 truncate" } },
+  { accessorKey: "name", header: "ชื่อ", meta: { className: "w-50 truncate" } },
   {
     accessorFn: (row) => `${row.amount}฿`,
-    header: "Amount",
+    header: "จำนวน",
     meta: { className: "w-24" },
   },
   {
@@ -57,7 +57,7 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
         </div>
       );
     },
-    header: "Message",
+    header: "ข้อความ",
     meta: { className: "w-full" },
   },
   {
@@ -95,7 +95,7 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
     cell(row) {
       return (
         <div className="flex gap-1">
-          <SimpleTooltip text="Re-send Popup">
+          <SimpleTooltip text="แสดง Popup อีกครั้ง">
             <ActionButton
               variant="outline"
               size="icon-sm"
@@ -110,7 +110,7 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
             </ActionButton>
           </SimpleTooltip>
           {row.row.original.uid ? (
-            <SimpleTooltip text="Copy Artifact UID">
+            <SimpleTooltip text="ก็อบ UID">
               <ActionButton
                 size="icon-sm"
                 action={() =>
@@ -124,7 +124,7 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
             <div className="size-8" />
           )}
           {row.row.original.image && (
-            <SimpleTooltip text="Open Image">
+            <SimpleTooltip text="เปิดภาพ">
               <ActionButton
                 size="icon-sm"
                 variant="outline"
@@ -168,7 +168,7 @@ export function DonateAdminPage({
     <div className="mx-auto flex w-full max-w-[max(1280px,90%)] flex-col">
       <span className="flex items-center gap-1 pt-1 pb-2 text-3xl font-semibold">
         <BitcoinIcon size={32} />
-        Donate List
+        โดเนททั้งหมด
       </span>
       <DataTable
         columns={columns}
