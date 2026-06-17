@@ -106,7 +106,7 @@ export function CalendarClient({
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" asChild>
-            <Link href={prevHref}>
+            <Link href={prevHref} prefetch>
               <ChevronLeft />
             </Link>
           </Button>
@@ -114,7 +114,7 @@ export function CalendarClient({
             {monthLabel}
           </span>
           <Button variant="outline" size="icon" asChild>
-            <Link href={nextHref}>
+            <Link href={nextHref} prefetch>
               <ChevronRight />
             </Link>
           </Button>
