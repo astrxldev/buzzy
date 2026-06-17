@@ -2,7 +2,7 @@ import { env } from "node:process";
 import { cron, redis } from "bun";
 import { formatDistanceToNow } from "date-fns";
 import { and, asc, eq, gt, isNull, lt, not, sql } from "drizzle-orm";
-import { archive, removeExpiredSubmissions } from "@/app/(ui)/rubgram/api";
+import { removeExpiredSubmissions } from "@/app/(ui)/rubgram/api";
 import { auth, issueInternalToken } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
@@ -271,13 +271,6 @@ async function cacheCards() {
     schedule(60, cacheCards);
   } else schedule(120, cacheCards);
 }
-
-cron("0 0 1 * *", async function rubgramArchive() {
-  const { log } = logger("rubgramArchive");
-  log("Started...");
-  await archive({});
-  log("Done");
-});
 
 cron("0 0 */14 * *", async function syncAmber() {
   const { log, error } = logger("syncAmber");

@@ -159,21 +159,8 @@ export const endgameSubmissions = endgame.table("submissions", {
           isNotNull(endgameSubmissions.slip),
         )!,
     ),
-  archived: boolean().notNull().default(false),
-});
-
-export const endgameArchive = endgame.table("sarchive", {
-  id: text().primaryKey(),
-  name: text().notNull(),
-  user: text().notNull(),
-  queue: integer().notNull(),
-  price: integer().notNull(),
-  slip: text().references(() => endgameSlips.id),
-  round: integer().notNull(),
-  service: text()
-    .references(() => endgameTypes.id)
-    .array()
-    .notNull(),
+  deleted: boolean().notNull().default(false),
+  submit_day: timestamp().notNull().defaultNow(),
 });
 
 // expired submission
@@ -207,6 +194,7 @@ export const endgameSettings = endgame.table("settings", {
   limit: integer().notNull().default(-1),
   free: integer().notNull().default(0),
   allDiscount: integer().notNull().default(10),
+  monthly: jsonb().$type<Record<string, boolean>>().notNull().default({}),
 });
 
 export const endgameDiscord = endgame.table("discord", {

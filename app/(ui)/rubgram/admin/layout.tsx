@@ -28,8 +28,13 @@ import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { endgameSubmissions } from "@/lib/db/schema";
 import { getEndgameConfig, random, wipe } from "../api";
-import { LimitManager, SlipButton, SubmissionList, Watcher } from "./client";
-import { desc, sql } from "drizzle-orm";
+import {
+  CalendarButton,
+  LimitManager,
+  SubmissionList,
+  Watcher,
+} from "./client";
+import { sql } from "drizzle-orm";
 import Link from "next/link";
 import { ErrorBoundary } from "next/dist/client/components/error-boundary";
 import { ErrorModal } from "@/components/error";
@@ -48,21 +53,19 @@ export default async function AdminLayout({
       id: endgameSubmissions.id,
       name: endgameSubmissions.name,
       checked: endgameSubmissions.checked,
-      queue: endgameSubmissions.queue,
       publicQueue: sql<number>`
         ${endgameSubmissions.queue} - (
-          select count(*)
+          select count(*)::int
           from ${endgameSubmissions} e2
-          where e2.checked = true
-            and e2.queue < ${endgameSubmissions.queue}
-            or  e2.archived
+          where (e2.checked and e2.queue < endgame.submissions.queue)
+             or e2.deleted
         )
       `,
       paid: endgameSubmissions.paid,
-      archived: endgameSubmissions.archived,
+      deleted: endgameSubmissions.deleted,
     })
     .from(endgameSubmissions)
-    .orderBy(desc(endgameSubmissions.archived), endgameSubmissions.id);
+    .orderBy(endgameSubmissions.deleted, endgameSubmissions.id);
   const config = await getEndgameConfig();
   return (
     <SidebarProvider>
@@ -84,7 +87,7 @@ export default async function AdminLayout({
               >
                 <Dice5 size={24} className="size-6" />
               </Button>
-              <SlipButton />
+              <CalendarButton />
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="ghost" size="icon" className="size-8">

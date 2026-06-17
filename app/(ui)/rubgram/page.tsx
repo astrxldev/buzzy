@@ -87,7 +87,7 @@ export default async function EndgamePage() {
               select count(*)
               from ${endgameSubmissions} e2
               where e2.checked = true
-                and e2.queue < ${endgameSubmissions.queue}
+                and e2.queue < endgame.submissions.queue
             )
           `,
           paid: endgameSubmissions.paid,
@@ -104,7 +104,7 @@ export default async function EndgamePage() {
                 gt(endgameSubmissions.expires, new Date()),
               ),
             ),
-            not(endgameSubmissions.archived),
+            not(endgameSubmissions.deleted),
           ),
         )
     : [];
