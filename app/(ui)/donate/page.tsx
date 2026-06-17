@@ -36,6 +36,7 @@ import { DownloadButton } from "../rubgram/client";
 import { getPostHogClient } from "@/lib/posthog-server";
 import { sql } from "drizzle-orm";
 import DonateLogo from "#/logos/donate.webp";
+import Link from 'next/link';
 
 const { TMN_DEST_PHONE_NUM, SASTIFY_API_PRIVKEY } = process.env as Record<
   string,
@@ -263,11 +264,13 @@ export default async function () {
       <div className="w-full max-w-md rounded-md border bg-card p-5">
         {/* oxlint-disable-next-line tailwindcss/enforce-canonical */}
         <div className="relative aspect-[304.5/30] w-full">
-          <Image
-            src={DonateLogo}
-            alt="Donate Logo"
-            className="absolute left-1/2 w-3/4 -translate-x-1/2 -translate-y-2/3"
-          />
+          <Link href="/">
+            <Image
+              src={DonateLogo}
+              alt="Donate Logo"
+              className="absolute left-1/2 w-3/4 -translate-x-1/2 -translate-y-2/3"
+            />
+          </Link>
         </div>
         <FormProvider id="tip" inDialog={false} onSubmit={submit}>
           <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-end">
