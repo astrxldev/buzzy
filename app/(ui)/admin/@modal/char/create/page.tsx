@@ -213,3 +213,5 @@ export default async function CharacterCreatePage() {
     </ModalBase>
   );
 }
+
+export const dynamic = "force-dynamic";

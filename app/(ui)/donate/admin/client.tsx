@@ -14,6 +14,7 @@ import {
   BugPlay,
   ChevronsLeftRightEllipsis,
   Copy,
+  Goal,
   ImageIcon,
   MessageCircleWarning,
 } from "lucide-react";
@@ -24,6 +25,8 @@ import { useEffect } from "react";
 import posthog from "posthog-js";
 import { sse } from "@/lib/db/sse-endpoints";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const columns: ColumnDef<typeof donations.$inferSelect>[] = [
   { accessorKey: "name", header: "ชื่อ", meta: { className: "w-50 truncate" } },
@@ -88,6 +91,13 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
             >
               <ChevronsLeftRightEllipsis />
             </ActionButton>
+          </SimpleTooltip>
+          <SimpleTooltip text="Set Goal">
+            <Button asChild variant="outline" size="icon-sm">
+              <Link href="/donate/admin/goal">
+                <Goal />
+              </Link>
+            </Button>
           </SimpleTooltip>
         </div>
       );

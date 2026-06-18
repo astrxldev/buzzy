@@ -8,7 +8,6 @@ import { actionLog } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
-  endgameArchive,
   endgameDiscord,
   endgameExpired,
   endgameSettings,
@@ -23,52 +22,15 @@ import { checkSlip } from "@/lib/payment";
 const { DISCORD_WEBHOOK_URL, DISCORD_CLIENT_ID, BASE_URL } =
   process.env as Record<string, string>;
 
-export async function archive({ onlyChecked = true, copy = true }) {
-  if (!(await adminCheck())) throw "Unauthorized";
-  await db.transaction(async (tx) => {
-    const deleted = await (
-      copy
-        ? tx
-            .update(endgameSubmissions)
-            .set({
-              archived: true,
-            })
-            .returning()
-        : tx.delete(endgameSubmissions).returning()
-    ).where(
-      and(
-        onlyChecked ? eq(endgameSubmissions.checked, true) : undefined,
-        not(endgameSubmissions.archived),
-      ),
-    );
-    if (!onlyChecked && !copy)
-      await tx.execute(
-        sql`ALTER SEQUENCE endgame.submissions_queue_seq RESTART WITH 1`,
-      );
-    const [{ maxRound }] = await tx
-      .select({ maxRound: sql<number>`MAX(${endgameArchive.round})` })
-      .from(endgameArchive);
-    await tx.insert(endgameArchive).values(
-      deleted
-        .filter((e) => e.paid)
-        .map((s) => ({
-          ...s,
-          round: maxRound + 1,
-        })),
-    );
-  });
-}
-
 export async function wipe() {
   if (!(await adminCheck())) throw "Unauthorized";
-  await archive({ onlyChecked: false });
+  await db.update(endgameSubmissions).set({ deleted: true });
   revalidatePath("/rubgram/admin");
   revalidatePath("/rubgram");
 
   sse.rubgram.pub("update", { type: "wipe" });
 
   await actionLog(`Deleted rubgram submissions`);
-  redirect("/rubgram/admin");
 }
 
 export async function random() {
@@ -165,6 +127,23 @@ export async function setFree(free: number) {
   await actionLog(`Set rubgram free submission amount to ${free}`);
 }
 
+export async function toggleMonth(month: string) {
+  if (!(await adminCheck())) throw "Unauthorized";
+  const [s] = await db
+    .select({ monthly: endgameSettings.monthly })
+    .from(endgameSettings)
+    .limit(1);
+  const monthly = {
+    ...(s?.monthly ?? {}),
+    [month]: !(s?.monthly?.[month] ?? false),
+  };
+  await db
+    .update(endgameSettings)
+    .set({ monthly })
+    .where(eq(endgameSettings.id, true));
+  revalidatePath("/rubgram/admin/calendar");
+}
+
 export async function getEndgameConfig() {
   const [ngm]: (typeof endgameSettings.$inferSelect | undefined)[] = await db
     .select()
@@ -222,7 +201,7 @@ export async function submitEndgame(formData: FormData) {
     .where(
       and(
         eq(endgameSubmissions.user, user),
-        not(endgameSubmissions.archived),
+        not(endgameSubmissions.deleted),
         not(endgameSubmissions.checked),
         not(endgameSubmissions.paid),
       ),
@@ -265,7 +244,9 @@ export async function submitEndgamePayment(formData: FormData) {
     const [s] = await tx
       .select()
       .from(endgameSubmissions)
-      .where(eq(endgameSubmissions.id, sid))
+      .where(
+        and(eq(endgameSubmissions.id, sid), not(endgameSubmissions.deleted)),
+      )
       .limit(1);
     const [a] = await tx
       .select()
@@ -410,9 +391,10 @@ export async function removeExpiredSubmissions() {
 }
 
 export async function cancel(sid: string) {
-  await db.delete(endgameSubmissions).where(eq(endgameSubmissions.id, sid));
-
-  await removeExpiredSubmissions();
+  await db
+    .update(endgameSubmissions)
+    .set({ deleted: true })
+    .where(eq(endgameSubmissions.id, sid));
 
   sse.rubgram.pub("update", { type: "cancel" });
 

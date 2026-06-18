@@ -103,3 +103,5 @@ export default async function TlTypeCreatePage() {
     </ModalBase>
   );
 }
+
+export const dynamic = "force-dynamic";

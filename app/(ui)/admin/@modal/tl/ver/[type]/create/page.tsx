@@ -189,3 +189,5 @@ export default async function TlVersionCreatePage({
     </ModalBase>
   );
 }
+
+export const dynamic = "force-dynamic";

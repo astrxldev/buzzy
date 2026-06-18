@@ -2,11 +2,30 @@
 
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { donations } from "@/lib/db/schema";
+import { donations, settings } from "@/lib/db/schema";
 import { sse } from "@/lib/db/sse-endpoints";
 import { fileToDataUrl } from "@/lib/utils";
 import { eq } from "drizzle-orm";
 import { getPostHogClient } from "@/lib/posthog-server";
+
+export async function resetGoal() {
+  if (!(await adminCheck())) throw new Error("Unauthorized");
+
+  getPostHogClient().capture({
+    distinctId: "admin",
+    event: "donation_admin_goal_reset",
+  });
+
+  await db
+    .insert(settings)
+    .values({ donateGoalStarting: new Date() })
+    .onConflictDoUpdate({
+      target: settings.id,
+      set: { donateGoalStarting: new Date() },
+    });
+
+  sse.donate.pub("update", null);
+}
 
 export async function testPopup() {
   if (!(await adminCheck())) throw new Error("Unauthorized");

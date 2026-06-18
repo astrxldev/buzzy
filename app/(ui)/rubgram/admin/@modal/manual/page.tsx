@@ -160,3 +160,5 @@ export default async function RgManualCreateModal() {
     </ModalBase>
   );
 }
+
+export const dynamic = "force-dynamic";

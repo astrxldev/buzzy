@@ -1,7 +1,7 @@
 "use client";
 
 import { useProgress } from "@bprogress/next";
-import { Lock, Logs, Unlock } from "lucide-react";
+import { Calendar, Lock, Unlock } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -72,7 +72,8 @@ export function SidebarLink({
         }
       }}
     >
-      {submission.queue}. {submission.name}
+      {submission.checked ? <div className="px-1" /> : `${submission.queue}. `}
+      {submission.name}
       <SidebarMenuBadge className="pointer-events-auto">
         <Checkbox
           className="mr-2"
@@ -251,10 +252,9 @@ export function SubmissionList({
     id: string;
     name: string;
     checked: boolean;
-    queue: number;
     publicQueue: number;
     paid: boolean;
-    archived: boolean;
+    deleted: boolean;
   }[];
 }) {
   const [query, setQuery] = useState("");
@@ -277,18 +277,18 @@ export function SubmissionList({
       {subs
         .filter(
           (s) =>
-            (debug || (s.paid && !s.archived)) &&
-            (s.queue + s.name).toLowerCase().includes(query),
+            (debug || (s.paid && !s.deleted)) &&
+            (s.publicQueue + s.name).toLowerCase().includes(query),
         )
         .map((s) => (
           <SidebarMenuButton
             key={s.id}
             asChild
-            className={cn(((debug && !s.paid) || s.archived) && "opacity-50")}
+            className={cn(((debug && !s.paid) || s.deleted) && "opacity-50")}
           >
             <SidebarLink
-              submission={debug ? s : { ...s, queue: s.publicQueue }}
-              prefetch={!s.archived}
+              submission={{ ...s, queue: s.publicQueue }}
+              prefetch={!s.deleted}
             />
           </SidebarMenuButton>
         ))}
@@ -324,23 +324,18 @@ export function Watcher() {
   return <div></div>;
 }
 
-export function SlipButton() {
+export function CalendarButton() {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8"
-          onClick={() => {
-            window.location.href = "/rubgram/admin/slip";
-          }}
-        >
-          <Logs size={24} className="size-6" />
+        <Button variant="ghost" size="icon" className="size-8" asChild>
+          <Link href="/rubgram/admin/calendar">
+            <Calendar size={24} className="size-6" />
+          </Link>
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        <p>All time คิว</p>
+        <p>ปฏิทินคิว</p>
       </TooltipContent>
     </Tooltip>
   );
