@@ -57,6 +57,12 @@ jobs:
           docker push mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG &
           wait
 
+      - name: Install kubectl
+        run: |
+          curl -sLO "https://dl.k8s.io/release/v1.35.0/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          mv kubectl /usr/local/bin/kubectl
+
       - name: Deploy to k3s
         run: |
           TAG=${{ gitea.sha }}
