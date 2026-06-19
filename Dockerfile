@@ -71,5 +71,6 @@ COPY --from=builder /home/container/util ./util
 COPY --from=builder /home/container/lib ./lib
 COPY --from=builder /home/container/tsconfig.json ./tsconfig.json
 COPY --from=builder /home/container/.version ./.version
+COPY --from=builder /home/container/drizzle.config.ts ./drizzle.config.ts
 
 CMD ["bun", "start"]
