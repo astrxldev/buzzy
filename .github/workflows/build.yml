@@ -80,7 +80,7 @@ jobs:
           kubectl create job db-migrate \
             --image=mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG \
             -n buzz \
-            --command -- bun dr push
+            -- bun dr push
           kubectl wait --for=condition=complete job/db-migrate -n buzz --timeout=120s
 
           # Roll app & backend
