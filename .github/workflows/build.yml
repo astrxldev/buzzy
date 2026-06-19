@@ -86,3 +86,5 @@ jobs:
           # Roll app & backend
           kubectl set image deployment/app app=mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG -n buzz
           kubectl set image deployment/backend backend=mts.dgnr.us:5000/${{ gitea.repository }}:backend-$TAG -n buzz
+          kubectl rollout status deployment/app -n buzz --timeout=120s
+          kubectl rollout status deployment/backend -n buzz --timeout=120s
