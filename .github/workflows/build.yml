@@ -59,9 +59,17 @@ jobs:
 
       - name: Install kubectl
         run: |
-          curl -sLO "https://dl.k8s.io/release/v1.35.0/bin/linux/amd64/kubectl"
+          ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+          curl -sLO "https://dl.k8s.io/release/v1.35.0/bin/linux/${ARCH}/kubectl"
           chmod +x kubectl
           mv kubectl /usr/local/bin/kubectl
+
+      - name: Configure kubectl
+        run: |
+          kubectl config set-cluster buzz --server=https://100.75.220.33:6443 --insecure-skip-tls-verify=true
+          kubectl config set-credentials ci-deployer --token=${{ secrets.KUBE_TOKEN }}
+          kubectl config set-context buzz --cluster=buzz --user=ci-deployer --namespace=buzz
+          kubectl config use-context buzz
 
       - name: Deploy to k3s
         run: |
