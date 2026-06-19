@@ -57,13 +57,34 @@ jobs:
           docker push mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG &
           wait
 
-      - name: Deploy to production
+      - name: Install kubectl
+        run: |
+          ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+          curl -sLO "https://dl.k8s.io/release/v1.35.0/bin/linux/${ARCH}/kubectl"
+          chmod +x kubectl
+          mv kubectl /usr/local/bin/kubectl
+
+      - name: Configure kubectl
+        run: |
+          kubectl config set-cluster buzz --server=https://100.75.220.33:6443 --insecure-skip-tls-verify=true
+          kubectl config set-credentials ci-deployer --token=${{ secrets.KUBE_TOKEN }}
+          kubectl config set-context buzz --cluster=buzz --user=ci-deployer --namespace=buzz
+          kubectl config use-context buzz
+
+      - name: Deploy to k3s
         run: |
           TAG=${{ gitea.sha }}
 
-          docker service update \
-            --image mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG \
-            buzz_app
-          docker service update \
-            --image mts.dgnr.us:5000/${{ gitea.repository }}:backend-$TAG \
-            buzz_backend
+          # DB migration
+          kubectl delete job db-migrate -n buzz --ignore-not-found
+          kubectl create job db-migrate \
+            --image=mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG \
+            -n buzz \
+            -- bun dr push
+          kubectl wait --for=condition=complete job/db-migrate -n buzz --timeout=180s
+
+          # Roll app & backend
+          kubectl set image deployment/app app=mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG -n buzz
+          kubectl set image deployment/backend backend=mts.dgnr.us:5000/${{ gitea.repository }}:backend-$TAG -n buzz
+          kubectl rollout status deployment/app -n buzz --timeout=180s
+          kubectl rollout status deployment/backend -n buzz --timeout=180s

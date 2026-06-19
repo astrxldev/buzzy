@@ -449,8 +449,7 @@ export function TierList({
               >
                 <span>
                   {type.name} เวอร์ชั่น {version.name} ระดับ
-                  <span className="text-yellow-400">{type.mode}</span>{" "}
-                  ใช้ได้ถึง{" "}
+                  <span className="text-yellow-400">{type.mode}</span> ใช้ได้ถึง{" "}
                 </span>
                 <span className="text-green-400">{version.deprecates}</span>
                 {deleteMode && (

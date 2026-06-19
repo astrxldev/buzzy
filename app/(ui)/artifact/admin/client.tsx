@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { MaybeWrap } from "@/components/action-button";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -23,6 +24,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { Input } from "@/components/ui/input";
 import {
   SidebarMenu,
@@ -40,12 +46,6 @@ import { setLimit, toggleCheck, toggleLock } from "@/lib/api";
 import { shared } from "@/lib/comms";
 import { sse } from "@/lib/db/sse-endpoints";
 import { cn } from "@/lib/utils";
-import { MaybeWrap } from "@/components/action-button";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
 
 export function SidebarLink({
   submission,

@@ -1,12 +1,12 @@
 "use server";
 
+import { eq } from "drizzle-orm";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { donations, settings } from "@/lib/db/schema";
 import { sse } from "@/lib/db/sse-endpoints";
-import { fileToDataUrl } from "@/lib/utils";
-import { eq } from "drizzle-orm";
 import { getPostHogClient } from "@/lib/posthog-server";
+import { fileToDataUrl } from "@/lib/utils";
 
 export async function resetGoal() {
   if (!(await adminCheck())) throw new Error("Unauthorized");

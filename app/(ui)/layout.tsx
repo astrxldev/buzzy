@@ -1,3 +1,4 @@
+import { Anuphan } from "next/font/google";
 import { ViewTransition } from "react";
 import { Toaster } from "sonner";
 import Background from "#/bg.webp";
@@ -5,7 +6,6 @@ import Image from "@/components/image";
 import { StarsRenderer } from "@/components/stars";
 import Providers, { VersionCheck } from "../client";
 import { Navbar } from "./navbar";
-import { Anuphan } from "next/font/google";
 
 const anuphan = Anuphan({
   variable: "--font-anuphan",

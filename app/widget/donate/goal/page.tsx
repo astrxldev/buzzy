@@ -1,10 +1,10 @@
 "use client";
 
-import { sse } from "@/lib/db/sse-endpoints";
-import { useEffect, useRef, useState } from "react";
-import { getDonateBar } from "./api";
 import { motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
+import { sse } from "@/lib/db/sse-endpoints";
 import { pausePass } from "@/lib/utils";
+import { getDonateBar } from "./api";
 
 type Data = Awaited<ReturnType<typeof getDonateBar>>;
 

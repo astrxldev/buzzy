@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: buzz
+
+resources:
+  - namespace.yaml
+  - deployment-app.yaml
+  - service-app.yaml
+  - deployment-backend.yaml
+  - ingress.yaml
+  - middleware.yaml
+  - hpa.yaml
+  - pdb.yaml
+  - service-account.yaml
+  - role.yaml
+  - role-binding.yaml

@@ -21,21 +21,6 @@ COPY patches ./patches
 # Install into cache, then persist into real node_modules
 RUN --mount=type=cache,target=/root/.bun bun install --frozen-lockfile
 
-### Stage N: drizzle ###
-FROM oven/bun:canary-alpine as drizzle
-
-# Isolation
-RUN adduser -Du 1001 container
-USER container
-WORKDIR /home/container
-COPY --from=deps /home/container/node_modules ./node_modules
-COPY --from=deps /home/container/package*.json ./
-COPY --from=deps /home/container/bun.lock ./
-COPY --chown=1001 ./drizzle.config.ts ./.env ./
-COPY --chown=1001 ./lib/db ./lib/db
-
-RUN bun dr push
-
 ### Stage 2: builder ###
 FROM oven/bun:canary-alpine AS builder
 
@@ -86,5 +71,6 @@ COPY --from=builder /home/container/util ./util
 COPY --from=builder /home/container/lib ./lib
 COPY --from=builder /home/container/tsconfig.json ./tsconfig.json
 COPY --from=builder /home/container/.version ./.version
+COPY --from=builder /home/container/drizzle.config.ts ./drizzle.config.ts
 
 CMD ["bun", "start"]

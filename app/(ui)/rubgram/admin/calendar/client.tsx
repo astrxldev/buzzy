@@ -16,7 +16,6 @@ import Link from "next/link";
 import { useMemo, useTransition } from "react";
 import { toast } from "sonner";
 import { SimpleTooltip } from "@/components/tooltip";
-import { toggleMonth } from "../../api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +33,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { toggleMonth } from "../../api";
+
 type Row = {
   id: string;
   name: string;
