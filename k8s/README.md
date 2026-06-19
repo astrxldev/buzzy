@@ -55,8 +55,9 @@
 - **Redis**: redis-operator. `REDIS_URL` in Secret points to the Redis operator's endpoint.
 
 ### Container Registry
-- Same private registry `mts.dgnr.us:5000` running on the k3s control plane node.
-- All nodes must be able to pull from it. If registry uses HTTP (no TLS), configure `containerd` registries mirror or set `system-default-registry` in k3s.
+- **Zot** running in-cluster (namespace `registry`), exposed via ServiceLB on host port 5000.
+- All k3s nodes have `/etc/rancher/k3s/registries.yaml` mirroring `mts.dgnr.us:5000` → `http://localhost:5000` (svclb binds host port 5000). k3s must be restarted after writing this file.
+- CI runner pushes to `mts.dgnr.us:5000` (Tailscale → `100.75.220.33` → svclb → zot pod).
 
 ### Resource Limits
 - **app**: 2 replicas, limits 1 CPU / 1 Gi memory, requests 500m / 512 Mi. Liveness probe on `/api/health` (60s interval). Readiness probe same.
@@ -82,6 +83,17 @@ kubectl apply -k k8s/
 # In .github/workflows/build.yml
 TAG=${{ gitea.sha }}
 
+# Install kubectl (arch-detected)
+ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+curl -sLO "https://dl.k8s.io/release/v1.35.0/bin/linux/${ARCH}/kubectl"
+chmod +x kubectl && mv kubectl /usr/local/bin/kubectl
+
+# Wire up kubeconfig
+kubectl config set-cluster buzz --server=https://100.75.220.33:6443 --insecure-skip-tls-verify=true
+kubectl config set-credentials ci-deployer --token=${{ secrets.KUBE_TOKEN }}
+kubectl config set-context buzz --cluster=buzz --user=ci-deployer --namespace=buzz
+kubectl config use-context buzz
+
 # DB migration
 kubectl delete job db-migrate -n buzz --ignore-not-found
 kubectl create job db-migrate \
@@ -93,6 +105,18 @@ kubectl wait --for=condition=complete job/db-migrate -n buzz --timeout=120s
 # Roll app & backend
 kubectl set image deployment/app app=mts.dgnr.us:5000/astral/buzz:frontend-$TAG -n buzz
 kubectl set image deployment/backend backend=mts.dgnr.us:5000/astral/buzz:backend-$TAG -n buzz
+```
+
+CI runner needs Gitea secret `KUBE_TOKEN` containing the `ci-deployer` SA token. Rotate via:
+```bash
+kubectl delete secret ci-deployer-token -n buzz && \
+  kubectl apply -f k8s/service-account.yaml && \
+  kubectl create secret generic ci-deployer-token \
+    --namespace buzz \
+    --type=kubernetes.io/service-account-token \
+    --annotation=kubernetes.io/service-account.name=ci-deployer
+# then get new token and update Gitea secret
+TOKEN=$(kubectl get secret ci-deployer-token -n buzz -o jsonpath='{.data.token}' | base64 -d)
 ```
 
 ## Files Changed from Swarm
