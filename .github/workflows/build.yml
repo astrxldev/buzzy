@@ -57,13 +57,18 @@ jobs:
           docker push mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG &
           wait
 
-      - name: Deploy to production
+      - name: Deploy to k3s
         run: |
           TAG=${{ gitea.sha }}
 
-          docker service update \
-            --image mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG \
-            buzz_app
-          docker service update \
-            --image mts.dgnr.us:5000/${{ gitea.repository }}:backend-$TAG \
-            buzz_backend
+          # DB migration
+          kubectl delete job db-migrate -n buzz --ignore-not-found
+          kubectl create job db-migrate \
+            --image=mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG \
+            -n buzz \
+            --command -- bun dr push
+          kubectl wait --for=condition=complete job/db-migrate -n buzz --timeout=120s
+
+          # Roll app & backend
+          kubectl set image deployment/app app=mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG -n buzz
+          kubectl set image deployment/backend backend=mts.dgnr.us:5000/${{ gitea.repository }}:backend-$TAG -n buzz

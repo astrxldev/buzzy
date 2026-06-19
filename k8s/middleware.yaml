@@ -1,0 +1,8 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: sse-optimizer
+  namespace: buzz
+spec:
+  buffering:
+    maxRequestBodyBytes: 104857600
