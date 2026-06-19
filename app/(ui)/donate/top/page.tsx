@@ -1,5 +1,6 @@
 import type { SQL } from "drizzle-orm";
 import { asc, desc, max, sql, sum } from "drizzle-orm";
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/lib/db";
@@ -7,7 +8,6 @@ import { donations } from "@/lib/db/schema";
 import { fileToDataUrl } from "@/lib/utils";
 import { Podium } from "./podium";
 import { TopDonateTable } from "./table";
-import type { Metadata } from "next";
 
 type NumberString = `${number}`;
 type NumberLike = number | NumberString;

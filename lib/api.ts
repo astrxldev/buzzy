@@ -1,6 +1,6 @@
 "use server";
 
-import { randomUUIDv7 } from "bun";
+import { fetch, randomUUIDv7 } from "bun";
 import { and, eq, inArray, isNotNull, lt, not, or, sql } from "drizzle-orm";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import { revalidatePath } from "next/cache";
@@ -9,6 +9,7 @@ import z from "zod";
 import { adminCheck } from "./auth";
 import { uidRegex } from "./const";
 import { db } from "./db";
+import { redis } from "./db/redis";
 import { cdnReferences } from "./db/references";
 import {
   artifactSettings,
@@ -23,8 +24,6 @@ import {
 } from "./db/schema";
 import { sse, tlSse } from "./db/sse-endpoints";
 import { b2s } from "./utils";
-import { redis } from "./db/redis";
-import { fetch } from "bun";
 
 export async function getCharacters(chars: string[]) {
   return await db
@@ -410,8 +409,11 @@ export async function actionLog(text: string, details?: unknown) {
 }
 
 export async function getAmberVh() {
-  const cached = await redis!.get("amber:vh");
-  if (cached) return cached;
+  try {
+    const cached = await redis?.get("amber:vh");
+    if (cached) return cached;
+  } catch {}
+
   const Schema = z.object({
     response: z.number().positive(),
     data: z.object({
@@ -425,6 +427,6 @@ export async function getAmberVh() {
       e.json(),
     ),
   );
-  queueMicrotask(() => redis!.setex("amber:vh", 86400, vh));
+  queueMicrotask(() => redis?.setex("amber:vh", 86400, vh));
   return vh;
 }

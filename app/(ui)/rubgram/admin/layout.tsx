@@ -1,5 +1,9 @@
+import { sql } from "drizzle-orm";
 import { Dice5, PlusIcon, Trash2 } from "lucide-react";
+import { ErrorBoundary } from "next/dist/client/components/error-boundary";
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ErrorModal } from "@/components/error";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,10 +38,6 @@ import {
   SubmissionList,
   Watcher,
 } from "./client";
-import { sql } from "drizzle-orm";
-import Link from "next/link";
-import { ErrorBoundary } from "next/dist/client/components/error-boundary";
-import { ErrorModal } from "@/components/error";
 
 export default async function AdminLayout({
   modal,

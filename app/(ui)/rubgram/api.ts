@@ -17,8 +17,9 @@ import {
   settings,
 } from "@/lib/db/schema";
 import { sse } from "@/lib/db/sse-endpoints";
-import { getPostHogClient } from "@/lib/posthog-server";
 import { checkSlip } from "@/lib/payment";
+import { getPostHogClient } from "@/lib/posthog-server";
+
 const { DISCORD_WEBHOOK_URL, DISCORD_CLIENT_ID, BASE_URL } =
   process.env as Record<string, string>;
 

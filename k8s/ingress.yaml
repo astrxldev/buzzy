@@ -4,9 +4,7 @@ metadata:
   name: app
   namespace: buzz
   annotations:
-    traefik.ingress.kubernetes.io/response-buffering: "false"
     traefik.ingress.kubernetes.io/read-timeout: "200"
-    traefik.ingress.kubernetes.io/router.middlewares: buzz-sse-optimizer@kubernetescrd
 spec:
   ingressClassName: traefik
   rules:

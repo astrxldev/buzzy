@@ -2,6 +2,8 @@ import { PlusIcon } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import z from "zod";
+import { th } from "zod/v4/locales";
+import { getDiscordUsers } from "@/app/api/discord/users/api";
 import {
   FormAction,
   FormInput,
@@ -12,6 +14,15 @@ import { ModalBase } from "@/components/modal";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { actionLog } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
@@ -22,19 +33,8 @@ import {
   endgameSubmissions,
   endgameTypes,
 } from "@/lib/db/schema";
-import { CurrencyInput, ServiceSelect, SlipUpload, UserSelect } from "./client";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type { SlipokResponse } from "../../../api";
-import { getDiscordUsers } from "@/app/api/discord/users/api";
-import { th } from "zod/v4/locales";
+import { CurrencyInput, ServiceSelect, SlipUpload, UserSelect } from "./client";
 
 const Schema = z.object({
   name: z.string(),

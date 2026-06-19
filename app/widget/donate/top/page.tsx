@@ -1,7 +1,7 @@
 "use client";
 
-import { sse } from "@/lib/db/sse-endpoints";
 import { useEffect, useRef, useState } from "react";
+import { sse } from "@/lib/db/sse-endpoints";
 import { getTopDonate } from "./api";
 
 type Data = Awaited<ReturnType<typeof getTopDonate>>;

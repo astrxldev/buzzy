@@ -1,13 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
+import Image from "next/image";
 import posthog from "posthog-js";
 import { useEffect, useRef, useState } from "react";
-import { VersionCheck } from "@/app/client";
-import { cn } from "@/lib/utils";
-import { sse } from "@/lib/db/sse-endpoints";
 import DefaultImage from "#/favicon.webp";
+import { VersionCheck } from "@/app/client";
+import { sse } from "@/lib/db/sse-endpoints";
+import { cn } from "@/lib/utils";
 import { markDone, markRunning } from "./api";
 
 type DonateData = {

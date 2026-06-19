@@ -1,4 +1,6 @@
 // oxlint-disable tailwindcss/no-unknown-classes
+
+import { isNotNull, sql } from "drizzle-orm";
 import { Kanit } from "next/font/google";
 import { Watcher } from "@/app/(ui)/artifact/admin/client";
 import { VersionCheck } from "@/app/client";
@@ -6,7 +8,6 @@ import AutoFitText from "@/components/fit";
 import { getArtifactConfig } from "@/lib/api";
 import { db } from "@/lib/db";
 import { submissions } from "@/lib/db/schema";
-import { isNotNull, sql } from "drizzle-orm";
 
 const kanit = Kanit({
   variable: "--font-kanit",
