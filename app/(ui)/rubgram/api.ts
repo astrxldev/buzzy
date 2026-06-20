@@ -1,6 +1,6 @@
 "use server";
 
-import { and, desc, eq, gt, lt, not, sql } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, lt, not, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -431,6 +431,20 @@ export async function cancel(sid: string) {
   sse.rubgram.pub("update", { type: "cancel" });
 
   revalidatePath("/rubgram");
+}
+
+export async function bulkDelete(ids: string[]) {
+  if (!(await adminCheck())) throw "Unauthorized";
+  await db
+    .update(endgameSubmissions)
+    .set({ deleted: true })
+    .where(inArray(endgameSubmissions.id, ids));
+
+  revalidatePath("/rubgram/admin");
+
+  sse.rubgram.pub("update", { type: "wipe" });
+
+  await actionLog(`Bulk deleted ${ids.length} rubgram submissions`);
 }
 
 export async function discordCall(id: string) {

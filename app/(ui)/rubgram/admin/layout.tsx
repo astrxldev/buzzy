@@ -33,6 +33,7 @@ import { db } from "@/lib/db";
 import { endgameSubmissions } from "@/lib/db/schema";
 import { getEndgameConfig, random, wipe } from "../api";
 import {
+  BulkDeleteButton,
   CalendarButton,
   LimitManager,
   SubmissionList,
@@ -123,6 +124,7 @@ export default async function AdminLayout({
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
+          <BulkDeleteButton />
           <SidebarGroup>
             <SidebarGroupLabel>การตั้งค่า</SidebarGroupLabel>
             <LimitManager
