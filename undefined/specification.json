@@ -1,1 +1,262 @@
-{"applications":{"@me":{"_":["get","patch"]},"{application_id}":{"activity-instances":{"{instance_id}":{"_":["get"]}},"attachment":{"_":["post"]},"commands":{"{command_id}":{"_":["get","delete","patch"]},"_":["get","put","post"]},"emojis":{"{emoji_id}":{"_":["get","delete","patch"]},"_":["get","post"]},"entitlements":{"{entitlement_id}":{"consume":{"_":["post"]},"_":["get","delete"]},"_":["get","post"]},"guilds":{"{guild_id}":{"commands":{"permissions":{"_":["get"]},"{command_id}":{"permissions":{"_":["get","put"]},"_":["get","delete","patch"]},"_":["get","put","post"]}}},"role-connections":{"metadata":{"_":["get","put"]}},"_":["get","patch"]}},"channels":{"{channel_id}":{"followers":{"_":["post"]},"invites":{"_":["get","post"]},"messages":{"bulk-delete":{"_":["post"]},"pins":{"{message_id}":{"_":["put","delete"]},"_":["get"]},"{message_id}":{"crosspost":{"_":["post"]},"reactions":{"{emoji_name}":{"@me":{"_":["put","delete"]},"{user_id}":{"_":["delete"]},"_":["get","delete"]},"_":["delete"]},"threads":{"_":["post"]},"_":["get","delete","patch"]},"_":["get","post"]},"permissions":{"{overwrite_id}":{"_":["put","delete"]}},"pins":{"{message_id}":{"_":["put","delete"]},"_":["get"]},"polls":{"{message_id}":{"answers":{"{answer_id}":{"_":["get"]}},"expire":{"_":["post"]}}},"recipients":{"{user_id}":{"_":["put","delete"]}},"send-soundboard-sound":{"_":["post"]},"thread-members":{"@me":{"_":["put","delete"]},"{user_id}":{"_":["get","put","delete"]},"_":["get"]},"threads":{"archived":{"private":{"_":["get"]},"public":{"_":["get"]}},"search":{"_":["get"]},"_":["post"]},"typing":{"_":["post"]},"users":{"@me":{"threads":{"archived":{"private":{"_":["get"]}}}}},"voice-status":{"_":["put"]},"webhooks":{"_":["get","post"]},"_":["get","delete","patch"]}},"gateway":{"bot":{"_":["get"]},"_":["get"]},"guilds":{"templates":{"{code}":{"_":["get"]}},"{guild_id}":{"audit-logs":{"_":["get"]},"auto-moderation":{"rules":{"{rule_id}":{"_":["get","delete","patch"]},"_":["get","post"]}},"bans":{"{user_id}":{"_":["get","put","delete"]},"_":["get"]},"bulk-ban":{"_":["post"]},"channels":{"_":["get","post","patch"]},"emojis":{"{emoji_id}":{"_":["get","delete","patch"]},"_":["get","post"]},"incident-actions":{"_":["put"]},"integrations":{"{integration_id}":{"_":["delete"]},"_":["get"]},"invites":{"_":["get"]},"members":{"@me":{"_":["patch"]},"search":{"_":["get"]},"{user_id}":{"roles":{"{role_id}":{"_":["put","delete"]}},"_":["get","put","delete","patch"]},"_":["get"]},"messages":{"search":{"_":["get"]}},"new-member-welcome":{"_":["get"]},"onboarding":{"_":["get","put"]},"preview":{"_":["get"]},"prune":{"_":["get","post"]},"regions":{"_":["get"]},"requests":{"{request_id}":{"_":["patch"]},"_":["get"]},"roles":{"member-counts":{"_":["get"]},"{role_id}":{"_":["get","delete","patch"]},"_":["get","post","patch"]},"scheduled-events":{"{guild_scheduled_event_id}":{"exceptions":{"{exception_id}":{"_":["delete","patch"]},"_":["post"]},"users":{"counts":{"_":["get"]},"_":["get"]},"{guild_scheduled_event_exception_id}":{"users":{"_":["get"]}},"_":["get","delete","patch"]},"_":["get","post"]},"soundboard-sounds":{"{sound_id}":{"_":["get","delete","patch"]},"_":["get","post"]},"stickers":{"{sticker_id}":{"_":["get","delete","patch"]},"_":["get","post"]},"templates":{"{code}":{"_":["put","delete","patch"]},"_":["get","post"]},"threads":{"active":{"_":["get"]}},"vanity-url":{"_":["get"]},"voice-states":{"@me":{"_":["get","patch"]},"{user_id}":{"_":["get","patch"]}},"webhooks":{"_":["get"]},"welcome-screen":{"_":["get","patch"]},"widget":{"_":["get","patch"]},"widget.json":{"_":["get"]},"widget.png":{"_":["get"]},"_":["get","patch"]}},"interactions":{"{interaction_id}":{"{interaction_token}":{"callback":{"_":["post"]}}}},"invites":{"{code}":{"target-users":{"job-status":{"_":["get"]},"_":["get","put"]},"_":["get","delete"]}},"lobbies":{"{lobby_id}":{"channel-linking":{"_":["patch"]},"members":{"@me":{"invites":{"_":["post"]},"_":["delete"]},"bulk":{"_":["post"]},"{user_id}":{"invites":{"_":["post"]},"_":["put","delete"]}},"messages":{"{message_id}":{"moderation-metadata":{"_":["put"]}},"_":["get","post"]},"_":["get","delete","patch"]},"_":["put","post"]},"oauth2":{"@me":{"_":["get"]},"applications":{"@me":{"_":["get"]}},"keys":{"_":["get"]},"userinfo":{"_":["get"]}},"partner-sdk":{"dms":{"{user_id_1}":{"{user_id_2}":{"messages":{"{message_id}":{"moderation-metadata":{"_":["put"]}}}}}},"provisional-accounts":{"unmerge":{"bot":{"_":["post"]},"_":["post"]}},"token":{"bot":{"_":["post"]},"_":["post"]}},"skus":{"{sku_id}":{"subscriptions":{"{subscription_id}":{"_":["get"]},"_":["get"]}}},"soundboard-default-sounds":{"_":["get"]},"stage-instances":{"{channel_id}":{"_":["get","delete","patch"]},"_":["post"]},"sticker-packs":{"{pack_id}":{"_":["get"]},"_":["get"]},"stickers":{"{sticker_id}":{"_":["get"]}},"users":{"@me":{"applications":{"{application_id}":{"entitlements":{"_":["get"]},"role-connection":{"_":["get","put","delete"]}}},"channels":{"_":["post"]},"connections":{"_":["get"]},"guilds":{"{guild_id}":{"member":{"_":["get"]},"_":["delete"]},"_":["get"]},"_":["get","patch"]},"{user_id}":{"_":["get"]}},"voice":{"regions":{"_":["get"]}},"webhooks":{"{webhook_id}":{"{webhook_token}":{"github":{"_":["post"]},"messages":{"@original":{"_":["get","delete","patch"]},"{message_id}":{"_":["get","delete","patch"]}},"slack":{"_":["post"]},"_":["get","post","delete","patch"]},"_":["get","delete","patch"]}}}
+{
+  "applications": {
+    "@me": { "_": ["get", "patch"] },
+    "{application_id}": {
+      "activity-instances": { "{instance_id}": { "_": ["get"] } },
+      "attachment": { "_": ["post"] },
+      "commands": {
+        "{command_id}": { "_": ["get", "delete", "patch"] },
+        "_": ["get", "put", "post"]
+      },
+      "emojis": {
+        "{emoji_id}": { "_": ["get", "delete", "patch"] },
+        "_": ["get", "post"]
+      },
+      "entitlements": {
+        "{entitlement_id}": {
+          "consume": { "_": ["post"] },
+          "_": ["get", "delete"]
+        },
+        "_": ["get", "post"]
+      },
+      "guilds": {
+        "{guild_id}": {
+          "commands": {
+            "permissions": { "_": ["get"] },
+            "{command_id}": {
+              "permissions": { "_": ["get", "put"] },
+              "_": ["get", "delete", "patch"]
+            },
+            "_": ["get", "put", "post"]
+          }
+        }
+      },
+      "role-connections": { "metadata": { "_": ["get", "put"] } },
+      "_": ["get", "patch"]
+    }
+  },
+  "channels": {
+    "{channel_id}": {
+      "followers": { "_": ["post"] },
+      "invites": { "_": ["get", "post"] },
+      "messages": {
+        "bulk-delete": { "_": ["post"] },
+        "pins": { "{message_id}": { "_": ["put", "delete"] }, "_": ["get"] },
+        "{message_id}": {
+          "crosspost": { "_": ["post"] },
+          "reactions": {
+            "{emoji_name}": {
+              "@me": { "_": ["put", "delete"] },
+              "{user_id}": { "_": ["delete"] },
+              "_": ["get", "delete"]
+            },
+            "_": ["delete"]
+          },
+          "threads": { "_": ["post"] },
+          "_": ["get", "delete", "patch"]
+        },
+        "_": ["get", "post"]
+      },
+      "permissions": { "{overwrite_id}": { "_": ["put", "delete"] } },
+      "pins": { "{message_id}": { "_": ["put", "delete"] }, "_": ["get"] },
+      "polls": {
+        "{message_id}": {
+          "answers": { "{answer_id}": { "_": ["get"] } },
+          "expire": { "_": ["post"] }
+        }
+      },
+      "recipients": { "{user_id}": { "_": ["put", "delete"] } },
+      "send-soundboard-sound": { "_": ["post"] },
+      "thread-members": {
+        "@me": { "_": ["put", "delete"] },
+        "{user_id}": { "_": ["get", "put", "delete"] },
+        "_": ["get"]
+      },
+      "threads": {
+        "archived": { "private": { "_": ["get"] }, "public": { "_": ["get"] } },
+        "search": { "_": ["get"] },
+        "_": ["post"]
+      },
+      "typing": { "_": ["post"] },
+      "users": {
+        "@me": { "threads": { "archived": { "private": { "_": ["get"] } } } }
+      },
+      "voice-status": { "_": ["put"] },
+      "webhooks": { "_": ["get", "post"] },
+      "_": ["get", "delete", "patch"]
+    }
+  },
+  "gateway": { "bot": { "_": ["get"] }, "_": ["get"] },
+  "guilds": {
+    "templates": { "{code}": { "_": ["get"] } },
+    "{guild_id}": {
+      "audit-logs": { "_": ["get"] },
+      "auto-moderation": {
+        "rules": {
+          "{rule_id}": { "_": ["get", "delete", "patch"] },
+          "_": ["get", "post"]
+        }
+      },
+      "bans": { "{user_id}": { "_": ["get", "put", "delete"] }, "_": ["get"] },
+      "bulk-ban": { "_": ["post"] },
+      "channels": { "_": ["get", "post", "patch"] },
+      "emojis": {
+        "{emoji_id}": { "_": ["get", "delete", "patch"] },
+        "_": ["get", "post"]
+      },
+      "incident-actions": { "_": ["put"] },
+      "integrations": { "{integration_id}": { "_": ["delete"] }, "_": ["get"] },
+      "invites": { "_": ["get"] },
+      "members": {
+        "@me": { "_": ["patch"] },
+        "search": { "_": ["get"] },
+        "{user_id}": {
+          "roles": { "{role_id}": { "_": ["put", "delete"] } },
+          "_": ["get", "put", "delete", "patch"]
+        },
+        "_": ["get"]
+      },
+      "messages": { "search": { "_": ["get"] } },
+      "new-member-welcome": { "_": ["get"] },
+      "onboarding": { "_": ["get", "put"] },
+      "preview": { "_": ["get"] },
+      "prune": { "_": ["get", "post"] },
+      "regions": { "_": ["get"] },
+      "requests": { "{request_id}": { "_": ["patch"] }, "_": ["get"] },
+      "roles": {
+        "member-counts": { "_": ["get"] },
+        "{role_id}": { "_": ["get", "delete", "patch"] },
+        "_": ["get", "post", "patch"]
+      },
+      "scheduled-events": {
+        "{guild_scheduled_event_id}": {
+          "exceptions": {
+            "{exception_id}": { "_": ["delete", "patch"] },
+            "_": ["post"]
+          },
+          "users": { "counts": { "_": ["get"] }, "_": ["get"] },
+          "{guild_scheduled_event_exception_id}": { "users": { "_": ["get"] } },
+          "_": ["get", "delete", "patch"]
+        },
+        "_": ["get", "post"]
+      },
+      "soundboard-sounds": {
+        "{sound_id}": { "_": ["get", "delete", "patch"] },
+        "_": ["get", "post"]
+      },
+      "stickers": {
+        "{sticker_id}": { "_": ["get", "delete", "patch"] },
+        "_": ["get", "post"]
+      },
+      "templates": {
+        "{code}": { "_": ["put", "delete", "patch"] },
+        "_": ["get", "post"]
+      },
+      "threads": { "active": { "_": ["get"] } },
+      "vanity-url": { "_": ["get"] },
+      "voice-states": {
+        "@me": { "_": ["get", "patch"] },
+        "{user_id}": { "_": ["get", "patch"] }
+      },
+      "webhooks": { "_": ["get"] },
+      "welcome-screen": { "_": ["get", "patch"] },
+      "widget": { "_": ["get", "patch"] },
+      "widget.json": { "_": ["get"] },
+      "widget.png": { "_": ["get"] },
+      "_": ["get", "patch"]
+    }
+  },
+  "interactions": {
+    "{interaction_id}": {
+      "{interaction_token}": { "callback": { "_": ["post"] } }
+    }
+  },
+  "invites": {
+    "{code}": {
+      "target-users": { "job-status": { "_": ["get"] }, "_": ["get", "put"] },
+      "_": ["get", "delete"]
+    }
+  },
+  "lobbies": {
+    "{lobby_id}": {
+      "channel-linking": { "_": ["patch"] },
+      "members": {
+        "@me": { "invites": { "_": ["post"] }, "_": ["delete"] },
+        "bulk": { "_": ["post"] },
+        "{user_id}": { "invites": { "_": ["post"] }, "_": ["put", "delete"] }
+      },
+      "messages": {
+        "{message_id}": { "moderation-metadata": { "_": ["put"] } },
+        "_": ["get", "post"]
+      },
+      "_": ["get", "delete", "patch"]
+    },
+    "_": ["put", "post"]
+  },
+  "oauth2": {
+    "@me": { "_": ["get"] },
+    "applications": { "@me": { "_": ["get"] } },
+    "keys": { "_": ["get"] },
+    "userinfo": { "_": ["get"] }
+  },
+  "partner-sdk": {
+    "dms": {
+      "{user_id_1}": {
+        "{user_id_2}": {
+          "messages": {
+            "{message_id}": { "moderation-metadata": { "_": ["put"] } }
+          }
+        }
+      }
+    },
+    "provisional-accounts": {
+      "unmerge": { "bot": { "_": ["post"] }, "_": ["post"] }
+    },
+    "token": { "bot": { "_": ["post"] }, "_": ["post"] }
+  },
+  "skus": {
+    "{sku_id}": {
+      "subscriptions": { "{subscription_id}": { "_": ["get"] }, "_": ["get"] }
+    }
+  },
+  "soundboard-default-sounds": { "_": ["get"] },
+  "stage-instances": {
+    "{channel_id}": { "_": ["get", "delete", "patch"] },
+    "_": ["post"]
+  },
+  "sticker-packs": { "{pack_id}": { "_": ["get"] }, "_": ["get"] },
+  "stickers": { "{sticker_id}": { "_": ["get"] } },
+  "users": {
+    "@me": {
+      "applications": {
+        "{application_id}": {
+          "entitlements": { "_": ["get"] },
+          "role-connection": { "_": ["get", "put", "delete"] }
+        }
+      },
+      "channels": { "_": ["post"] },
+      "connections": { "_": ["get"] },
+      "guilds": {
+        "{guild_id}": { "member": { "_": ["get"] }, "_": ["delete"] },
+        "_": ["get"]
+      },
+      "_": ["get", "patch"]
+    },
+    "{user_id}": { "_": ["get"] }
+  },
+  "voice": { "regions": { "_": ["get"] } },
+  "webhooks": {
+    "{webhook_id}": {
+      "{webhook_token}": {
+        "github": { "_": ["post"] },
+        "messages": {
+          "@original": { "_": ["get", "delete", "patch"] },
+          "{message_id}": { "_": ["get", "delete", "patch"] }
+        },
+        "slack": { "_": ["post"] },
+        "_": ["get", "post", "delete", "patch"]
+      },
+      "_": ["get", "delete", "patch"]
+    }
+  }
+}

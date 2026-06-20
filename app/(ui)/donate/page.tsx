@@ -36,7 +36,7 @@ import {
   SlipUpload,
 } from "../rubgram/admin/@modal/manual/client";
 import { DownloadButton } from "../rubgram/client";
-import Link from 'next/link';
+import Link from "next/link";
 
 const { TMN_DEST_PHONE_NUM, SASTIFY_API_PRIVKEY } = process.env as Record<
   string,

@@ -311,9 +311,7 @@ export function SubmissionList({
             <SidebarMenuButton
               key={s.id}
               asChild
-              className={cn(
-                ((debug && !s.paid) || s.deleted) && "opacity-50",
-              )}
+              className={cn(((debug && !s.paid) || s.deleted) && "opacity-50")}
             >
               <SidebarLink
                 submission={{ ...s, queue: s.publicQueue }}

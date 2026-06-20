@@ -6,4 +6,3 @@ metadata:
 spec:
   buffering:
     maxRequestBodyBytes: 104857600
-
