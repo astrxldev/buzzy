@@ -1,12 +1,30 @@
 "use client";
 
-import { ArrowRight, Check, Download, LogIn, ScrollText } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Circle,
+  Clock,
+  Download,
+  List,
+  LogIn,
+  Plus,
+  ScrollText,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Blocker } from "@/components/blocker";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Kbd } from "@/components/ui/kbd";
 import { Label } from "@/components/ui/label";
 import {
@@ -25,14 +43,17 @@ import {
   cancel,
   type getDiscordSession,
   type getEndgameConfig,
+  type getUserSubmissions,
   loginDiscord,
 } from "./api";
 import { RulesDialog } from "./rules";
 
 export function WelcomeScreening({
   session,
+  userSubs,
 }: {
   session: Awaited<ReturnType<typeof getDiscordSession>>;
+  userSubs: Awaited<ReturnType<typeof getUserSubmissions>>;
 }) {
   const [agreed, setAgreed] = useState(false);
   const [updated] = shared.state("updated");
@@ -58,6 +79,13 @@ export function WelcomeScreening({
               สลับบัญชี?
             </button>
           </span>
+          <div className="absolute right-0 bottom-0 m-2">
+            <SubmissionListModal subs={userSubs}>
+              <Button variant="outline" size="sm">
+                <List /> รายการคิว
+              </Button>
+            </SubmissionListModal>
+          </div>
         </div>
       ) : (
         <div className="grid gap-2">
@@ -265,4 +293,95 @@ export function ClearCookie() {
     console.warn("Cannot clear rubgram cookie");
   }
   return "";
+}
+
+export function SubmitAnotherButton() {
+  const router = useRouter();
+  return (
+    <Button variant="outline" size="sm" onClick={() => router.push("?new")}>
+      <Plus /> ลงคิวเพิ่ม
+    </Button>
+  );
+}
+
+export function SubmissionListModal({
+  subs,
+  children,
+}: {
+  subs: Awaited<ReturnType<typeof getUserSubmissions>>;
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const serverLabels: Record<string, string> = {
+    as: "Asia",
+    eu: "Europe",
+    us: "America",
+    tw: "TW, HK, MO",
+  };
+
+  function select(id: string) {
+    try {
+      // biome-ignore lint/suspicious/noTsIgnore: typescript issue
+      // @ts-ignore
+      cookieStore.set("rsid", id);
+    } catch {
+      console.warn("Cannot set rubgram cookie");
+    }
+    router.refresh();
+  }
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent className="max-h-[80svh] max-w-lg overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>รายการคิวของฉัน</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-2">
+          {subs.length === 0 && (
+            <p className="text-sm text-muted-foreground">ไม่มีรายการคิว</p>
+          )}
+          {subs.map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              onClick={() => select(r.id)}
+              className="flex cursor-pointer items-start gap-3 rounded-md border p-3 text-left transition-colors hover:bg-accent"
+            >
+              <div className="flex size-12 shrink-0 items-center justify-center rounded bg-muted">
+                {r.paid ? (
+                  <Check className="size-5 text-green-500" />
+                ) : r.expires && new Date(r.expires) <= new Date() ? (
+                  <Circle className="size-5 text-muted-foreground" />
+                ) : (
+                  <Clock className="size-5 text-yellow-500" />
+                )}
+              </div>
+              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="truncate font-medium">
+                    {r.queue}. {r.name}
+                  </span>
+                </div>
+                <span className="truncate text-xs text-muted-foreground">
+                  {r.services.join(", ")}
+                </span>
+                <div className="flex items-center gap-2 text-xs">
+                  <Badge variant="outline">{serverLabels[r.server]}</Badge>
+                  <span className="font-medium">{r.price} ฿</span>
+                  {r.paid ? (
+                    <span className="text-green-500">ชำระแล้ว</span>
+                  ) : r.expires && new Date(r.expires) <= new Date() ? (
+                    <span className="text-muted-foreground">หมดเวลา</span>
+                  ) : (
+                    <span className="text-yellow-500">รอชำระ</span>
+                  )}
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }

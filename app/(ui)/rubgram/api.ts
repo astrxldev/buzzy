@@ -178,6 +178,37 @@ export async function getEndgameConfig() {
   };
 }
 
+export async function getUserSubmissions(uid: string) {
+  const types = await db.select().from(endgameTypes);
+  const typeNames = Object.fromEntries(types.map((t) => [t.id, t.display]));
+
+  const subs = await db
+    .select({
+      id: endgameSubmissions.id,
+      queue: endgameSubmissions.queue,
+      name: endgameSubmissions.name,
+      server: endgameSubmissions.server,
+      price: endgameSubmissions.price,
+      paid: endgameSubmissions.paid,
+      checked: endgameSubmissions.checked,
+      deleted: endgameSubmissions.deleted,
+      expires: endgameSubmissions.expires,
+      service: endgameSubmissions.service,
+      submitDay: endgameSubmissions.submit_day,
+    })
+    .from(endgameSubmissions)
+    .where(
+      and(eq(endgameSubmissions.user, uid), not(endgameSubmissions.deleted)),
+    )
+    .orderBy(desc(endgameSubmissions.submit_day))
+    .limit(20);
+
+  return subs.map((s) => ({
+    ...s,
+    services: s.service.map((id) => typeNames[id] || id),
+  }));
+}
+
 export async function submitEndgame(formData: FormData) {
   const { full, locked, limit, types, free } = await getEndgameConfig();
   const name = formData.get("name") as string;
