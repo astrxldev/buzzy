@@ -14,6 +14,7 @@ import {
   endgameSlips,
   endgameSubmissions,
   endgameTypes,
+  type Note,
   settings,
 } from "@/lib/db/schema";
 import { sse } from "@/lib/db/sse-endpoints";
@@ -445,6 +446,48 @@ export async function bulkDelete(ids: string[]) {
   sse.rubgram.pub("update", { type: "wipe" });
 
   await actionLog(`Bulk deleted ${ids.length} rubgram submissions`);
+}
+
+export async function addNote(sid: string, text: string) {
+  if (!(await adminCheck())) throw "Unauthorized";
+
+  const note: Note = {
+    id: Bun.randomUUIDv7(),
+    text,
+    createdAt: new Date().toISOString(),
+  };
+
+  const [sub] = await db
+    .select({ notes: endgameSubmissions.notes })
+    .from(endgameSubmissions)
+    .where(eq(endgameSubmissions.id, sid))
+    .limit(1);
+
+  await db
+    .update(endgameSubmissions)
+    .set({ notes: [...(sub?.notes || []), note] })
+    .where(eq(endgameSubmissions.id, sid));
+
+  revalidatePath(`/rubgram/admin/${sid}`);
+
+  return note;
+}
+
+export async function deleteNote(sid: string, noteId: string) {
+  if (!(await adminCheck())) throw "Unauthorized";
+
+  const [sub] = await db
+    .select({ notes: endgameSubmissions.notes })
+    .from(endgameSubmissions)
+    .where(eq(endgameSubmissions.id, sid))
+    .limit(1);
+
+  await db
+    .update(endgameSubmissions)
+    .set({ notes: (sub?.notes || []).filter((n) => n.id !== noteId) })
+    .where(eq(endgameSubmissions.id, sid));
+
+  revalidatePath(`/rubgram/admin/${sid}`);
 }
 
 export async function discordCall(id: string) {
