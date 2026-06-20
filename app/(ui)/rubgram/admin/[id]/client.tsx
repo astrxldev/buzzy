@@ -144,7 +144,7 @@ export function NotesPanel({
               onClick={() => {
                 setCloseCooldown(true);
                 setCardOpen(true);
-                setTimeout(() => setCloseCooldown(false), 100);
+                setTimeout(() => setCloseCooldown(false), 300);
               }}
             >
               + เพิ่มโน๊ต
