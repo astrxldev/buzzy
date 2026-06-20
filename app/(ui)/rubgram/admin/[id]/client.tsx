@@ -132,7 +132,7 @@ export function NotesPanel({
       <div className="mb-3 flex items-center gap-2">
         <HoverCard
           openDelay={0}
-          closeDelay={0}
+          closeDelay={200}
           open={cardOpen}
           onOpenChange={(r) => r || closeCooldown || setCardOpen(r)}
         >
@@ -182,7 +182,7 @@ export function NotesPanel({
               border: `${pal.border} 1px solid`,
             }}
           >
-            <span className="text-xs" style={{ color: pal.text }}>
+            <span className="text-sm" style={{ color: pal.text }}>
               {n.text}
             </span>
             <Button
