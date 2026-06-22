@@ -12,13 +12,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          docker info
-          env="${{ secrets.ENV_B64 }}"
-          length=${#env}
-          echo "Length: $length"
-          echo "${{ secrets.ENV_B64 }}" | base64 -d > .env
+
+      - name: Install kubectl
+        run: |
+          ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+          curl -sLO "https://dl.k8s.io/release/v1.35.0/bin/linux/${ARCH}/kubectl"
+          chmod +x kubectl
+          mv kubectl /usr/local/bin/kubectl
+
+      - name: Configure kubectl
+        run: |
+          kubectl config set-cluster buzz --server=https://100.75.220.33:6443 --insecure-skip-tls-verify=true
+          kubectl config set-credentials ci-deployer --token=${{ secrets.KUBE_TOKEN }}
+          kubectl config set-context buzz --cluster=buzz --user=ci-deployer --namespace=buzz
+          kubectl config use-context buzz
+
+      - name: Generate .env from K8s secret
+        run: |
+          kubectl get secret buzz-env -n buzz \
+            -o go-template='{{range $k,$v := .data}}{{$k}}={{$v|base64decode}}{{"\n"}}{{end}}' > .env
           ls -l .env
+
       - run: |
           TAG=${{ gitea.sha }}
           docker build \
@@ -30,13 +44,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          docker info
-          env="${{ secrets.ENV_B64 }}"
-          length=${#env}
-          echo "Length: $length"
-          echo "${{ secrets.ENV_B64 }}" | base64 -d > .env
+
+      - name: Install kubectl
+        run: |
+          ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+          curl -sLO "https://dl.k8s.io/release/v1.35.0/bin/linux/${ARCH}/kubectl"
+          chmod +x kubectl
+          mv kubectl /usr/local/bin/kubectl
+
+      - name: Configure kubectl
+        run: |
+          kubectl config set-cluster buzz --server=https://100.75.220.33:6443 --insecure-skip-tls-verify=true
+          kubectl config set-credentials ci-deployer --token=${{ secrets.KUBE_TOKEN }}
+          kubectl config set-context buzz --cluster=buzz --user=ci-deployer --namespace=buzz
+          kubectl config use-context buzz
+
+      - name: Generate .env from K8s secret
+        run: |
+          kubectl get secret buzz-env -n buzz \
+            -o go-template='{{range $k,$v := .data}}{{$k}}={{$v|base64decode}}{{"\n"}}{{end}}' > .env
           ls -l .env
+
       - run: |
           TAG=${{ gitea.sha }}
           docker build \
