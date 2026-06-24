@@ -1,6 +1,16 @@
 "use server";
 
-import { and, desc, eq, gt, inArray, lt, not, sql } from "drizzle-orm";
+import {
+  and,
+  count as sqlCount,
+  desc,
+  eq,
+  gt,
+  inArray,
+  lt,
+  not,
+  sql,
+} from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -155,7 +165,10 @@ export async function getEndgameConfig() {
     .select()
     .from(settings)
     .limit(1);
-  const count = await db.$count(endgameSubmissions);
+  const [{ count }] = await db
+    .select({ count: sqlCount() })
+    .from(endgameSubmissions)
+    .where(not(endgameSubmissions.deleted));
   const types = await db
     .select()
     .from(endgameTypes)
