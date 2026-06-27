@@ -23,6 +23,16 @@ spec:
         app: buzz
         component: app
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: region
+                    operator: In
+                    values:
+                      - sg
       terminationGracePeriodSeconds: 5
       containers:
         - name: app
