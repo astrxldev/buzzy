@@ -13,7 +13,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useEllipsisVisible } from "react-hook-text-overflow";
 import { DataTable } from "@/components/tantable";
 import { SimpleTooltip } from "@/components/tooltip";
@@ -165,15 +165,6 @@ export function DonateAdminPage({
 }: {
   data: (typeof donations.$inferSelect)[];
 }) {
-  const router = useRouter();
-  useEffect(() => {
-    if (!router) return;
-    return sse.donate.subMany({
-      ping: () => router.refresh(),
-      update: () => router.refresh(),
-    }).clean;
-  }, [router]);
-
   return (
     <div className="mx-auto flex w-full max-w-[max(1280px,90%)] flex-col">
       <span className="flex items-center gap-1 pt-1 pb-2 text-3xl font-semibold">
@@ -186,6 +177,29 @@ export function DonateAdminPage({
         data={data}
         className="max-h-[calc(100vh-93px)] w-full overflow-y-auto bg-black/25 backdrop-blur-sm"
       ></DataTable>
+      <DonateWatcher />
     </div>
   );
+}
+
+// component cuz simplicity sake
+export function DonateWatcher({ sfx = false }: { sfx?: boolean }) {
+  const player = useRef<HTMLAudioElement | null>(null);
+  const router = useRouter();
+  useEffect(() => {
+    if (!router) return;
+    return sse.donate.subMany({
+      ping: () => {
+        router.refresh();
+        player.current?.play();
+      },
+      update: () => router.refresh(),
+    }).clean;
+  }, [router]);
+
+  if (sfx)
+    return (
+      <audio src="/assets/donate-mod-sfx.wav" preload="auto" ref={player} />
+    );
+  else return undefined;
 }

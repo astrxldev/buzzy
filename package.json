@@ -78,6 +78,7 @@
     "radix-ui": "^1.4.3",
     "react": "19.2.6",
     "react-day-picker": "^9.12.0",
+    "react-document-picture-in-picture": "^1.2.2",
     "react-dom": "19.2.6",
     "react-hook-form": "^7.68.0",
     "react-hook-text-overflow": "^1.0.1",
@@ -118,7 +119,8 @@
     "better-sqlite3": "npm:dry-uninstall"
   },
   "patchedDependencies": {
-    "react-hook-text-overflow@1.0.1": "patches/react-hook-text-overflow@1.0.1.patch"
+    "react-hook-text-overflow@1.0.1": "patches/react-hook-text-overflow@1.0.1.patch",
+    "react-document-picture-in-picture@1.2.2": "patches/react-document-picture-in-picture@1.2.2.patch"
   },
   "trustedDependencies": [
     "@prisma/client",

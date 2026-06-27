@@ -1,0 +1,17 @@
+diff --git a/dist/ReactDocumentPictureInPicture.js b/dist/ReactDocumentPictureInPicture.js
+index c0e1d9e9df8dc57ea5e173a14d4125758b867b8c..2c18334b752fa0be300f3c1e962bae1fbaf78d6e 100644
+--- a/dist/ReactDocumentPictureInPicture.js
++++ b/dist/ReactDocumentPictureInPicture.js
+@@ -98,9 +98,9 @@ const ReactDocumentPictureInPicture = (0, react_1.forwardRef)((props, ref) => {
+         close,
+     ]);
+     let featureUnavailableReason = (() => {
+-        const isUsingSecureProtocol = window.location.protocol === 'https:';
+-        if (isUsingSecureProtocol === false)
+-            return FeatureUnavailableReasonEnum.USING_UNSECURE_PROTOCOL;
++        // const isUsingSecureProtocol = window.location.protocol === 'https:';
++        // if (isUsingSecureProtocol === false)
++        //     return FeatureUnavailableReasonEnum.USING_UNSECURE_PROTOCOL;
+         const featureIsAvailable = 'documentPictureInPicture' in window;
+         if (featureIsAvailable === false)
+             return FeatureUnavailableReasonEnum.API_NOT_SUPPORTED;
