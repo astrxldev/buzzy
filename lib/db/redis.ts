@@ -52,13 +52,17 @@ export class PubSubManager {
     function ping() {
       clearTimeout(heartbeatTimeout);
       heartbeatTimeout = setTimeout(() => {
-        writer.write(":)\n\n");
+        try {
+          writer.write(":)\n\n");
+        } catch {}
         ping();
       }, 90000); // cloudflare timeout = 100s
     }
 
     const write = (payload: PubPayload) => {
-      writer.write(this.constructMessage(payload.data, payload.event));
+      try {
+        writer.write(this.constructMessage(payload.data, payload.event));
+      } catch {}
       ping();
     };
 
