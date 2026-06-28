@@ -5,26 +5,34 @@ import { ExternalLink, RadioTower } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, type ComponentProps } from "react";
 
-const ReactPIP = dynamic(() => import("react-document-picture-in-picture"), {
-  ssr: false,
-});
+const ReactPIP = dynamic(
+  () => import("@/components/dpip").then((e) => e.DocumentPictureInPicture),
+  {
+    ssr: false,
+  },
+);
 
 export function PIP(props: ComponentProps<typeof ReactPIP>) {
   return (
     <ReactPIP
       {...props}
-      width={400}
-      height={600}
       shareStyles
       buttonRenderer={({ toggle, isOpen }) => (
-        <div>
+        <div className="flex flex-col">
           {isOpen ? <span>Content popped out.</span> : props.children}
           <Button onClick={toggle} variant="outline" size="icon-sm">
             <ExternalLink />
           </Button>
         </div>
       )}
-      featureUnavailableRenderer={(r) => r}
+      featureUnavailableRenderer={
+        <div className="flex flex-col">
+          {props.children}
+          <Button disabled variant="outline" size="icon-sm">
+            <ExternalLink />
+          </Button>
+        </div>
+      }
     />
   );
 }

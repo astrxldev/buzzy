@@ -31,7 +31,7 @@ export default async function DonateModeratorPage() {
   }
 
   return (
-    <PIP>
+    <PIP width={400} height={600}>
       <div className="dark flex w-full max-w-100 flex-col gap-1 bg-background p-1 text-foreground scheme-dark">
         <span>Donate Moderator</span>
         {sub.image ? (
