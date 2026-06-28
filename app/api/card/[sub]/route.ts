@@ -20,7 +20,7 @@ export async function GET(
   if (!char)
     return new Response(`Unknown character: ${sub.char}`, { status: 500 });
   const card = await fetch(
-    `http://mts.dgnr.us:8809/v1/card/genshin/${sub.uid}/${char.amber.split("-")[0]}?lang=th&substat=true&quality=true`,
+    `https://api.astrxl.dev/v1/card/genshin/${sub.uid}/${char.amber.split("-")[0]}?lang=th&substat=true&quality=true`,
   );
   if (!card.ok) return card;
   const fresh = await card.arrayBuffer();

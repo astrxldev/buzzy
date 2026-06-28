@@ -160,7 +160,7 @@ export async function checkEnkaStatus(uid: string, char: string) {
     .from(characters)
     .where(eq(characters.name, char));
   const res = await fetch(
-    `http://mts.dgnr.us:8809/v1/card/genshin/${uid}/${ch ? ch.amber.split("-")[0] : "10000005"}?debug=dump`,
+    `https://api.astrxl.dev/v1/card/genshin/${uid}/${ch ? ch.amber.split("-")[0] : "10000005"}?debug=dump`,
   );
   const text = await res.text(),
     { status } = res;
