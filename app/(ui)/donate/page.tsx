@@ -216,12 +216,12 @@ export default async function () {
           .onConflictDoUpdate({
             target: submissions.uid,
             set: {
-              comment: sql`CONCAT(${submissions.comment}, ${"\n"}, ${message})`,
+              comment: sql`${submissions.comment} || ${"\n"}::text || ${message}::text`,
               promoted: true,
             },
-          });
-        // .onConflictDoNothing();
-        // .catch(() => "conflict");
+          })
+          // .onConflictDoNothing();
+          .catch(console.error);
         // if (res === "conflict") {
         //   tx.rollback();
         //   ph.capture({
