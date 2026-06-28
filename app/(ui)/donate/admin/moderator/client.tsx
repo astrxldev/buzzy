@@ -62,7 +62,7 @@ export function ClientTracker() {
   useEffect(() => {
     const interval = setInterval(() => {
       setConnected(tracking.current);
-      if (tracking.current > 0) tracking.current--;
+      tracking.current = 0;
     }, 10000);
     return () => clearInterval(interval);
   }, []);
