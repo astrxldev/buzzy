@@ -28,6 +28,7 @@ type SharedStates = Partial<{
   warning: "showcase" | "nf" | "guide" | "private";
   "warning.uid": string;
   "warning.src": "submit" | "input";
+  "moderator.volume": number;
   _raw: Record<string, unknown>;
 }>;
 

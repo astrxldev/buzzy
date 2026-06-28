@@ -11,7 +11,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { ActionButton } from "@/components/action-button";
 import { reloadWidget } from "../api";
 import { markDone } from "@/app/widget/donate/api";
-import { ClientTracker, PIP } from "./client";
+import { ClientTracker, PIP, VolumeChanger } from "./client";
 
 export default async function DonateModeratorPage() {
   if (!(await adminCheck()))
@@ -32,7 +32,7 @@ export default async function DonateModeratorPage() {
 
   return (
     <PIP width={400} height={600}>
-      <div className="dark flex w-full max-w-100 flex-col gap-1 bg-background p-1 text-foreground scheme-dark">
+      <div className="dark flex w-full max-w-100 flex-col gap-1 rounded-md bg-background p-1 text-foreground scheme-dark">
         <span>Donate Moderator</span>
         {sub.image ? (
           <div className="relative flex aspect-square w-full max-w-100 items-center justify-center overflow-hidden rounded-lg border bg-black/50">
@@ -67,7 +67,8 @@ export default async function DonateModeratorPage() {
           </ActionButton>
           <ClientTracker />
         </div>
-        <DonateWatcher sfx />
+        <VolumeChanger />
+        <DonateWatcher />
       </div>
     </PIP>
   );

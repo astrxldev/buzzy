@@ -168,6 +168,13 @@ export const DocumentPictureInPicture = forwardRef<
 
     div.style.width = "100%";
     div.style.height = "100%";
+    div.style.background = "black";
+    div.style.backgroundImage = "radial-gradient(#222 1px, transparent 1px)";
+    div.style.backgroundSize = "24px 24px";
+    div.style.height = "100svh";
+    div.style.display = "flex";
+    div.style.justifyContent = "center";
+    div.style.alignItems = "center";
 
     win.document.body.appendChild(div);
 

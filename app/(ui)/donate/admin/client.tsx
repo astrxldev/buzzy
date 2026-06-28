@@ -13,7 +13,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useEllipsisVisible } from "react-hook-text-overflow";
 import { DataTable } from "@/components/tantable";
 import { SimpleTooltip } from "@/components/tooltip";
@@ -183,23 +183,15 @@ export function DonateAdminPage({
 }
 
 // component cuz simplicity sake
-export function DonateWatcher({ sfx = false }: { sfx?: boolean }) {
-  const player = useRef<HTMLAudioElement | null>(null);
+export function DonateWatcher() {
   const router = useRouter();
   useEffect(() => {
     if (!router) return;
     return sse.donate.subMany({
-      ping: () => {
-        router.refresh();
-        player.current?.play();
-      },
-      update: () => router.refresh(),
+      ping: router.refresh.bind(router),
+      update: router.refresh.bind(router),
     }).clean;
   }, [router]);
 
-  if (sfx)
-    return (
-      <audio src="/assets/donate-mod-sfx.wav" preload="auto" ref={player} />
-    );
-  else return undefined;
+  return undefined;
 }
