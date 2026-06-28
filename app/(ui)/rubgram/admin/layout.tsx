@@ -129,7 +129,10 @@ export default async function AdminLayout({
             <SidebarGroupLabel>การตั้งค่า</SidebarGroupLabel>
             <LimitManager
               config={config}
-              length={subs.reduce((c, s) => c + (s.paid && !s.deleted ? 1 : 0), 0)}
+              length={subs.reduce(
+                (c, s) => c + (s.paid && !s.deleted ? 1 : 0),
+                0,
+              )}
             />
           </SidebarGroup>
         </SidebarFooter>
