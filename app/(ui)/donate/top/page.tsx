@@ -1,5 +1,5 @@
 import type { SQL } from "drizzle-orm";
-import { asc, desc, max, sql, sum } from "drizzle-orm";
+import { asc, desc, max, ne, sql, sum } from "drizzle-orm";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -49,6 +49,7 @@ async function Content() {
       amount: sum(donations.amount) as unknown as SQL<number>,
     })
     .from(donations)
+    .where(ne(donations.name, "Anonymous"))
     .offset(3)
     .limit(7)
     .groupBy(donations.name)
@@ -67,6 +68,7 @@ async function Content() {
     `,
     })
     .from(donations)
+    .where(ne(donations.name, "Anonymous"))
     .groupBy(donations.name)
     .orderBy(desc(sum(donations.amount)), asc(max(donations.id)))
     .limit(3)
