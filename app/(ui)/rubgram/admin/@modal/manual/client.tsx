@@ -126,7 +126,10 @@ export function SlipUpload({
         type="button"
       >
         {isSelected ? (
-          <span onClick={isSelected ? choose : undefined} className="truncate">
+          <span
+            onClick={isSelected ? choose : undefined}
+            className="min-w-0 truncate"
+          >
             {value.name} <Kbd>{b2sClient(Number(value.size))}</Kbd>
           </span>
         ) : (
