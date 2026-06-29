@@ -191,13 +191,20 @@ export default async function () {
 
       const { name, amount, message, image } = $;
 
+      const downscaled = image
+        ? await new Bun.Image(await image.arrayBuffer())
+            .resize(512, 512)
+            .webp()
+            .toBuffer()
+        : undefined;
+
       const [{ id }] = await tx
         .insert(donations)
         .values({
           name,
           amount,
           message,
-          image: image ? Buffer.from(await image.arrayBuffer()) : undefined,
+          image: downscaled,
           uid: $.artifact === "true" ? $.uid : null,
           // dont send on screen if less than 10
           sent: $.amount < 10,
