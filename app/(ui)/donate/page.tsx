@@ -297,7 +297,7 @@ export default async function () {
               </FormInput>
             </div>
           </div>
-          <FormInput name="message" label="ข้อความ" subLabel="สูงสุด 500 ตัวอักษร">
+          <FormInput name="message" label="ข้อความ" subLabel="สูงสุด 200 ตัวอักษร">
             <Textarea placeholder="ข้อความ" />
           </FormInput>
           {!artifactConfig.locked && (
