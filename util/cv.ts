@@ -1,12 +1,14 @@
-import { Glob } from "bun";
+import { file, Glob, write } from "bun";
+import { rm } from "node:fs/promises";
 
 const g = new Glob("public/bgassets/*.png");
 
 for await (const img of g.scan()) {
-  Bun.file(img)
+  file(img)
     .image()
     .webp()
     .buffer()
-    .then((b) => Bun.write(img.replace(".png", ".webp"), b))
+    .then((b) => write(img.replace(".png", ".webp"), b))
+    .then(() => rm(img))
     .finally(() => console.log(img, "processed."));
 }
