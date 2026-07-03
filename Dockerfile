@@ -61,7 +61,7 @@ USER container
 WORKDIR /home/container
 
 COPY --from=builder /home/container/.next ./.next
-COPY --from=builder /home/container/public ./next/standalone/public
+COPY --from=builder /home/container/public ./public
 RUN cp -r .next/static .next/standalone/.next
 
 COPY --from=builder /home/container/.version ./.version
