@@ -4,17 +4,6 @@
 FROM oven/bun:canary-alpine AS deps
 WORKDIR /home/container
 
-# RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-#     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-#     apt-get update \
-#     && apt-get install -y \
-#         python3 \
-#         make \
-#         g++ \
-#         sqlite3 \
-#         libsqlite3-dev \
-#     && rm -rf /var/lib/apt/lists/*
-
 COPY package*.json bun.lock ./
 COPY patches ./patches
 
@@ -58,19 +47,10 @@ RUN adduser -Du 1001 container
 USER container
 WORKDIR /home/container
 
-COPY --from=builder /home/container/node_modules ./node_modules
-COPY --from=builder /home/container/next.config.ts ./
-COPY --from=builder /home/container/bun.lock ./ 
-COPY --from=builder /home/container/package*.json ./ 
-
-COPY --from=builder /home/container/public ./public
-COPY --from=builder /home/container/.env ./.env
 COPY --from=builder /home/container/.next ./.next
+COPY --from=builder /home/container/public ./next/standalone/public
+RUN cp -r .next/static .next/standalone/,next
 
-COPY --from=builder /home/container/util ./util
-COPY --from=builder /home/container/lib ./lib
-COPY --from=builder /home/container/tsconfig.json ./tsconfig.json
 COPY --from=builder /home/container/.version ./.version
-COPY --from=builder /home/container/drizzle.config.ts ./drizzle.config.ts
 
-CMD ["bun", "start"]
+CMD ["bun", ".next/standalone/server.js"]
