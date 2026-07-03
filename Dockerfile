@@ -67,4 +67,5 @@ COPY --from=builder /home/container/public ./public
 COPY --from=builder /home/container/.next/static ./.next/static
 COPY --from=builder /home/container/.version ./.version
 
+ENV HOSTNAME=0.0.0.0
 CMD ["bun", "server.js"]
