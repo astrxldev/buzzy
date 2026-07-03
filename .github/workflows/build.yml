@@ -111,13 +111,24 @@ jobs:
 
           # DB migration
           kubectl delete job db-migrate -n buzz --ignore-not-found
-          kubectl create job db-migrate \
-            --image=mts.dgnr.us:5000/${{ gitea.repository }}:migration-$TAG \
-            -n buzz \
-            --dry-run=client -o yaml \
-            -- bun dr push | \
-            kubectl set env -f - --from=secret/buzz-env --local -o yaml | \
-            kubectl apply -f -
+          cat <<JOBEOF | kubectl apply -f -
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migrate
+  namespace: buzz
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: db-migrate
+          image: mts.dgnr.us:5000/${{ gitea.repository }}:migration-$TAG
+          command: ["bun", "dr", "push"]
+          envFrom:
+            - secretRef:
+                name: buzz-env
+JOBEOF
 
           # Roll app & backend
           kubectl set image deployment/app app=mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG -n buzz
