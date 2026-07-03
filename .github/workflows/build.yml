@@ -114,7 +114,7 @@ jobs:
           kubectl create job db-migrate \
             --image=mts.dgnr.us:5000/${{ gitea.repository }}:migration-$TAG \
             -n buzz \
-            -- push
+            -- bun dr push
 
           # Roll app & backend
           kubectl set image deployment/app app=mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG -n buzz
