@@ -54,3 +54,16 @@ RUN cp -r .next/static .next/standalone/,next
 COPY --from=builder /home/container/.version ./.version
 
 CMD ["bun", ".next/standalone/server.js"]
+
+### Stage 4: migration ###
+FROM oven/bun:canary-alpine AS migration
+WORKDIR /home/container
+
+COPY --from=deps /home/container/node_modules ./node_modules
+COPY --from=deps /home/container/package*.json ./
+COPY --from=deps /home/container/bun.lock ./
+
+COPY drizzle.config.ts ./
+COPY lib/db/ ./lib/db/
+
+ENTRYPOINT ["bun", "drizzle-kit"]
