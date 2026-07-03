@@ -21,8 +21,8 @@ const backgrounds = [
   ["/artifact", Background1, "/bgassets/buzzbg1-r2-mask.webp"],
   ["/rubgram", Background2, "/bgassets/buzzbg2-r1-mask.webp"],
   ["/donate", Background3, "/bgassets/buzzbg3-r1-mask.webp"],
-  ["/tl", Background4, "/bgassets/buzzbg4-r1-mask.webp"],
-  ["/guide", Background5, "/bgassets/buzzbg5-r1-mask.webp"],
+  ["/tl", Background5, "/bgassets/buzzbg4-r1-mask.webp"],
+  ["/guide", Background4, "/bgassets/buzzbg5-r1-mask.webp"],
   ["/admin", Background6, "/bgassets/buzzbg6-r1-mask.webp"],
   // unused
   ["/donate", Background7, "/bgassets/buzzbg7-r1-mask.webp"],
