@@ -60,10 +60,9 @@ RUN adduser -Du 1001 container
 USER container
 WORKDIR /home/container
 
-COPY --from=builder /home/container/.next ./.next
+COPY --from=builder /home/container/.next/standalone ./
 COPY --from=builder /home/container/public ./public
-RUN cp -r .next/static .next/standalone/.next
-
+COPY --from=builder /home/container/.next/static ./.next/static
 COPY --from=builder /home/container/.version ./.version
 
-CMD ["bun", ".next/standalone/server.js"]
+CMD ["bun", "server.js"]
