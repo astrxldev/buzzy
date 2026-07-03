@@ -46,6 +46,8 @@ WORKDIR /home/container
 COPY --from=deps /home/container/node_modules ./node_modules
 COPY --from=deps /home/container/package*.json ./
 COPY --from=deps /home/container/bun.lock ./
+COPY --from=builder /home/container/drizzle.config.ts ./drizzle.config.ts
+COPY --from=builder /home/container/lib ./lib
 
 COPY drizzle.config.ts ./
 COPY lib/db/ ./lib/db/
