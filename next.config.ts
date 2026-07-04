@@ -52,4 +52,5 @@ export default {
   // reactCompiler: true,
   allowedDevOrigins: ["astral:3000", "dev3000.astrxl.dev"],
   // basePath: "/beta"
+  output: "standalone",
 } satisfies NextConfig;

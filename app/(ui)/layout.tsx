@@ -1,11 +1,9 @@
 import { Anuphan } from "next/font/google";
 import { ViewTransition } from "react";
 import { Toaster } from "sonner";
-import Background from "#/bg.webp";
-import Image from "@/components/image";
-import { StarsRenderer } from "@/components/stars";
 import Providers, { VersionCheck } from "../client";
 import { Navbar } from "./navbar";
+import { BackgroundProvider } from "./background";
 
 const anuphan = Anuphan({
   variable: "--font-anuphan",
@@ -19,12 +17,7 @@ export default async function UiLayout({
 }) {
   return (
     <>
-      <Image
-        src={Background}
-        alt="Background"
-        className="fixed top-0 left-0 z-[-1] h-fit min-h-dvh w-full object-cover opacity-40"
-      />
-      <StarsRenderer />
+      <BackgroundProvider />
       <Providers>
         <ViewTransition>{children}</ViewTransition>
         <VersionCheck />

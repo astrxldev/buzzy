@@ -39,6 +39,9 @@ jobs:
             -t mts.dgnr.us:5000/${{ gitea.repository }}:frontend \
             -t mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG \
             .
+          docker build --target migration \
+            -t mts.dgnr.us:5000/${{ gitea.repository }}:migration \
+            .
 
   build-backend:
     runs-on: ubuntu-latest
@@ -83,6 +86,7 @@ jobs:
           docker push mts.dgnr.us:5000/${{ gitea.repository }}:backend-$TAG &
           docker push mts.dgnr.us:5000/${{ gitea.repository }}:frontend &
           docker push mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG &
+          docker push mts.dgnr.us:5000/${{ gitea.repository }}:migration &
           wait
 
       - name: Install kubectl
@@ -106,9 +110,12 @@ jobs:
           # DB migration
           kubectl delete job db-migrate -n buzz --ignore-not-found
           kubectl create job db-migrate \
-            --image=mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG \
+            --image=mts.dgnr.us:5000/${{ gitea.repository }}:migration \
             -n buzz \
-            -- bun dr push
+            --dry-run=client -o json \
+            -- bun dr push | \
+            jq '.spec.template.spec.containers[0].envFrom = [{"secretRef": {"name": "buzz-env"}}]' | \
+            kubectl apply -f -
 
           # Roll app & backend
           kubectl set image deployment/app app=mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG -n buzz
