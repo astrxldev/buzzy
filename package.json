@@ -57,7 +57,7 @@
     "@sfjs/snowflake": "^0.1.5",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.14.2",
-    "@types/bun": "^1.3.12",
+    "@types/bun": "^1.3.14",
     "auto-text-size": "^0.2.3",
     "babel-plugin-react-compiler": "^1.0.0",
     "better-auth": "^1.4.6",
@@ -118,7 +118,8 @@
     "better-sqlite3": "npm:dry-uninstall"
   },
   "patchedDependencies": {
-    "react-hook-text-overflow@1.0.1": "patches/react-hook-text-overflow@1.0.1.patch"
+    "react-hook-text-overflow@1.0.1": "patches/react-hook-text-overflow@1.0.1.patch",
+    "react-document-picture-in-picture@1.2.2": "patches/react-document-picture-in-picture@1.2.2.patch"
   },
   "trustedDependencies": [
     "@prisma/client",

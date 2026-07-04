@@ -1,6 +1,6 @@
-import { ErrorModal } from "@/components/error";
 import { ErrorBoundary } from "next/dist/client/components/error-boundary";
 import type { ReactNode } from "react";
+import { ErrorModal } from "@/components/error";
 
 export default async function DonateAdminLayout({
   children,

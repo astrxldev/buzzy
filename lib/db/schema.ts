@@ -161,7 +161,14 @@ export const endgameSubmissions = endgame.table("submissions", {
     ),
   deleted: boolean().notNull().default(false),
   submit_day: timestamp().notNull().defaultNow(),
+  notes: jsonb().$type<Note[]>().notNull().default([]),
 });
+
+export type Note = {
+  id: string;
+  text: string;
+  createdAt: string;
+};
 
 // expired submission
 export const endgameExpired = endgame.table("expired", {

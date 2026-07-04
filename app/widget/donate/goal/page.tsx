@@ -1,10 +1,10 @@
 "use client";
 
-import { sse } from "@/lib/db/sse-endpoints";
-import { useEffect, useRef, useState } from "react";
-import { getDonateBar } from "./api";
 import { motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
+import { sse } from "@/lib/db/sse-endpoints";
 import { pausePass } from "@/lib/utils";
+import { getDonateBar } from "./api";
 
 type Data = Awaited<ReturnType<typeof getDonateBar>>;
 
@@ -78,7 +78,7 @@ export default function TopDonateWidget() {
   }, [bar]);
 
   return bar ? (
-    <div className="relative h-full max-h-[20svw] w-full rounded-full bg-[#252525]">
+    <div className="relative h-full max-h-[20svw] w-full overflow-hidden rounded-full bg-[#252525]">
       <div className="absolute inset-2 rounded-full bg-black" />
       <motion.div
         className="absolute inset-1.5 rounded-full bg-linear-to-b from-[#FD0000] to-[#830000]"

@@ -1,8 +1,8 @@
 "use server";
 
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { donations } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function markRunning(id: string) {

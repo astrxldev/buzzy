@@ -19,6 +19,8 @@ export const auth = betterAuth({
     "http://localhost:3000",
     "https://dev3000.astrxl.dev",
     "http://m.dgnr.us",
+    "http://buzz.sudloh.com",
+    "http://app.buzz.svc.cluster.local:3000",
   ],
   database: drizzleAdapter(db, {
     provider: "pg", // or "mysql", "sqlite"

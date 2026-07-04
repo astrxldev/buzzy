@@ -1,6 +1,16 @@
 "use server";
 
-import { and, desc, eq, gt, lt, not, sql } from "drizzle-orm";
+import {
+  and,
+  count as sqlCount,
+  desc,
+  eq,
+  gt,
+  inArray,
+  lt,
+  not,
+  sql,
+} from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -14,11 +24,13 @@ import {
   endgameSlips,
   endgameSubmissions,
   endgameTypes,
+  type Note,
   settings,
 } from "@/lib/db/schema";
 import { sse } from "@/lib/db/sse-endpoints";
-import { getPostHogClient } from "@/lib/posthog-server";
 import { checkSlip } from "@/lib/payment";
+import { getPostHogClient } from "@/lib/posthog-server";
+
 const { DISCORD_WEBHOOK_URL, DISCORD_CLIENT_ID, BASE_URL } =
   process.env as Record<string, string>;
 
@@ -153,7 +165,10 @@ export async function getEndgameConfig() {
     .select()
     .from(settings)
     .limit(1);
-  const count = await db.$count(endgameSubmissions);
+  const [{ count }] = await db
+    .select({ count: sqlCount() })
+    .from(endgameSubmissions)
+    .where(not(endgameSubmissions.deleted));
   const types = await db
     .select()
     .from(endgameTypes)
@@ -175,6 +190,37 @@ export async function getEndgameConfig() {
     ...ngm,
     ...glob,
   };
+}
+
+export async function getUserSubmissions(uid: string) {
+  const types = await db.select().from(endgameTypes);
+  const typeNames = Object.fromEntries(types.map((t) => [t.id, t.display]));
+
+  const subs = await db
+    .select({
+      id: endgameSubmissions.id,
+      queue: endgameSubmissions.queue,
+      name: endgameSubmissions.name,
+      server: endgameSubmissions.server,
+      price: endgameSubmissions.price,
+      paid: endgameSubmissions.paid,
+      checked: endgameSubmissions.checked,
+      deleted: endgameSubmissions.deleted,
+      expires: endgameSubmissions.expires,
+      service: endgameSubmissions.service,
+      submitDay: endgameSubmissions.submit_day,
+    })
+    .from(endgameSubmissions)
+    .where(
+      and(eq(endgameSubmissions.user, uid), not(endgameSubmissions.deleted)),
+    )
+    .orderBy(desc(endgameSubmissions.submit_day))
+    .limit(20);
+
+  return subs.map((s) => ({
+    ...s,
+    services: s.service.map((id) => typeNames[id] || id),
+  }));
 }
 
 export async function submitEndgame(formData: FormData) {
@@ -399,6 +445,62 @@ export async function cancel(sid: string) {
   sse.rubgram.pub("update", { type: "cancel" });
 
   revalidatePath("/rubgram");
+}
+
+export async function bulkDelete(ids: string[]) {
+  if (!(await adminCheck())) throw "Unauthorized";
+  await db
+    .update(endgameSubmissions)
+    .set({ deleted: true })
+    .where(inArray(endgameSubmissions.id, ids));
+
+  revalidatePath("/rubgram/admin");
+
+  sse.rubgram.pub("update", { type: "wipe" });
+
+  await actionLog(`Bulk deleted ${ids.length} rubgram submissions`);
+}
+
+export async function addNote(sid: string, text: string) {
+  if (!(await adminCheck())) throw "Unauthorized";
+
+  const note: Note = {
+    id: Bun.randomUUIDv7(),
+    text,
+    createdAt: new Date().toISOString(),
+  };
+
+  const [sub] = await db
+    .select({ notes: endgameSubmissions.notes })
+    .from(endgameSubmissions)
+    .where(eq(endgameSubmissions.id, sid))
+    .limit(1);
+
+  await db
+    .update(endgameSubmissions)
+    .set({ notes: [...(sub?.notes || []), note] })
+    .where(eq(endgameSubmissions.id, sid));
+
+  revalidatePath(`/rubgram/admin/${sid}`);
+
+  return note;
+}
+
+export async function deleteNote(sid: string, noteId: string) {
+  if (!(await adminCheck())) throw "Unauthorized";
+
+  const [sub] = await db
+    .select({ notes: endgameSubmissions.notes })
+    .from(endgameSubmissions)
+    .where(eq(endgameSubmissions.id, sid))
+    .limit(1);
+
+  await db
+    .update(endgameSubmissions)
+    .set({ notes: (sub?.notes || []).filter((n) => n.id !== noteId) })
+    .where(eq(endgameSubmissions.id, sid));
+
+  revalidatePath(`/rubgram/admin/${sid}`);
 }
 
 export async function discordCall(id: string) {

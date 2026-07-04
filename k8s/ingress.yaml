@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app
+  namespace: buzz
+  annotations:
+    traefik.ingress.kubernetes.io/read-timeout: "200"
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: m.dgnr.us
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app
+                port:
+                  number: 3000
+    - host: buzz.sudloh.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app
+                port:
+                  number: 3000

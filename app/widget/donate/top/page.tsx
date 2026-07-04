@@ -1,7 +1,7 @@
 "use client";
 
-import { sse } from "@/lib/db/sse-endpoints";
 import { useEffect, useRef, useState } from "react";
+import { sse } from "@/lib/db/sse-endpoints";
 import { getTopDonate } from "./api";
 
 type Data = Awaited<ReturnType<typeof getTopDonate>>;
@@ -10,6 +10,7 @@ export default function TopDonateWidget() {
   const [top, setTop] = useState<Data>();
   const textRef = useRef<HTMLDivElement | null>(null);
   const stableSize = useRef<Record<string, number>>({});
+  const [ping, setPing] = useState(0);
 
   useEffect(() => {
     async function update() {
@@ -29,6 +30,12 @@ export default function TopDonateWidget() {
       clearInterval(backupInterval);
     };
   }, []);
+
+  useEffect(() => {
+    const listener = () => setPing(Date.now());
+    window.addEventListener("resize", listener);
+    return () => window.removeEventListener("resize", listener);
+  });
 
   // the most idiomatic way possible but it works
   useEffect(() => {
@@ -52,9 +59,9 @@ export default function TopDonateWidget() {
       }
     }, 100);
     return () => clearInterval(interval);
-  }, [textRef, top]);
+  }, [textRef, top, ping]);
   return top ? (
-    <div className="grid h-18.75 w-94.5 max-w-94.5 grid-cols-[40px_minmax(0,1fr)_max-content] gap-1 rounded-full border-4 border-black bg-black/75 p-2 px-3 text-5xl font-semibold text-[#FFBA00] *:self-center">
+    <div className="grid h-full w-full grid-cols-[40px_minmax(0,1fr)_max-content] gap-1 rounded-full border-4 border-black bg-black/75 p-2 px-3 text-5xl font-semibold text-[#FFBA00] *:self-center">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         height="24px"

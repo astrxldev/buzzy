@@ -1,7 +1,7 @@
 "use client";
 
 import { useProgress } from "@bprogress/next";
-import { Calendar, Lock, Unlock } from "lucide-react";
+import { Calendar, Lock, Trash2, Unlock } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -39,7 +39,7 @@ import { shared } from "@/lib/comms";
 import { sse } from "@/lib/db/sse-endpoints";
 import { cn } from "@/lib/utils";
 import type { getEndgameConfig } from "../api";
-import { setFree, setLimit, toggleCheck, toggleLock } from "../api";
+import { bulkDelete, setFree, setLimit, toggleCheck, toggleLock } from "../api";
 
 export function SidebarLink({
   submission,
@@ -259,6 +259,7 @@ export function SubmissionList({
 }) {
   const [query, setQuery] = useState("");
   const [debug] = shared.state("debug");
+  const [selIds, setSelIds] = shared.state("rubgram.sel_id");
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -280,20 +281,81 @@ export function SubmissionList({
             (debug || (s.paid && !s.deleted)) &&
             (s.publicQueue + s.name).toLowerCase().includes(query),
         )
-        .map((s) => (
-          <SidebarMenuButton
-            key={s.id}
-            asChild
-            className={cn(((debug && !s.paid) || s.deleted) && "opacity-50")}
-          >
-            <SidebarLink
-              submission={{ ...s, queue: s.publicQueue }}
-              prefetch={!s.deleted}
-            />
-          </SidebarMenuButton>
-        ))}
+        .map((s) =>
+          debug ? (
+            <div key={s.id} className="flex items-center gap-0">
+              <Checkbox
+                className="mx-1 shrink-0"
+                checked={selIds?.includes(s.id) ?? false}
+                onCheckedChange={(ch) =>
+                  setSelIds((prev) =>
+                    ch
+                      ? [...(prev || []), s.id]
+                      : (prev || []).filter((i) => i !== s.id),
+                  )
+                }
+              />
+              <SidebarMenuButton
+                asChild
+                className={cn(
+                  ((debug && !s.paid) || s.deleted) && "opacity-50",
+                )}
+              >
+                <SidebarLink
+                  submission={{ ...s, queue: s.publicQueue }}
+                  prefetch={!s.deleted}
+                />
+              </SidebarMenuButton>
+            </div>
+          ) : (
+            <SidebarMenuButton
+              key={s.id}
+              asChild
+              className={cn(((debug && !s.paid) || s.deleted) && "opacity-50")}
+            >
+              <SidebarLink
+                submission={{ ...s, queue: s.publicQueue }}
+                prefetch={!s.deleted}
+              />
+            </SidebarMenuButton>
+          ),
+        )}
       <div ref={bottomRef} />
     </>
+  );
+}
+
+export function BulkDeleteButton() {
+  const [selIds, setSelIds] = shared.state("rubgram.sel_id");
+  const [loading, setLoading] = useState(false);
+
+  if (!selIds?.length) return null;
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <Button
+          variant="destructive"
+          size="sm"
+          className="w-full"
+          disabled={loading}
+          onClick={async () => {
+            setLoading(true);
+            try {
+              await bulkDelete(selIds);
+              setSelIds([]);
+              toast.success(`ลบ ${selIds.length} รายการแล้ว`);
+            } catch (e) {
+              toast.error(`${e}`);
+            }
+            setLoading(false);
+          }}
+        >
+          {loading ? "กำลังลบ..." : <Trash2 />}
+          ลบ {selIds.length} รายการ
+        </Button>
+      </SidebarMenuItem>
+    </SidebarMenu>
   );
 }
 

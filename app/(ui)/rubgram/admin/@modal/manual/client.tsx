@@ -4,15 +4,16 @@
 import { FileSearch2, RefreshCw, X } from "lucide-react";
 import { type ComponentProps, useEffect, useRef, useState } from "react";
 import { b2sClient } from "@/app/(ui)/admin/cdn/table";
+import { VirtualizedComboBox } from "@/components/combobox";
 import { useFormContext } from "@/components/form";
 import { SimpleTooltip } from "@/components/tooltip";
 import { Button } from "@/components/ui/button";
+import type { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import type { Input } from "@/components/ui/input";
 import { Kbd } from "@/components/ui/kbd";
 import { Label } from "@/components/ui/label";
 import {
@@ -23,9 +24,8 @@ import {
   MultiSelectTrigger,
   MultiSelectValue,
 } from "@/components/ui/multi-select";
-import { cn } from "@/lib/utils";
-import { VirtualizedComboBox } from "@/components/combobox";
 import { Spinner } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
 
 export function CurrencyInput(props: ComponentProps<typeof Input>) {
   return (
@@ -126,7 +126,10 @@ export function SlipUpload({
         type="button"
       >
         {isSelected ? (
-          <span onClick={isSelected ? choose : undefined} className="truncate">
+          <span
+            onClick={isSelected ? choose : undefined}
+            className="min-w-0 truncate"
+          >
             {value.name} <Kbd>{b2sClient(Number(value.size))}</Kbd>
           </span>
         ) : (

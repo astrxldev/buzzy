@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2, UserLock } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { type FormEvent, use, useEffect, useState } from "react";
@@ -11,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 import { Brash } from "./brash";
-import Link from "next/link";
 
 export default function LoginPage({
   searchParams,

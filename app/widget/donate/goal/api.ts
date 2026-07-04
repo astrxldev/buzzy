@@ -1,9 +1,9 @@
 "use server";
 
+import { gt, sum } from "drizzle-orm";
 import { getArtifactConfig } from "@/lib/api";
 import { db } from "@/lib/db";
 import { donations, settings } from "@/lib/db/schema";
-import { gt, sum } from "drizzle-orm";
 
 export async function getDonateBar() {
   const { donateGoalStarting } = await getArtifactConfig();

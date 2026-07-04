@@ -1,5 +1,9 @@
+import { sql } from "drizzle-orm";
 import { Dice5, PlusIcon, Trash2 } from "lucide-react";
+import { ErrorBoundary } from "next/dist/client/components/error-boundary";
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ErrorModal } from "@/components/error";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,15 +33,12 @@ import { db } from "@/lib/db";
 import { endgameSubmissions } from "@/lib/db/schema";
 import { getEndgameConfig, random, wipe } from "../api";
 import {
+  BulkDeleteButton,
   CalendarButton,
   LimitManager,
   SubmissionList,
   Watcher,
 } from "./client";
-import { sql } from "drizzle-orm";
-import Link from "next/link";
-import { ErrorBoundary } from "next/dist/client/components/error-boundary";
-import { ErrorModal } from "@/components/error";
 
 export default async function AdminLayout({
   modal,
@@ -123,11 +124,15 @@ export default async function AdminLayout({
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
+          <BulkDeleteButton />
           <SidebarGroup>
             <SidebarGroupLabel>การตั้งค่า</SidebarGroupLabel>
             <LimitManager
               config={config}
-              length={subs.reduce((c, s) => c + (s.paid ? 1 : 0), 0)}
+              length={subs.reduce(
+                (c, s) => c + (s.paid && !s.deleted ? 1 : 0),
+                0,
+              )}
             />
           </SidebarGroup>
         </SidebarFooter>

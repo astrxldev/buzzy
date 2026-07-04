@@ -1,9 +1,11 @@
+import { sql } from "drizzle-orm";
 import { QrCodeIcon, SendIcon } from "lucide-react";
 import type { Metadata } from "next";
 import z from "zod";
 import { th } from "zod/v4/locales";
 import PromptpayImage from "#/assets/promptpay.jpg";
 import TruemoneyIcon from "#/assets/tmn.webp";
+import DonateLogo from "#/logos/donate.webp";
 import Cropper from "@/components/cropper";
 import {
   FormAction,
@@ -27,16 +29,14 @@ import { db } from "@/lib/db";
 import { donations, endgameSlips, submissions } from "@/lib/db/schema";
 import { sse } from "@/lib/db/sse-endpoints";
 import { checkSlip } from "@/lib/payment";
+import { getPostHogClient } from "@/lib/posthog-server";
 import { fileToDataUrl } from "@/lib/utils";
 import {
   CurrencyInput,
   SlipUpload,
 } from "../rubgram/admin/@modal/manual/client";
 import { DownloadButton } from "../rubgram/client";
-import { getPostHogClient } from "@/lib/posthog-server";
-import { sql } from "drizzle-orm";
-import DonateLogo from "#/logos/donate.webp";
-import Link from 'next/link';
+import Link from "next/link";
 
 const { TMN_DEST_PHONE_NUM, SASTIFY_API_PRIVKEY } = process.env as Record<
   string,
@@ -191,13 +191,20 @@ export default async function () {
 
       const { name, amount, message, image } = $;
 
+      const downscaled = image
+        ? await new Bun.Image(await image.arrayBuffer())
+            .resize(512, 512)
+            .webp()
+            .toBuffer()
+        : undefined;
+
       const [{ id }] = await tx
         .insert(donations)
         .values({
           name,
           amount,
           message,
-          image: image ? Buffer.from(await image.arrayBuffer()) : undefined,
+          image: downscaled,
           uid: $.artifact === "true" ? $.uid : null,
           // dont send on screen if less than 10
           sent: $.amount < 10,
@@ -216,12 +223,12 @@ export default async function () {
           .onConflictDoUpdate({
             target: submissions.uid,
             set: {
-              comment: sql`CONCAT(${submissions.comment}, ${"\n"}, ${message})`,
+              comment: sql`${submissions.comment} || ${"\n"}::text || ${message}::text`,
               promoted: true,
             },
-          });
-        // .onConflictDoNothing();
-        // .catch(() => "conflict");
+          })
+          // .onConflictDoNothing();
+          .catch(console.error);
         // if (res === "conflict") {
         //   tx.rollback();
         //   ph.capture({
@@ -290,7 +297,7 @@ export default async function () {
               </FormInput>
             </div>
           </div>
-          <FormInput name="message" label="ข้อความ" subLabel="สูงสุด 500 ตัวอักษร">
+          <FormInput name="message" label="ข้อความ" subLabel="สูงสุด 200 ตัวอักษร">
             <Textarea placeholder="ข้อความ" />
           </FormInput>
           {!artifactConfig.locked && (

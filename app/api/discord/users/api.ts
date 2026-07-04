@@ -2,9 +2,9 @@
 
 import { env } from "node:process";
 import Snowflake, { GatewayIntents } from "@sfjs/snowflake";
-import { redis } from "@/lib/db/redis";
-import { adminCheck } from "@/lib/auth";
 import { forbidden } from "next/navigation";
+import { adminCheck } from "@/lib/auth";
+import { redis } from "@/lib/db/redis";
 
 const bot = new Snowflake({
   token: env.DISCORD_BOT_TOKEN || "",

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
-export function StarsRenderer() {
+export function StarsRenderer({ mask }: { mask: string }) {
   const cv = useRef<HTMLCanvasElement | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -122,9 +122,12 @@ export function StarsRenderer() {
     <canvas
       ref={cv}
       className={cn(
-        "fixed top-0 left-0 z-[-1] h-fit min-h-dvh w-full mask-[url('/mask.webp')] mask-cover mask-center mask-no-repeat object-cover opacity-0 transition-opacity duration-5000",
+        "fixed top-0 left-0 z-[-1] h-fit min-h-dvh w-full mask-cover mask-center mask-no-repeat object-cover opacity-0 transition-opacity duration-5000",
         loaded && "opacity-40",
       )}
+      style={{
+        maskImage: `url(${JSON.stringify(mask)})`,
+      }}
     ></canvas>
   );
 }

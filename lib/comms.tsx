@@ -21,12 +21,14 @@ type SharedStates = Partial<{
   connected: boolean;
   updated: boolean;
   "rubgram.services": string[];
+  "rubgram.sel_id": string[];
   "tl.deleteMode": boolean;
   inspect: Record<string, string>;
   // nf(Not Found) and showcase(Not In Showcase) is error dialog that opens guide
   warning: "showcase" | "nf" | "guide" | "private";
   "warning.uid": string;
   "warning.src": "submit" | "input";
+  "moderator.volume": number;
   _raw: Record<string, unknown>;
 }>;
 

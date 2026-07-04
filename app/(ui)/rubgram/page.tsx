@@ -3,6 +3,7 @@ import {
   AlertCircle,
   BookAlert,
   CircleDollarSign,
+  List,
   SendHorizonal,
   X,
 } from "lucide-react";
@@ -54,7 +55,7 @@ import { db } from "@/lib/db";
 import { endgameSubmissions } from "@/lib/db/schema";
 import { LiveButton } from "../artifact/live";
 import { Watcher } from "./admin/client";
-import { getDiscordSession, getEndgameConfig } from "./api";
+import { getDiscordSession, getEndgameConfig, getUserSubmissions } from "./api";
 import {
   CancelButton,
   ClearCookie,
@@ -63,6 +64,8 @@ import {
   PriceEstimation,
   ServiceSelector,
   SlipUpload,
+  SubmissionListModal,
+  SubmitAnotherButton,
   WelcomeScreening,
 } from "./client";
 import { EndgameFormWrapper } from "./form";
@@ -73,16 +76,25 @@ export const metadata: Metadata = {
   description: "รับเล่นคอนเทนต์เอนเกมเกนชินแทนคนดู",
 };
 
-export default async function EndgamePage() {
+export default async function EndgamePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ new?: string }>;
+}) {
+  const sp = await searchParams;
+  const isNew = sp.new === "";
+
   const cookie = await cookies();
   const sid = cookie.get("rsid");
   const session = await getDiscordSession();
-  const [q] = sid?.value
-    ? await db
-        .select({
-          // Using endgame.submissions.queue here because
-          // ${endgameSubmissions.queue} does not work
-          queue: sql<number>`
+
+  const [q] =
+    !isNew && sid?.value
+      ? await db
+          .select({
+            // Using endgame.submissions.queue here because
+            // ${endgameSubmissions.queue} does not work
+            queue: sql<number>`
             ${endgameSubmissions.queue} - (
               select count(*)
               from ${endgameSubmissions} e2
@@ -90,24 +102,25 @@ export default async function EndgamePage() {
                 and e2.queue < endgame.submissions.queue
             )
           `,
-          paid: endgameSubmissions.paid,
-          price: endgameSubmissions.price,
-          expires: endgameSubmissions.expires,
-        })
-        .from(endgameSubmissions)
-        .where(
-          and(
-            or(
-              eq(endgameSubmissions.id, sid.value),
-              and(
-                eq(endgameSubmissions.user, session?.uid || "placeholder"),
-                gt(endgameSubmissions.expires, new Date()),
+            paid: endgameSubmissions.paid,
+            price: endgameSubmissions.price,
+            expires: endgameSubmissions.expires,
+          })
+          .from(endgameSubmissions)
+          .where(
+            and(
+              or(
+                eq(endgameSubmissions.id, sid.value),
+                and(
+                  eq(endgameSubmissions.user, session?.uid || "placeholder"),
+                  gt(endgameSubmissions.expires, new Date()),
+                ),
               ),
+              not(endgameSubmissions.deleted),
             ),
-            not(endgameSubmissions.deleted),
-          ),
-        )
-    : [];
+          )
+      : [];
+  const userSubs = session ? await getUserSubmissions(session.uid) : [];
   const { count, ...config } = await getEndgameConfig();
   const [canExpire] = q
     ? await db
@@ -141,6 +154,14 @@ export default async function EndgamePage() {
                   </span>
                 )}
               </div>
+              <div className="absolute right-0 bottom-0 m-2 flex gap-2">
+                <SubmissionListModal subs={userSubs}>
+                  <Button variant="outline" size="sm">
+                    <List /> รายการคิว
+                  </Button>
+                </SubmissionListModal>
+                <SubmitAnotherButton />
+              </div>
             </Blocker>
           )
         ) : config.locked ? (
@@ -154,7 +175,7 @@ export default async function EndgamePage() {
             </div>
           </Blocker>
         ) : (
-          <WelcomeScreening {...{ session }} />
+          <WelcomeScreening {...{ session, userSubs }} />
         )}
         <CardHeader className="justify-center">
           <CardTitle>
@@ -333,7 +354,7 @@ export default async function EndgamePage() {
           ช่องดิสคอร์ด
         </a>
       </span>
-      {sid && !q && <ClearCookie />}
+      {sid && !q && !isNew && <ClearCookie />}
       <Watcher />
     </div>
   );

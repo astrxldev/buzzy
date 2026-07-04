@@ -97,10 +97,10 @@ async function main() {
   console.log("Fetching Amber data...");
   const [changelog, avatars]: [ChangelogApiResponse, AvatarApiResponse] =
     await Promise.all([
-      await fetch("https://gi.yatta.moe/api/v2/static/changelog").then((e) =>
+      await fetch("https://buzz.sudloh.com/api/amber/log").then((e) =>
         e.json(),
       ),
-      await fetch("https://gi.yatta.moe/api/v2/en/avatar").then((e) =>
+      await fetch("https://buzz.sudloh.com/api/amber/char").then((e) =>
         e.json(),
       ),
     ]);
