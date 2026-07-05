@@ -36,11 +36,11 @@ jobs:
       - run: |
           TAG=${{ gitea.sha }}
           docker build \
-            -t mts.dgnr.us:5000/${{ gitea.repository }}:frontend \
-            -t mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG \
+            -t registry.neko-piranha.ts.net/${{ gitea.repository }}:frontend \
+            -t registry.neko-piranha.ts.net/${{ gitea.repository }}:frontend-$TAG \
             .
           docker build --target migration \
-            -t mts.dgnr.us:5000/${{ gitea.repository }}:migration \
+            -t registry.neko-piranha.ts.net/${{ gitea.repository }}:migration \
             .
 
   build-backend:
@@ -72,8 +72,8 @@ jobs:
           TAG=${{ gitea.sha }}
           docker build \
             -f backend.dockerfile \
-            -t mts.dgnr.us:5000/${{ gitea.repository }}:backend \
-            -t mts.dgnr.us:5000/${{ gitea.repository }}:backend-$TAG \
+            -t registry.neko-piranha.ts.net/${{ gitea.repository }}:backend \
+            -t registry.neko-piranha.ts.net/${{ gitea.repository }}:backend-$TAG \
             .
 
   push:
@@ -82,11 +82,11 @@ jobs:
     steps:
       - run: |
           TAG=${{ gitea.sha }}
-          docker push mts.dgnr.us:5000/${{ gitea.repository }}:backend &
-          docker push mts.dgnr.us:5000/${{ gitea.repository }}:backend-$TAG &
-          docker push mts.dgnr.us:5000/${{ gitea.repository }}:frontend &
-          docker push mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG &
-          docker push mts.dgnr.us:5000/${{ gitea.repository }}:migration &
+          docker push registry.neko-piranha.ts.net/${{ gitea.repository }}:backend &
+          docker push registry.neko-piranha.ts.net/${{ gitea.repository }}:backend-$TAG &
+          docker push registry.neko-piranha.ts.net/${{ gitea.repository }}:frontend &
+          docker push registry.neko-piranha.ts.net/${{ gitea.repository }}:frontend-$TAG &
+          docker push registry.neko-piranha.ts.net/${{ gitea.repository }}:migration &
           wait
 
       - name: Install kubectl
@@ -110,7 +110,7 @@ jobs:
           # DB migration
           kubectl delete job db-migrate -n buzz --ignore-not-found
           kubectl create job db-migrate \
-            --image=mts.dgnr.us:5000/${{ gitea.repository }}:migration \
+            --image=registry.neko-piranha.ts.net/${{ gitea.repository }}:migration \
             -n buzz \
             --dry-run=client -o json \
             -- bun dr push | \
@@ -118,8 +118,8 @@ jobs:
             kubectl apply -f -
 
           # Roll app & backend
-          kubectl set image deployment/app app=mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG -n buzz
-          kubectl set image deployment/backend backend=mts.dgnr.us:5000/${{ gitea.repository }}:backend-$TAG -n buzz
+          kubectl set image deployment/app app=registry.neko-piranha.ts.net/${{ gitea.repository }}:frontend-$TAG -n buzz
+          kubectl set image deployment/backend backend=registry.neko-piranha.ts.net/${{ gitea.repository }}:backend-$TAG -n buzz
           kubectl rollout status deployment/app -n buzz --timeout=180s &
           kubectl rollout status deployment/backend -n buzz --timeout=180s &
           kubectl wait --for=condition=complete job/db-migrate -n buzz --timeout=600s &

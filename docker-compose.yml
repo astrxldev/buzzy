@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   app:
-    image: mts.dgnr.us:5000/astral/buzz:frontend
+    image: registry.neko-piranha.ts.net/astral/buzz:frontend
     deploy:
       replicas: 2
       resources:
@@ -26,7 +26,7 @@ services:
       - buzz
 
   backend:
-    image: mts.dgnr.us:5000/astral/buzz:backend
+    image: registry.neko-piranha.ts.net/astral/buzz:backend
     environment:
       NO_AUTH_CHECK: "true"
     deploy:

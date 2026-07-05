@@ -55,7 +55,7 @@
 - **ServiceAccount `ci-deployer`** in namespace `buzz`.
 - RBAC Role grants: Deployments (get/list/watch/update/patch), Pods (get/list/watch), Jobs (full CRUD), Services/Ingresses/Middlewares (get/list/watch/create/update/patch).
 - Token for the runner: `kubectl create token ci-deployer -n buzz` (or use a long-lived token from a Secret tied to the SA).
-- The runner also needs `docker` login access to `mts.dgnr.us:5000` (same as today).
+- The runner also needs `docker` login access to `registry.neko-piranha.ts.net` (same as today).
 
 ### Replicated Stateful Services (external to buzz namespace)
 
@@ -65,8 +65,7 @@
 ### Container Registry
 
 - **Zot** running in-cluster (namespace `registry`), exposed via ServiceLB on host port 5000.
-- All k3s nodes have `/etc/rancher/k3s/registries.yaml` mirroring `mts.dgnr.us:5000` → `http://localhost:5000` (svclb binds host port 5000). k3s must be restarted after writing this file.
-- CI runner pushes to `mts.dgnr.us:5000` (Tailscale → `100.75.220.33` → svclb → zot pod).
+- CI runner pushes to `registry.neko-piranha.ts.net` (Tailscale → `100.75.220.33` → svclb → zot pod).
 
 ### Resource Limits
 
@@ -111,14 +110,14 @@ kubectl config use-context buzz
 # DB migration
 kubectl delete job db-migrate -n buzz --ignore-not-found
 kubectl create job db-migrate \
-  --image=mts.dgnr.us:5000/astral/buzz:frontend-$TAG \
+  --image=registry.neko-piranha.ts.net/astral/buzz:frontend-$TAG \
   -n buzz \
   --command -- bun dr push
 kubectl wait --for=condition=complete job/db-migrate -n buzz --timeout=120s
 
 # Roll app & backend
-kubectl set image deployment/app app=mts.dgnr.us:5000/astral/buzz:frontend-$TAG -n buzz
-kubectl set image deployment/backend backend=mts.dgnr.us:5000/astral/buzz:backend-$TAG -n buzz
+kubectl set image deployment/app app=registry.neko-piranha.ts.net/astral/buzz:frontend-$TAG -n buzz
+kubectl set image deployment/backend backend=registry.neko-piranha.ts.net/astral/buzz:backend-$TAG -n buzz
 ```
 
 CI runner needs Gitea secret `KUBE_TOKEN` containing the `ci-deployer` SA token. Rotate via:

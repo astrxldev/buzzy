@@ -26,7 +26,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
         - name: backend
-          image: mts.dgnr.us:5000/astral/buzz:backend
+          image: registry.neko-piranha.ts.net/astral/buzz:backend
           env:
             - name: NO_AUTH_CHECK
               value: "true"

@@ -100,7 +100,7 @@ graph TB
   subgraph Infra["Infrastructure — Docker Swarm"]
     Nginx["Nginx Reverse Proxy<br/>(SSE: buffering off, 200s timeout)"]:::infra
     GiteaCI["Gitea Actions CI/CD"]:::infra
-    Registry["Private Registry<br/>mts.dgnr.us:5000"]:::infra
+    Registry["Private Registry<br/>registry.neko-piranha.ts.net"]:::infra
     AppService["App Service<br/>2 replicas · 1 CPU / 1 GB"]:::infra
     BackendService["Backend Service<br/>1 replica · 1 CPU / 512 MB"]:::infra
   end
@@ -397,7 +397,7 @@ Push to `main` or `dev` triggers `.github/workflows/build.yml`:
 
 1. Build frontend Docker image (multi-stage: deps → drizzle push → builder → runner)
 2. Build backend Docker image (compiled to Bun bytecode via `bun build --target bun --bytecode`)
-3. Push both images to private registry at `mts.dgnr.us:5000`
+3. Push both images to private registry at `registry.neko-piranha.ts.net`
 4. Rolling update of Docker Swarm services (`buzz_app`, `buzz_backend`)
 
 ### Production stack (Docker Swarm)
@@ -412,7 +412,7 @@ Infrastructure dependencies:
 - PostgreSQL database (managed externally)
 - Redis instance for SSE pub/sub and caching
 - Nginx reverse proxy with SSE optimizations (buffering off, 200s read timeout)
-- Private Docker registry at `mts.dgnr.us:5000`
+- Private Docker registry at `registry.neko-piranha.ts.net`
 
 ### Environment
 
