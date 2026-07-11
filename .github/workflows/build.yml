@@ -36,11 +36,11 @@ jobs:
       - run: |
           TAG=${{ gitea.sha }}
           docker build \
-            -t mts.dgnr.us:5000/${{ gitea.repository }}:frontend \
-            -t mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG \
+            -t registry.neko-piranha.ts.net/${{ gitea.repository }}:frontend \
+            -t registry.neko-piranha.ts.net/${{ gitea.repository }}:frontend-$TAG \
             .
           docker build --target migration \
-            -t mts.dgnr.us:5000/${{ gitea.repository }}:migration \
+            -t registry.neko-piranha.ts.net/${{ gitea.repository }}:migration \
             .
 
   build-backend:
@@ -72,8 +72,8 @@ jobs:
           TAG=${{ gitea.sha }}
           docker build \
             -f backend.dockerfile \
-            -t mts.dgnr.us:5000/${{ gitea.repository }}:backend \
-            -t mts.dgnr.us:5000/${{ gitea.repository }}:backend-$TAG \
+            -t registry.neko-piranha.ts.net/${{ gitea.repository }}:backend \
+            -t registry.neko-piranha.ts.net/${{ gitea.repository }}:backend-$TAG \
             .
 
   push:
@@ -82,11 +82,11 @@ jobs:
     steps:
       - run: |
           TAG=${{ gitea.sha }}
-          docker push mts.dgnr.us:5000/${{ gitea.repository }}:backend &
-          docker push mts.dgnr.us:5000/${{ gitea.repository }}:backend-$TAG &
-          docker push mts.dgnr.us:5000/${{ gitea.repository }}:frontend &
-          docker push mts.dgnr.us:5000/${{ gitea.repository }}:frontend-$TAG &
-          docker push mts.dgnr.us:5000/${{ gitea.repository }}:migration &
+          docker push registry.neko-piranha.ts.net/${{ gitea.repository }}:backend &
+          docker push registry.neko-piranha.ts.net/${{ gitea.repository }}:backend-$TAG &
+          docker push registry.neko-piranha.ts.net/${{ gitea.repository }}:frontend &
+          docker push registry.neko-piranha.ts.net/${{ gitea.repository }}:frontend-$TAG &
+          docker push registry.neko-piranha.ts.net/${{ gitea.repository }}:migration &
           wait
 
       - name: Install kubectl
