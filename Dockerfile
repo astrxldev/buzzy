@@ -43,9 +43,8 @@ RUN mkdir -p .next/cache
 FROM oven/bun:1.3.14-alpine AS migration
 WORKDIR /home/container
 
-COPY --from=deps /home/container/node_modules ./node_modules
-COPY --from=deps /home/container/package*.json ./
-COPY --from=deps /home/container/bun.lock ./
+RUN bun i uuidv7 drizzle-orm drizzle-kit
+
 COPY --from=builder /home/container/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder /home/container/lib ./lib
 
