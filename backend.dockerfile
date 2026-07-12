@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.4
 
 ### Stage 1: deps ###
-FROM oven/bun:canary-alpine AS deps
+FROM oven/bun:1.3.14-alpine AS deps
 WORKDIR /home/container
 
 COPY package*.json bun.lock ./
@@ -11,7 +11,7 @@ COPY patches ./patches
 RUN --mount=type=cache,target=/root/.bun bun install --frozen-lockfile
 
 ### Stage 2: builder ###
-FROM oven/bun:canary-alpine AS builder
+FROM oven/bun:1.3.14-alpine AS builder
 
 # Isolation
 RUN adduser -Du 1001 container
@@ -29,7 +29,7 @@ COPY --chown=1001 . .
 RUN bun build --target bun --production --bytecode backend --outdir=dist
 
 ### Stage 3: runner ###
-FROM oven/bun:canary-alpine AS runner
+FROM oven/bun:1.3.14-alpine AS runner
 
 # Isolation
 RUN adduser -Du 1001 container

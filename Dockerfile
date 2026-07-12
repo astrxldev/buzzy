@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.4
 
 ### Stage 1: deps ###
-FROM oven/bun:canary-alpine AS deps
+FROM oven/bun:1.3.14-alpine AS deps
 WORKDIR /home/container
 
 COPY package*.json bun.lock ./
@@ -11,7 +11,7 @@ COPY patches ./patches
 RUN --mount=type=cache,target=/root/.bun bun install --frozen-lockfile
 
 ### Stage 2: builder ###
-FROM oven/bun:canary-alpine AS builder
+FROM oven/bun:1.3.14-alpine AS builder
 
 # Isolation
 RUN adduser -Du 1001 container
@@ -40,7 +40,7 @@ RUN --mount=type=cache,target=/home/container/.next/cache,uid=1001,gid=1001 \
 RUN mkdir -p .next/cache
 
 ### Stage 3: migration ###
-FROM oven/bun:canary-alpine AS migration
+FROM oven/bun:1.3.14-alpine AS migration
 WORKDIR /home/container
 
 COPY --from=deps /home/container/node_modules ./node_modules
@@ -55,7 +55,7 @@ COPY lib/db/ ./lib/db/
 CMD ["bun", "drizzle-kit"]
 
 ### Stage 4: runner ###
-FROM oven/bun:canary-alpine AS runner
+FROM oven/bun:1.3.14-alpine AS runner
 
 # Isolation
 RUN adduser -Du 1001 container

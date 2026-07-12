@@ -270,7 +270,7 @@ graph TB
 ## Architecture
 
 - **Framework:** Next.js 16 (App Router), Turbopack, React 19 — hybrid SSR/RSC/CSR
-- **Runtime:** Bun (canary-alpine) — development, production, and backend
+- **Runtime:** Bun (1.3.14-alpine) — development, production, and backend
 - **Language:** TypeScript (strict, bundler module resolution)
 - **UI:** shadcn/ui (Radix primitives), Tailwind CSS 4, motion, lucide-react, @tanstack/react-table, recharts
 - **Forms:** react-hook-form, zod validation
