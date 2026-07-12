@@ -61,7 +61,7 @@ export async function GET(request: Request) {
   ) {
     const [apiKey, model] = POSSIBLE_CHOICES[currentRotation].split(":");
     console.log(
-      `[TTS] Trying key ${apiKey.slice(0, 8)}:${model} (${currentRotation}/${POSSIBLE_CHOICES} #${i + 1})...`,
+      `[TTS] Trying key ${apiKey.slice(0, 8)}:${model} (${currentRotation}/${POSSIBLE_CHOICES.length} #${i + 1})...`,
     );
     const client = new GoogleGenAI({ apiKey });
 
@@ -87,7 +87,7 @@ export async function GET(request: Request) {
       console.error(`TTS API key failed: ${apiKey.slice(0, 8)}...`, e);
     }
   }
-  console.log("[TTS] Got response?", audioData);
+  console.log("[TTS] Got response?", audioData ? "yes" : "no");
 
   if (!audioData)
     return Response.json({ error: "Response is empty" }, { status: 500 });
