@@ -23,7 +23,7 @@ import type { Note } from "@/lib/db/schema";
 import { addNote, debugUploadSlip, deleteNote, discordCall } from "../../api";
 
 // by chatgpt
-const lePalette = [
+export const lePalette = [
   {
     bg: "#A34A5B",
     border: "#C26779",

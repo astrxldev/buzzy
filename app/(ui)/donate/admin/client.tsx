@@ -5,15 +5,17 @@ import {
   BitcoinIcon,
   BugPlay,
   ChevronsLeftRightEllipsis,
+  CoinsIcon,
   Copy,
   Goal,
   ImageIcon,
   MessageCircleWarning,
+  WalletIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
-import { useEffect, useState } from "react";
+import { type ComponentProps, useEffect, useRef, useState } from "react";
 import { useEllipsisVisible } from "react-hook-text-overflow";
 import { DataTable } from "@/components/tantable";
 import { SimpleTooltip } from "@/components/tooltip";
@@ -28,8 +30,35 @@ import { sse } from "@/lib/db/sse-endpoints";
 import { ActionButton } from "../../../../components/action-button";
 import { getImage, reloadWidget, resendPopup, testPopup } from "./api";
 import { formatDistanceToNow } from "date-fns";
+import { lePalette } from "../../rubgram/admin/[id]/client";
+import { th } from "date-fns/locale";
+
+// directly adapted for date instead of UUID
+function colorFor(date: Date) {
+  const seed =
+    date.getUTCFullYear() * 10000 +
+    (date.getUTCMonth() + 1) * 100 +
+    date.getUTCDate();
+
+  return lePalette[seed % lePalette.length];
+}
 
 const columns: ColumnDef<typeof donations.$inferSelect>[] = [
+  {
+    accessorKey: "created",
+    header: "",
+    cell(row) {
+      return (
+        <div
+          className="absolute inset-0"
+          style={{
+            background: colorFor(row.row.original.created).bg,
+          }}
+        ></div>
+      );
+    },
+    meta: { className: "w-1 p-0 relative" },
+  },
   { accessorKey: "name", header: "ชื่อ", meta: { className: "w-50 truncate" } },
   {
     accessorFn: (row) => `${row.amount}฿`,
@@ -169,20 +198,30 @@ function ActionRow({
   );
 }
 
-function TopRow({ row }: { row?: typeof donations.$inferSelect }) {
+function TopRow({
+  row,
+  stats,
+  ...props
+}: {
+  row?: typeof donations.$inferSelect;
+  stats: {
+    total: number;
+    today: number;
+  };
+} & ComponentProps<"div">) {
   const [time, setTime] = useState("");
 
   useEffect(() => {
     if (!row) return setTime("");
     function update() {
-      setTime(`${formatDistanceToNow(row!.created)} ago`);
+      setTime(`${formatDistanceToNow(row!.created, { locale: th })}ที่แล้ว`);
     }
     const interval = setInterval(update, 1000);
     update();
-    return () => clearTimeout(interval);
+    return () => clearInterval(interval);
   }, [row]);
   return (
-    <div className="flex w-full gap-2 p-1">
+    <div className="flex w-full gap-2 p-1" {...props}>
       {row ? (
         <div className="flex flex-10 flex-col rounded-lg border bg-card/50 py-1 pr-1 pl-2">
           <div className="flex justify-between text-xl">
@@ -202,29 +241,52 @@ function TopRow({ row }: { row?: typeof donations.$inferSelect }) {
           <span>No donation yet</span>
         </div>
       )}
-      {/* <div className="flex-1 rounded-lg border bg-card/50 px-2 py-1">Hi</div>
-      <div className="flex-1 rounded-lg border bg-card/50 px-2 py-1">Hi</div> */}
+      <div className="relative flex flex-1 flex-col overflow-hidden rounded-lg border bg-card/50 px-2 py-1">
+        <CoinsIcon className="absolute top-1/3 left-1/3 size-6/8 opacity-20" />
+        <span>รวมวันนี้</span>
+        <span className="text-3xl font-bold">{stats.today}฿</span>
+      </div>
+      <div className="relative flex flex-1 flex-col overflow-hidden rounded-lg border bg-card/50 px-2 py-1 ">
+        <WalletIcon className="absolute top-1/3 left-1/3 size-6/8 opacity-20" />
+        <span>รวมทั้งหมด</span>
+        <span className="text-3xl font-bold">{stats.total}฿</span>
+      </div>
     </div>
   );
 }
 
 export function DonateAdminPage({
   data,
+  stats,
 }: {
   data: (typeof donations.$inferSelect)[];
+  stats: {
+    total: number;
+    today: number;
+  };
 }) {
+  const [maxHeight, setMaxHeight] = useState("");
+  const topRowRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setMaxHeight(`calc(100vh - 93px - ${topRowRef.current?.clientHeight}px)`);
+  }, [data]);
+
   return (
     <div className="mx-auto flex w-full max-w-[max(1280px,90%)] flex-col">
       <span className="flex items-center gap-1 pt-1 pb-2 text-3xl font-semibold">
         <BitcoinIcon size={32} />
         โดเนททั้งหมด
       </span>
-      <TopRow row={data[0]} />
+      <TopRow row={data[0]} ref={topRowRef} stats={stats} />
       <DataTable
         columns={columns}
         emptyDescription="No donation came in yet."
         data={data.slice(1)}
-        className="max-h-[calc(100vh-93px)] w-full overflow-y-auto bg-black/25 backdrop-blur-sm"
+        className="w-full overflow-y-auto bg-black/25 backdrop-blur-sm"
+        style={{
+          maxHeight,
+        }}
       ></DataTable>
       <DonateWatcher />
     </div>

@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-table";
 import { FolderCode, Plus } from "lucide-react";
 import Link from "next/link";
+import type { ComponentProps } from "react";
 import { type MouseEventHandler, type ReactNode, useState } from "react";
 import {
   Table,
@@ -51,6 +52,7 @@ export function DataTable<TData, TValue>({
   home,
   context,
   onClick,
+  style,
 }: DataTableProps<TData, TValue> & {
   className?: string;
   openCreateDialog?: () => void;
@@ -66,7 +68,7 @@ export function DataTable<TData, TValue>({
     icon?: ReactNode;
   }[];
   onClick?: (row: TData) => void;
-}) {
+} & Pick<ComponentProps<"div">, "style">) {
   const [internalRowSelection, setInternalRowSelection] = useState({});
 
   const table = useReactTable({
@@ -80,7 +82,10 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className={cn("overflow-hidden rounded-md border", className)}>
+    <div
+      className={cn("overflow-hidden rounded-md border", className)}
+      style={style}
+    >
       <Table className="table-fixed">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
