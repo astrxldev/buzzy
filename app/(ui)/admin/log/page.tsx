@@ -4,7 +4,8 @@ import { auditLog, user } from "@/lib/db/schema";
 import AuditLogViewer from "./client";
 
 export default async function AuditLogViewerPage() {
-  const logs = (await db.execute(sql`
+  const logs = (
+    await db.execute(sql`
     SELECT *
     FROM (
       SELECT *
@@ -13,7 +14,8 @@ export default async function AuditLogViewerPage() {
       LIMIT 1000
     ) t
     ORDER BY id ASC;
-  `)) as (typeof auditLog.$inferSelect)[];
+  `)
+  ).rows as (typeof auditLog.$inferSelect)[];
   const users = await db
     .select({ name: user.name, email: user.email })
     .from(user);

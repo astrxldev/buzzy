@@ -42,7 +42,8 @@ export default async function AdminLayout({
 }) {
   if (!(await adminCheck()))
     redirect(`/login?next=${encodeURIComponent("/artifact/admin")}`);
-  const subs = (await db.execute(sql`
+  const subs = (
+    await db.execute(sql`
     WITH max_checked AS (
       SELECT MAX(queue) AS max_queue
       FROM artifact.submissions
@@ -62,7 +63,8 @@ export default async function AdminLayout({
     
         ELSE s.queue
       END,
-  s.id;`)) as (typeof submissions.$inferSelect)[];
+  s.id;`)
+  ).rows as (typeof submissions.$inferSelect)[];
   const config = await getArtifactConfig();
   const count = await db
     .select({ a: sql`NULL` })
