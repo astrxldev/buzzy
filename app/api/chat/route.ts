@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
-import type { YoutubeLiveInfo } from "../live/route";
+
+type LiveResponse =
+  | {
+      url: string;
+    }
+  | "none";
 
 export async function GET(request: Request) {
-  const response = await fetch(new URL("/api/live", request.url), {
+  const liveUrl = new URL("https://buzz.sudloh.com/api/live", request.url).toString();
+  const response = await fetch(liveUrl, {
     cache: "no-store",
   });
 
@@ -12,7 +18,7 @@ export async function GET(request: Request) {
     });
   }
 
-  const liveInfo: YoutubeLiveInfo = await response.json();
+  const liveInfo: LiveResponse = await response.json();
 
   if (liveInfo === "none") {
     return new NextResponse("No live stream found for this channel.", {
