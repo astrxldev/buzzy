@@ -209,6 +209,7 @@ export function UserSelect({
         variant="outline"
         onClick={() => setBump(Date.now())}
         disabled={loading}
+        type="button"
       >
         {loading ? <Spinner /> : <RefreshCw />}
       </Button>
