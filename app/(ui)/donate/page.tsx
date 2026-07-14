@@ -205,6 +205,7 @@ export default async function () {
           amount,
           message,
           image: downscaled,
+          method: $.type,
           uid: $.artifact === "true" ? $.uid : null,
           // dont send on screen if less than 10
           sent: $.amount < 10,

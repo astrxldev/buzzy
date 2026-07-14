@@ -11,6 +11,7 @@ import {
   ImageIcon,
   MessageCircleWarning,
   WalletIcon,
+  QrCodeIcon as PromptpayIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -32,6 +33,8 @@ import { getImage, reloadWidget, resendPopup, testPopup } from "./api";
 import { formatDistanceToNow } from "date-fns";
 import { lePalette } from "../../rubgram/admin/[id]/client";
 import { th } from "date-fns/locale";
+import TruemoneyIcon from "#/assets/tmn.webp";
+import Image from "@/components/image";
 
 // directly adapted for date instead of UUID
 function colorFor(date: Date) {
@@ -135,7 +138,7 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
     cell(row) {
       return <ActionRow row={row.row.original} filler />;
     },
-    meta: { className: "w-27 p-0" },
+    meta: { className: "w-36 p-0" },
   },
 ];
 
@@ -148,6 +151,15 @@ function ActionRow({
 }) {
   return (
     <div className="flex gap-1">
+      {row.method === "pp" ? (
+        <PromptpayIcon className="size-8 p-1 opacity-50" />
+      ) : (
+        <Image
+          src={TruemoneyIcon}
+          alt="truemoney"
+          className="size-8 p-1 opacity-50 brightness-200 grayscale"
+        />
+      )}
       <SimpleTooltip text="แสดง Popup อีกครั้ง">
         <ActionButton
           variant="outline"

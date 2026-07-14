@@ -347,6 +347,7 @@ export const guides = pgTable("guides", {
 
 //#region Donate
 export const schDonate = pgSchema("donate");
+export const paymentMethod = schDonate.enum("payment_method", ["tmn", "pp"]);
 
 export const donations = schDonate.table("donations", {
   id: text().primaryKey().$defaultFn(uuidv7),
@@ -359,6 +360,7 @@ export const donations = schDonate.table("donations", {
   lastPing: timestamp("last_ping").default(new Date("01-01-2000")).notNull(),
   sent: boolean().default(false).notNull(),
   uid: text(),
+  method: paymentMethod().notNull().default("pp"),
 });
 
 //#endregion
