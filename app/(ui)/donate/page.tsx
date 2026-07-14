@@ -332,15 +332,15 @@ export default async function () {
                 ),
                 value: "tmn",
               },
-              // {
-              //   label: (
-              //     <span className="flex items-center gap-1">
-              //       <QrCodeIcon className="size-6" />
-              //       PromptPay
-              //     </span>
-              //   ),
-              //   value: "pp",
-              // },
+              {
+                label: (
+                  <span className="flex items-center gap-1">
+                    <QrCodeIcon className="size-6" />
+                    PromptPay
+                  </span>
+                ),
+                value: "pp",
+              },
             ]}
           >
             <FormChoice value="tmn">
