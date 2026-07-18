@@ -1,21 +1,19 @@
 "use client";
 
-import { FolderSync } from "lucide-react";
+import { Bomb, FolderSync } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CdnChooser } from "@/components/chooser";
-import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { shared } from "@/lib/comms";
-import { syncAmber, toggleEnka } from "./api";
+import { forceRefresh, syncAmber, toggleEnka } from "./api";
 import { Section } from "./page";
+import { ActionButton } from "@/components/action-button";
 
 export function SettingsServicesSection({
   enka: enkaInitial,
 }: {
   enka: boolean;
 }) {
-  const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState("");
   const [enka, setEnka] = useState<boolean>();
   const [debug] = shared.state("debug");
@@ -26,10 +24,7 @@ export function SettingsServicesSection({
   }, [enka, enkaInitial]);
 
   async function sync() {
-    setSyncing(true);
-    syncAmber()
-      .then(setSyncResult)
-      .finally(() => setSyncing(false));
+    return syncAmber().then(setSyncResult);
   }
 
   return (
@@ -39,10 +34,16 @@ export function SettingsServicesSection({
           <Switch checked={enka} onCheckedChange={setEnka} />
           เปิดใช้การดึงตัวละครใน Artifact
         </div>
-        <Button disabled={syncing} onClick={sync} className="w-min">
-          {syncing ? <Spinner /> : <FolderSync />}
-          Sync Amber
-        </Button>
+        <div className="flex items-center gap-2">
+          <ActionButton action={sync}>
+            <FolderSync />
+            Sync Amber
+          </ActionButton>
+          <ActionButton action={forceRefresh} variant="destructive">
+            <Bomb />
+            FORCE RELOAD
+          </ActionButton>
+        </div>
         {debug && (
           <div className="grid w-fit gap-1 rounded-sm border border-dashed p-1">
             <span className="text-sm text-muted-foreground">

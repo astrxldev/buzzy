@@ -42,36 +42,42 @@ export function VersionCheck({ headless = false }: { headless?: boolean }) {
   useEffect(() => {
     if (!readyForUpdate && window.location.hash === "#update") {
       setUpdated(true);
-      setTimeout(() => toast.success("คุณอยู่ในเวอร์ชั่นล่าสุดแล้ว"), 1000);
+      if (!headless)
+        setTimeout(() => toast.success("คุณอยู่ในเวอร์ชั่นล่าสุดแล้ว"), 1000);
       const url = new URL(window.location.href);
       url.hash = "";
       window.history.replaceState("", "", url);
     }
 
-    const { clean, es } = sse.active.sub(
-      "version",
-      (newVersion) => {
-        setConnected(true);
-        emit("sync");
-        const version = ver.current;
-        if (!version) console.log("Client version:", newVersion);
-        console.log("Server version:", newVersion);
-        if (version && newVersion !== version) {
-          setReadyForUpdate(true);
+    const { clean, es } = sse.active.subMany(
+      {
+        version(newVersion) {
+          setConnected(true);
+          emit("sync");
+          const version = ver.current;
+          if (!version) console.log("Client version:", newVersion);
+          console.log("Server version:", newVersion);
+          if (version && newVersion !== version) {
+            setReadyForUpdate(true);
+            window.location.hash = "#update";
+            if (headless) window.location.reload();
+            else
+              toast("มีอัปเดตใหม่พร้อมใช้งาน", {
+                description: "รีโหลดเพื่ออัปเดตเป็นเวอร์ชันล่าสุด",
+                action: {
+                  label: "รีโหลด",
+                  // Do a full reload
+                  onClick: () => window.location.reload(),
+                },
+                duration: Infinity,
+              });
+          }
+          if (newVersion !== version) ver.current = newVersion;
+        },
+        refresh() {
           window.location.hash = "#update";
-          if (headless) window.location.reload();
-          else
-            toast("มีอัปเดตใหม่พร้อมใช้งาน", {
-              description: "รีโหลดเพื่ออัปเดตเป็นเวอร์ชันล่าสุด",
-              action: {
-                label: "รีโหลด",
-                // Do a full reload
-                onClick: () => window.location.reload(),
-              },
-              duration: Infinity,
-            });
-        }
-        if (newVersion !== version) ver.current = newVersion;
+          queueMicrotask(() => window.location.reload());
+        },
       },
       {
         endpoint: "/api/active",
