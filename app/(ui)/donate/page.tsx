@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { QrCodeIcon, SendIcon } from "lucide-react";
+import { CircleX, QrCodeIcon, SendIcon } from "lucide-react";
 import type { Metadata } from "next";
 import z from "zod";
 import { th } from "zod/v4/locales";
@@ -345,34 +345,50 @@ export default async function () {
             ]}
           >
             <FormChoice value="tmn">
-              <FormInput name="link" label="ลิ้งค์อั่งเปา">
-                <Input placeholder="https://gift.truemoney.com/campaign/?v=..." />
-              </FormInput>
+              {artifactConfig.donateTruemoney ? (
+                <FormInput name="link" label="ลิ้งค์อั่งเปา">
+                  <Input placeholder="https://gift.truemoney.com/campaign/?v=..." />
+                </FormInput>
+              ) : (
+                <div className="flex gap-2">
+                  <CircleX className="text-red-500" />{" "}
+                  ขณะนี้การโอนเงินด้วยทรูมันนี่ใช้ไม่ได้ชั่วคราว
+                </div>
+              )}
             </FormChoice>
             <FormChoice value="pp">
-              <div className="flex w-full gap-2 pb-2">
-                <Image
-                  src={PromptpayImage}
-                  alt="Promptpay QR Code"
-                  className="max-w-32 shrink-0 rounded"
-                />
-                <div className="relative flex shrink-0 flex-col">
-                  <span className="text-sm font-bold">บัญชีรับโดเนท</span>
-                  <span className="text-sm text-muted-foreground">
-                    ผู้รับ: นาย พัชรพล พลพันธุ์
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    บัญชี: xxx-x-x8666-x
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    เลขที่อ้างอิง: 004999056945438
-                  </span>
-                  <DownloadButton />
+              {artifactConfig.donatePromptpay ? (
+                <>
+                  <div className="flex w-full gap-2 pb-2">
+                    <Image
+                      src={PromptpayImage}
+                      alt="Promptpay QR Code"
+                      className="max-w-32 shrink-0 rounded"
+                    />
+                    <div className="relative flex shrink-0 flex-col">
+                      <span className="text-sm font-bold">บัญชีรับโดเนท</span>
+                      <span className="text-sm text-muted-foreground">
+                        ผู้รับ: นาย พัชรพล พลพันธุ์
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        บัญชี: xxx-x-x8666-x
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        เลขที่อ้างอิง: 004999056945438
+                      </span>
+                      <DownloadButton />
+                    </div>
+                  </div>
+                  <FormInput name="slip">
+                    <SlipUpload />
+                  </FormInput>
+                </>
+              ) : (
+                <div className="flex gap-2">
+                  <CircleX className="text-red-500" />{" "}
+                  ขณะนี้การโอนเงินด้วยพร้อมเพย์ใช้ไม่ได้ชั่วคราว
                 </div>
-              </div>
-              <FormInput name="slip">
-                <SlipUpload />
-              </FormInput>
+              )}
             </FormChoice>
           </FormTab>
           <div className="flex justify-end">

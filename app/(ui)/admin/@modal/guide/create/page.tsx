@@ -18,6 +18,7 @@ import { actionLog } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { guides } from "@/lib/db/schema";
+import { forceRefresh } from "../../../settings/api";
 
 export default async function GuideCreatePage() {
   if (!(await adminCheck())) redirect("/login");
@@ -64,6 +65,7 @@ export default async function GuideCreatePage() {
     await actionLog(`Added guide ${data.name}`, data);
 
     revalidatePath("/admin/guide");
+    forceRefresh("/guide");
     return { toast: "Guide added successfully.", close: true };
   }
 

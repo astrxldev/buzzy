@@ -48,7 +48,7 @@ export const sse = sseEndpointMap({
   active: {
     version: z.string(),
     live: z.custom<YoutubeLiveInfo>(),
-    refresh: z.null(),
+    refresh: z.string().nullable(),
   },
   // Admin Live Log
   log: {

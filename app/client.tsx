@@ -74,7 +74,8 @@ export function VersionCheck({ headless = false }: { headless?: boolean }) {
           }
           if (newVersion !== version) ver.current = newVersion;
         },
-        refresh() {
+        refresh(prefix) {
+          if (prefix && !window.location.pathname.startsWith(prefix)) return;
           window.location.hash = "#update";
           queueMicrotask(() => window.location.reload());
         },

@@ -50,7 +50,7 @@ export default {
   },
   deploymentId: process.env.NEXT_DEPLOYMENT_ID,
   // reactCompiler: true,
-  allowedDevOrigins: ["astral:3000", "dev3000.astrxl.dev"],
+  allowedDevOrigins: ["astral:3000", "dev3000.astrxl.dev", "nyx"],
   // basePath: "/beta"
   output: "standalone",
 } satisfies NextConfig;

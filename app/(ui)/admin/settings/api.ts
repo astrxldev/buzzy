@@ -10,16 +10,16 @@ import { settings } from "@/lib/db/schema";
 import { adminCheck } from "@/lib/auth";
 import { sse } from "@/lib/db/sse-endpoints";
 
-export async function getEnka() {
+export async function getSettongs() {
   if (!(await adminCheck())) throw "Unauthorized";
-  const [{ enka } = { enka: true }] = await db.select().from(settings).limit(1);
-  return enka;
+  const [
+    settangs = { enka: true, donatePromptpay: true, donateTruemoney: true },
+  ] = await db.select().from(settings).limit(1);
+  return settangs;
 }
 
 export async function toggleEnka(state: boolean) {
   if (!(await adminCheck())) throw "Unauthorized";
-  const last = await getEnka();
-  if (last === state) return;
   await db
     .insert(settings)
     .values({ enka: state })
@@ -39,7 +39,22 @@ export async function syncAmber() {
   return res.stdout;
 }
 
-export async function forceRefresh() {
+export async function forceRefresh(prefix: string | null = null) {
   if (!(await adminCheck())) throw "Unauthorized";
-  sse.active.pub("refresh", null);
+  sse.active.pub("refresh", prefix);
+
+  await actionLog("Pulled a force refresh");
+}
+
+export async function toggleDonatePaymentMethod(
+  method: "donatePromptpay" | "donateTruemoney",
+  state: boolean,
+) {
+  if (!(await adminCheck())) throw "Unauthorized";
+  await db
+    .insert(settings)
+    .values({ [method]: state })
+    .onConflictDoUpdate({ target: settings.id, set: { [method]: state } });
+
+  await actionLog("Changed a settings", { [method]: state });
 }

@@ -74,7 +74,9 @@ export const versions = pgTable("versions", {
 
 export const settings = pgTable("settings", {
   id: boolean().primaryKey().default(true),
-  enka: boolean().notNull().default(false), // Turn this off when Enka is on maintenance
+  enka: boolean().notNull().default(true), // Turn this off when Enka is on maintenance
+  donatePromptpay: boolean().notNull().default(true),
+  donateTruemoney: boolean().notNull().default(true),
   donateGoal: numeric({ mode: "number" }),
   donateGoalStarting: timestamp(),
 });

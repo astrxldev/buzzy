@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { guides } from "@/lib/db/schema";
+import { forceRefresh } from "../settings/api";
 
 export async function hideGuide(id: string) {
   if (!(await adminCheck())) redirect("/login");
@@ -15,5 +16,7 @@ export async function hideGuide(id: string) {
       hidden: not(guides.hidden),
     })
     .where(eq(guides.id, id));
+
+  forceRefresh("/guide");
   revalidatePath("/admin/guide");
 }
