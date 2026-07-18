@@ -1,5 +1,5 @@
 import z from "zod/v4";
-import type { YoutubeLiveInfo } from "@/app/api/live/route";
+import type { YoutubeLiveInfo } from "../youtube-types";
 import { sseEndpoint, sseEndpointMap } from "./redis";
 import type { auditLog, tierlistStates } from "./schema";
 

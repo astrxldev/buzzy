@@ -1,0 +1,15 @@
+@import "../app/globals.css";
+
+@font-face {
+  font-display: swap;
+  font-family: "Kanit Local";
+  font-style: normal;
+  font-weight: 600;
+  src: url("/Kanit-SemiBold.ttf") format("truetype");
+}
+
+:root {
+  --font-anuphan: "Anuphan", "Kanit Local", sans-serif;
+  --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}

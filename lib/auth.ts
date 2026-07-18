@@ -2,13 +2,16 @@ import { env } from "node:process";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin } from "better-auth/plugins";
-import { headers } from "next/headers";
 import { uuidv7 } from "uuidv7";
 import { db } from "$/db"; // your drizzle instance
 import * as schema from "$/db/schema";
 import { redis } from "./db/redis";
 
 export const auth = betterAuth({
+  secret:
+    process.env.BETTER_AUTH_SECRET ??
+    process.env.AUTH_SECRET ??
+    "buzz-local-development-secret",
   emailAndPassword: {
     enabled: true,
   },
@@ -28,7 +31,7 @@ export const auth = betterAuth({
   }),
 });
 
-export async function adminCheck() {
+export async function adminCheck(inputHeaders?: Headers) {
   "use server";
 
   if (env.NO_AUTH_CHECK)
@@ -37,7 +40,10 @@ export async function adminCheck() {
       name: "me@dgnr.us",
     } satisfies Partial<typeof auth.$Infer.Session.user>;
 
-  const head = await headers();
+  const head =
+    inputHeaders ??
+    (await import("next/headers").then(async ({ headers }) => headers()));
+  if (!head) return null;
 
   const internalAuth = head.get("X-Internal-Auth");
   if (internalAuth && (await redis!.get(`internalToken:${internalAuth}`)))

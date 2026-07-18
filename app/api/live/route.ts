@@ -1,19 +1,8 @@
 import { NextResponse } from "next/server";
 import { sse } from "@/lib/db/sse-endpoints";
+import type { YoutubeLiveInfo } from "@/lib/youtube-types";
 
 export const revalidate = 900;
-
-export type YoutubeLiveInfo =
-  | {
-      url: string;
-      thumbnails: {
-        url: string;
-        width: number;
-        height: number;
-      };
-      title: string;
-    }
-  | "none";
 
 type APISearchResource = {
   kind: "youtube#searchResult";

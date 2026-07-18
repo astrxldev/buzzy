@@ -1,4 +1,5 @@
 {
+  "extends": "./.svelte-kit/tsconfig.json",
   "compilerOptions": {
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
@@ -11,28 +12,22 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "react-jsx",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
-      "@/*": ["./*"],
-      "$/*": ["./lib/*"],
-      "#/*": ["./public/*"]
-    }
+    "incremental": true
   },
   "include": [
-    "next-env.d.ts",
     "globals.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    ".next\\dev/types/**/*.ts",
-    ".next\\dev/types/**/*.ts"
+    "src/**/*.svelte",
+    "src/**/*.ts",
+    "lib/const.ts",
+    "lib/payment.ts",
+    "lib/payment-types.ts",
+    "lib/youtube-types.ts",
+    "lib/auth.ts",
+    "lib/db/**/*.ts",
+    "types/**/*.d.ts",
+    ".svelte-kit/ambient.d.ts",
+    ".svelte-kit/non-ambient.d.ts",
+    ".svelte-kit/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", ".next", "app", "components", "hooks", "util"]
 }

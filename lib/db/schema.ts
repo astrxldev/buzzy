@@ -13,7 +13,7 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { uuidv7 } from "uuidv7";
-import type { SlipokResponse } from "@/app/(ui)/rubgram/api";
+import type { SlipokResponse } from "../payment-types";
 import { bytea } from "./custom";
 
 export const element = pgEnum("character_element", [

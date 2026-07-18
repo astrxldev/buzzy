@@ -113,7 +113,9 @@ export class EventSourceEndpoint<T extends EventSourceEventMap> {
   private manager = ps;
   private readonly defaultEndpointUrl = new URL(
     `/sse/${this.endpoint}`,
-    typeof location === "undefined" ? process.env.BASE_URL : location.href,
+    typeof location === "undefined"
+      ? (process.env.BASE_URL ?? "http://localhost:3000")
+      : location.href,
   );
 
   constructor(

@@ -1,4 +1,13 @@
-import { drizzle } from "drizzle-orm/bun-sql";
 import * as schema from "./schema";
 
-export const db = drizzle(process.env.DATABASE_URL!, { schema });
+async function createDb() {
+  if (typeof Bun !== "undefined") {
+    const { drizzle } = await import("drizzle-orm/bun-sql");
+    return drizzle(process.env.DATABASE_URL!, { schema });
+  }
+
+  const { drizzle } = await import("drizzle-orm/node-postgres");
+  return drizzle.mock({ schema });
+}
+
+export const db = await createDb();

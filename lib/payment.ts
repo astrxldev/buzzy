@@ -1,4 +1,4 @@
-import type { SlipokResponse } from "@/app/(ui)/rubgram/api";
+import type { SlipokResponse } from "./payment-types";
 
 const { SLIPOK_API_URL, SLIPOK_API_KEY } = process.env as Record<
   string,
