@@ -114,7 +114,7 @@ jobs:
             -n buzz \
             --dry-run=client -o json \
             -- bun dr push | \
-            jq '.spec.template.spec.containers[0].envFrom = [{"secretRef": {"name": "buzz-env"}}]' | \
+            jq '.spec.template.spec.containers[0].envFrom = [{"secretRef": {"name": "buzz-env"}}] | .spec.template.spec.containers[0].imagePullPolicy = "Always"' | \
             kubectl apply -f -
 
           # Roll app & backend
