@@ -45,6 +45,7 @@ WORKDIR /home/container
 
 RUN bun i uuidv7 drizzle-orm drizzle-kit
 
+COPY --from=deps /home/container/package*.json ./ 
 COPY --from=builder /home/container/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder /home/container/lib ./lib
 
