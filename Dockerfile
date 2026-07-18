@@ -43,7 +43,7 @@ RUN mkdir -p .next/cache
 FROM oven/bun:1.3.14-alpine AS migration
 WORKDIR /home/container
 
-RUN bun i uuidv7 drizzle-orm drizzle-kit
+RUN bun i uuidv7 drizzle-orm drizzle-kit postgres
 
 COPY --from=deps /home/container/package*.json ./ 
 COPY --from=builder /home/container/drizzle.config.ts ./drizzle.config.ts
