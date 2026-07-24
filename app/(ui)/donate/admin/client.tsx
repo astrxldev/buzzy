@@ -258,11 +258,14 @@ function TopRow({
         <span>รวมวันนี้</span>
         <span className="text-3xl font-bold">{stats.today}฿</span>
       </div>
-      <div className="relative flex flex-1 flex-col overflow-hidden rounded-lg border bg-card/50 px-2 py-1 ">
+      <Link
+        className="relative flex flex-1 flex-col overflow-hidden rounded-lg border bg-card/50 px-2 py-1"
+        href="/donate/admin/calendar"
+      >
         <WalletIcon className="absolute top-1/3 left-1/3 size-6/8 opacity-20" />
         <span>รวมทั้งหมด</span>
         <span className="text-3xl font-bold">{stats.total}฿</span>
-      </div>
+      </Link>
     </div>
   );
 }
