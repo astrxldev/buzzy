@@ -25,7 +25,7 @@ export default async function () {
         today: sql<number>`
           COALESCE(
             SUM(${donations.amount}) FILTER (
-              WHERE ${donations.created} >= NOW() - INTERVAL '24 hours'
+              WHERE ${donations.created} >= date_trunc('day', NOW())
             ),
             0
           )
