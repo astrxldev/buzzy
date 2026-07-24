@@ -1,6 +1,6 @@
 import type { StaticImport } from "next/dist/shared/lib/get-img-props";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { ViewTransition, type ReactNode } from "react";
 import Banner from "#/banner_t.webp";
 import ArtifactLogo from "#/logos/artifact.webp";
 import DonateLogo from "#/logos/donate.webp";
@@ -159,13 +159,15 @@ function HomeLink({
           className,
         )}
       >
-        <Image
-          src={logo}
-          alt={name}
-          className="h-24 w-48 object-contain transition-transform duration-100 hover:scale-110 sm:h-40 sm:w-50"
-          width={200}
-          height={200}
-        />
+        <ViewTransition name={`branch-${href}`}>
+          <Image
+            src={logo}
+            alt={name}
+            className="h-24 w-48 object-contain transition-transform duration-100 hover:scale-110 sm:h-40 sm:w-50"
+            width={200}
+            height={200}
+          />
+        </ViewTransition>
         <span className="visible block text-lg md:hidden md:text-xs">
           {name}
         </span>

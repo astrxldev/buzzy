@@ -9,6 +9,7 @@ import { SimpleTooltip } from "@/components/tooltip";
 import { ScrollBar } from "@/components/ui/scroll-area";
 import { db } from "@/lib/db";
 import { tierlistTypes, tierlistVersions } from "@/lib/db/schema";
+import { ViewTransition } from "react";
 
 export const metadata: Metadata = {
   title: "จัดเทียร์ลิสต์",
@@ -47,14 +48,16 @@ export default async function TierlistSelectionPage() {
     <div className="mx-2 flex min-h-full max-w-full flex-col justify-center gap-2">
       <center className="mb-2">
         <Link href="/">
-          <Image
-            src={TierlistLogo}
-            alt="Tierlist"
-            className="w-1/2 sm:w-96"
-            width={200}
-            height={100}
-            fetchPriority="high"
-          />
+          <ViewTransition name="branch-/tl">
+            <Image
+              src={TierlistLogo}
+              alt="Tierlist"
+              className="w-1/2 sm:w-96"
+              width={200}
+              height={100}
+              fetchPriority="high"
+            />
+          </ViewTransition>
         </Link>
       </center>
       {vers.map((t) => (

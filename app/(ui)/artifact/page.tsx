@@ -9,7 +9,7 @@ import {
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, ViewTransition } from "react";
 import banner from "#/logos/artifact.webp";
 import { Blocker } from "@/components/blocker";
 import { ComboBox } from "@/components/combobox";
@@ -138,16 +138,18 @@ export default async function ArtifactFormPage({
           <CardTitle>
             <div className="w-[276.5px]">
               <Link href="/">
-                <Image
-                  style={{
-                    transform: "translateY(-70%)",
-                  }}
-                  className="absolute z-50"
-                  height={137.5}
-                  width={276.5}
-                  src={banner}
-                  alt="เสือกไอดีชาวบ้าน"
-                />
+                <ViewTransition name="branch-/artifact">
+                  <Image
+                    style={{
+                      transform: "translateY(-70%)",
+                    }}
+                    className="absolute z-50"
+                    height={137.5}
+                    width={276.5}
+                    src={banner}
+                    alt="เสือกไอดีชาวบ้าน"
+                  />
+                </ViewTransition>
               </Link>
             </div>
           </CardTitle>

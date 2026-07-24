@@ -37,6 +37,7 @@ import {
 } from "../rubgram/admin/@modal/manual/client";
 import { DownloadButton } from "../rubgram/client";
 import Link from "next/link";
+import { ViewTransition } from "react";
 
 const { TMN_DEST_PHONE_NUM, SASTIFY_API_PRIVKEY } = process.env as Record<
   string,
@@ -273,11 +274,13 @@ export default async function () {
         {/* oxlint-disable-next-line tailwindcss/enforce-canonical */}
         <div className="relative aspect-[304.5/30] w-full">
           <Link href="/">
-            <Image
-              src={DonateLogo}
-              alt="Donate Logo"
-              className="absolute left-1/2 w-3/4 -translate-x-1/2 -translate-y-2/3"
-            />
+            <ViewTransition name="branch-/donate">
+              <Image
+                src={DonateLogo}
+                alt="Donate Logo"
+                className="absolute left-1/2 w-3/4 -translate-x-1/2 -translate-y-2/3"
+              />
+            </ViewTransition>
           </Link>
         </div>
         <FormProvider id="tip" inDialog={false} onSubmit={submit}>
