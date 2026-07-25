@@ -369,7 +369,7 @@ export async function getDiscordSession() {
 
 export async function loginDiscord() {
   redirect(
-    `https://discord.com/oauth2/authorize?client_id=${encodeURIComponent(DISCORD_CLIENT_ID)}&response_type=code&redirect_uri=${encodeURIComponent(new URL("/rubgram/callback", BASE_URL.includes("localhost") ? "https://buzz.sudloh.com" : BASE_URL).href)}&scope=identify+guilds.join+guilds`,
+    `https://discord.com/oauth2/authorize?client_id=${encodeURIComponent(DISCORD_CLIENT_ID)}&response_type=code&redirect_uri=${encodeURIComponent(`${BASE_URL}/rubgram/callback`)}&scope=identify+guilds.join+guilds`,
   );
 }
 
