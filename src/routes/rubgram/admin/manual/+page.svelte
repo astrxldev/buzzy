@@ -1,6 +1,8 @@
 <script lang="ts">
-  import { Plus } from "lucide-svelte";
+  import { Plus, RefreshCw, Search } from "lucide-svelte";
+  import { onMount } from "svelte";
   import { goto, invalidateAll } from "$app/navigation";
+  import { resolve } from "$app/paths";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import type { PageData } from "./$types";
@@ -17,10 +19,42 @@
   let slip: File | null = $state(null);
   let message = $state("");
   let busy = $state(false);
+  let userQuery = $state("");
+  let users = $state<{ uid: string; username: string; display: string }[]>([]);
+  let usersLoading = $state(false);
+  let chooserOpen = $state(false);
+  const shownUsers = $derived(
+    users
+      .filter((user) => `${user.display} ${user.username} ${user.uid}`.toLowerCase().includes(userQuery.toLowerCase()))
+      .slice(0, 50),
+  );
 
   function toggleService(id: string, checked: boolean) {
     services = checked ? [...services, id] : services.filter((service) => service !== id);
   }
+
+  async function loadUsers() {
+    usersLoading = true;
+    try {
+      const response = await fetch("/api/discord/users");
+      if (!response.ok) throw new Error("Discord user list could not be loaded");
+      users = await response.json();
+    } catch (e) {
+      message = e instanceof Error ? e.message : `${e}`;
+    } finally {
+      usersLoading = false;
+    }
+  }
+
+  function chooseUser(user: { uid: string; username: string; display: string }) {
+    discord = user.uid;
+    username = user.username;
+    display = user.display;
+    userQuery = `${user.display} (${user.username})`;
+    chooserOpen = false;
+  }
+
+  onMount(() => void loadUsers());
 
   async function submit(ev: SubmitEvent) {
     ev.preventDefault();
@@ -38,7 +72,7 @@
         slip,
       });
       await invalidateAll();
-      if (result.id) await goto(`/rubgram/admin/${result.id}`);
+      if (result.id) await goto(resolve("/rubgram/admin/[id]", { id: result.id }));
     } catch (e) {
       message = e instanceof Error ? e.message : `${e}`;
     } finally {
@@ -58,9 +92,7 @@
   >
     <div>
       <h1 class="text-3xl font-bold">Create Submission</h1>
-      <p class="mt-1 text-sm text-muted-foreground">
-        Manual Rubgram queue entry. Discord lookup is replaced by direct ID fields.
-      </p>
+      <p class="mt-1 text-sm text-muted-foreground">Manual Rubgram queue entry with Discord member lookup.</p>
     </div>
 
     <div class="grid gap-3 md:grid-cols-2">
@@ -89,28 +121,50 @@
           onchange={(ev) => (slip = ev.currentTarget.files?.[0] ?? null)}
         />
       </label>
-      <label class="grid gap-1">
-        <span class="text-sm font-medium">Discord ID</span>
-        <Input
-          bind:value={discord}
-          pattern={"\\d{17,20}"}
-          required
-        />
-      </label>
-      <label class="grid gap-1">
-        <span class="text-sm font-medium">Username</span>
-        <Input bind:value={username} placeholder="username" />
-      </label>
-      <label class="grid gap-1 md:col-span-2">
-        <span class="text-sm font-medium">Display name</span>
-        <Input bind:value={display} placeholder="display name" />
-      </label>
+      <div class="relative grid gap-1 md:col-span-2">
+        <span class="text-sm font-medium">Discord user</span>
+        <div class="flex gap-1">
+          <label class="relative grow">
+            <Search class="absolute top-2.5 left-2 size-4 text-muted-foreground" />
+            <Input
+              class="pl-8"
+              bind:value={userQuery}
+              placeholder="Search display name, username, or Discord ID"
+              onfocus={() => (chooserOpen = true)}
+              oninput={() => (chooserOpen = true)}
+              autocomplete="off"
+            />
+          </label>
+          <Button type="button" size="icon" variant="outline" disabled={usersLoading} onclick={loadUsers}>
+            <RefreshCw class={usersLoading ? "size-4 animate-spin" : "size-4"} />
+          </Button>
+        </div>
+        {#if chooserOpen}
+          <div class="absolute top-full z-20 mt-1 max-h-60 w-full overflow-y-auto rounded-md border bg-popover p-1 shadow-lg">
+            {#each shownUsers as user (user.uid)}
+              <button
+                class="flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent"
+                type="button"
+                onclick={() => chooseUser(user)}
+              >
+                <span class="truncate">{user.display}</span>
+                <span class="ml-2 truncate text-xs text-muted-foreground">{user.username}</span>
+              </button>
+            {:else}
+              <p class="p-2 text-sm text-muted-foreground">{usersLoading ? "Loading users..." : "No users found"}</p>
+            {/each}
+          </div>
+        {/if}
+        <Input bind:value={discord} pattern={"\\d{17,20}"} required placeholder="Discord ID" />
+        <input type="hidden" bind:value={username} />
+        <input type="hidden" bind:value={display} />
+      </div>
     </div>
 
     <fieldset class="grid gap-2 rounded-xl border p-3">
       <legend class="px-1 text-sm font-medium">Services</legend>
       <div class="grid gap-2 md:grid-cols-2">
-        {#each data.types as type}
+        {#each data.types as type (type.id)}
           <label class="flex items-center justify-between gap-2 rounded-md border bg-background/40 px-3 py-2 text-sm">
             <span>{type.display}</span>
             <span class="flex items-center gap-2">

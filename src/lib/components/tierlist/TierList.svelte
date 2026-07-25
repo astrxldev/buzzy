@@ -2,7 +2,9 @@
   import {
     ChevronDown,
     ChevronUp,
+    Calculator,
     CopyPlus,
+    FileQuestionMark,
     Home,
     MessageSquareText,
     Pencil,
@@ -12,6 +14,9 @@
     X,
   } from "lucide-svelte";
   import { tick } from "svelte";
+  import ReconnectingEventSource from "reconnecting-eventsource";
+  import { invalidateAll } from "$app/navigation";
+  import { resolve } from "$app/paths";
   import { dndzone } from "svelte-dnd-action";
   import FadeImage from "$lib/components/FadeImage.svelte";
   import { Button } from "$lib/components/ui/button";
@@ -47,6 +52,7 @@
     badges,
     states: initialStates,
     editable = false,
+    canEdit = editable,
   }: {
     type: typeof tierlistTypes.$inferSelect;
     version: typeof tierlistVersions.$inferSelect;
@@ -56,6 +62,7 @@
     badges: Badge[];
     states: State[];
     editable?: boolean;
+    canEdit?: boolean;
   } = $props();
 
   const cellIds = $derived([
@@ -65,7 +72,7 @@
     "untiered",
   ]);
 
-  const initialPlacements = $derived.by(() => {
+  function makeInitialPlacements() {
     const tiered = Object.values(version.placements ?? {}).flat();
     return {
       ...Object.fromEntries(
@@ -76,27 +83,149 @@
       ...(version.placements ?? {}),
       untiered: chars.map((char) => char.id).filter((id) => !tiered.includes(id)),
     };
-  });
+  }
 
-  let placements = $state<Record<string, string[]>>({});
-  let states = $state<State[]>([]);
+  function makeInitialStates() {
+    return initialStates;
+  }
+
+  let placements = $state<Record<string, string[]>>(makeInitialPlacements());
+  let states = $state<State[]>(makeInitialStates());
   let untieredOpen = $state(true);
-  let tileSize = $state(72);
+  let tileSizeSetting = $state<number | null>(null);
+  let tileSizeAuto = $state(72);
+  const tileSize = $derived(tileSizeSetting || tileSizeAuto);
   let badgeSize = $state(24);
   let settingsOpen = $state(false);
+  let disclaimerOpen = $derived(!!version.disclaimer);
   let deleteMode = $state(false);
   let selectedRef = $state<string | null>(null);
   let selectedComment = $state("");
   let selectedBadges = $state<string[]>([]);
-  let saving = $state(false);
   let status = $state<"idle" | "saving" | "saved" | "error">("idle");
+  let connection = $state<"unknown" | "connecting" | "ready">("unknown");
+  let preferencesLoaded = $state(false);
+  let columnElement = $state<HTMLElement>();
+  let untieredElement = $state<HTMLElement>();
+  let stateSaveTimer: ReturnType<typeof setTimeout> | undefined;
+  let savedStatusTimer: ReturnType<typeof setTimeout> | undefined;
 
   $effect(() => {
-    placements = structuredClone(initialPlacements);
+    version.id;
+    version.placements;
+    version.disclaimer;
+    chars;
+    tiers;
+    columns;
+    initialStates;
+
+    clearTimeout(stateSaveTimer);
+    clearTimeout(savedStatusTimer);
+    stateSaveTimer = undefined;
+    savedStatusTimer = undefined;
+    placements = makeInitialPlacements();
+    states = makeInitialStates();
+    selectedRef = null;
+    selectedComment = "";
+    selectedBadges = [];
+    status = "idle";
+    settingsOpen = false;
+    disclaimerOpen = !!version.disclaimer;
+    deleteMode = false;
   });
 
   $effect(() => {
-    states = initialStates;
+    const readPreference = <T,>(key: string, fallback: T): T => {
+      try {
+        const value = localStorage.getItem(key);
+        return value === null ? fallback : (JSON.parse(value) as T);
+      } catch {
+        return fallback;
+      }
+    };
+    tileSizeSetting = readPreference<number | null>("tl_tileSize", null);
+    badgeSize = readPreference("tl_badgeSize", 24);
+    untieredOpen = readPreference("tl_untieredOpen", true);
+    preferencesLoaded = true;
+  });
+
+  $effect(() => {
+    if (!preferencesLoaded) return;
+    localStorage.setItem("tl_tileSize", JSON.stringify(tileSizeSetting));
+    localStorage.setItem("tl_badgeSize", JSON.stringify(badgeSize));
+    localStorage.setItem("tl_untieredOpen", JSON.stringify(untieredOpen));
+  });
+
+  $effect(() => {
+    if (!columnElement || !untieredElement) return;
+    let frame = 0;
+    const recalculate = () => {
+      const columnWidth = columnElement!.getBoundingClientRect().width;
+      const untieredWidth = untieredElement!.getBoundingClientRect().width;
+      let auto = 0;
+      let tiles = Math.ceil(24 / Math.max(columns.length, 1));
+      do {
+        const columnSize = (columnWidth - 4) / tiles - 8;
+        const across = Math.max(1, Math.floor((untieredWidth - 4) / (columnSize + 8)));
+        auto = Math.min(columnSize, (untieredWidth - 4) / across - 8);
+        tiles--;
+      } while (auto < 60 && tiles > 0);
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => (tileSizeAuto = Math.max(40, auto)));
+    };
+    const observer = new ResizeObserver(recalculate);
+    observer.observe(columnElement);
+    observer.observe(untieredElement);
+    recalculate();
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  });
+
+  $effect(() => {
+    const listId = version.id;
+    const source = new ReconnectingEventSource(`/sse/tl.${listId}`);
+    connection = "connecting";
+    const updateStates = (event: MessageEvent<string>) => {
+      if (version.id !== listId) return;
+      const next = JSON.parse(event.data) as State[];
+      states = next;
+      if (selectedRef && !stateSaveTimer) {
+        const selected = next.find((state) => state.ref === selectedRef);
+        selectedComment = selected?.comment ?? "";
+        selectedBadges = selected?.badges ?? [];
+      }
+    };
+    const updatePlacements = (event: MessageEvent<string>) => {
+      if (version.id !== listId) return;
+      placements = JSON.parse(event.data) as Record<string, string[]>;
+    };
+    const refetch = async () => {
+      if (version.id !== listId) return;
+      try {
+        await invalidateAll();
+      } catch (error) {
+        console.error("Tierlist sync failed", error);
+      }
+    };
+    source.addEventListener("update_states", updateStates as EventListener);
+    source.addEventListener("update_placements", updatePlacements as EventListener);
+    source.onopen = () => {
+      if (version.id !== listId) return;
+      connection = "ready";
+      void refetch();
+    };
+    source.onerror = () => {
+      if (version.id === listId) connection = "unknown";
+    };
+    return () => {
+      source.close();
+      clearTimeout(stateSaveTimer);
+      clearTimeout(savedStatusTimer);
+      stateSaveTimer = undefined;
+      savedStatusTimer = undefined;
+    };
   });
 
   const selectedChar = $derived(
@@ -106,10 +235,13 @@
     selectedRef ? states.find((state) => state.ref === selectedRef) : undefined,
   );
 
-  $effect(() => {
-    if (!selectedRef) return;
-    selectedComment = selectedState?.comment ?? "";
-    selectedBadges = selectedState?.badges ?? [];
+  const selectedTier = $derived.by(() => {
+    if (!selectedRef) return undefined;
+    return tiers.find((tier) =>
+      Object.entries(placements).some(
+        ([cell, refs]) => cell.startsWith(`${tier.id}-`) && refs.includes(selectedRef!),
+      ),
+    )?.id;
   });
 
   function getChar(ref: string) {
@@ -132,13 +264,18 @@
     };
   }
 
-  async function savePlacements() {
-    if (!editable) return;
+  async function savePlacements(
+    listId = version.id,
+    nextPlacements = $state.snapshot(placements),
+  ) {
+    if (!editable || version.id !== listId) return;
     status = "saving";
     try {
-      await savePlacementsRemote({ list: version.id, placements });
+      await savePlacementsRemote({ list: listId, placements: nextPlacements });
+      if (version.id !== listId) return;
       status = "saved";
     } catch (error) {
+      if (version.id !== listId) return;
       console.error(error);
       status = "error";
     }
@@ -146,8 +283,10 @@
 
   async function handleFinalize(cellId: string, event: DndEvent) {
     updateCell(cellId, event);
+    const listId = version.id;
+    const nextPlacements = $state.snapshot(placements);
     await tick();
-    await savePlacements();
+    await savePlacements(listId, nextPlacements);
   }
 
   function addCharacter(charId: string) {
@@ -160,6 +299,8 @@
   }
 
   function removeCharacter(ref: string) {
+    clearTimeout(stateSaveTimer);
+    stateSaveTimer = undefined;
     placements = Object.fromEntries(
       Object.entries(placements).map(([cellId, refs]) => [
         cellId,
@@ -171,31 +312,62 @@
   }
 
   function openPanel(ref: string) {
+    closePanel();
     selectedRef = ref;
+    const state = getState(ref);
+    selectedComment = state?.comment ?? "";
+    selectedBadges = state?.badges ?? [];
+  }
+
+  function closePanel() {
+    if (stateSaveTimer) {
+      clearTimeout(stateSaveTimer);
+      stateSaveTimer = undefined;
+      void saveState();
+    }
+    selectedRef = null;
   }
 
   function toggleBadge(id: string) {
     selectedBadges = selectedBadges.includes(id)
       ? selectedBadges.filter((badge) => badge !== id)
-      : [...selectedBadges, id].slice(0, 4);
+      : [...selectedBadges, id];
+    scheduleStateSave(200);
+  }
+
+  function scheduleStateSave(delay: number) {
+    clearTimeout(stateSaveTimer);
+    status = "saving";
+    stateSaveTimer = setTimeout(() => {
+      stateSaveTimer = undefined;
+      void saveState();
+    }, delay);
   }
 
   async function saveState() {
     if (!selectedRef || !selectedChar) return;
-    saving = true;
+    const listId = version.id;
+    const ref = selectedRef;
+    const char = selectedChar;
+    const payload = {
+      uuid: selectedState?.uuid,
+      ref,
+      char: char.id,
+      comment: selectedComment,
+      badges: selectedBadges,
+    };
+    states = [...states.filter((state) => state.ref !== ref), { ...selectedState, ...payload, list: listId } as State];
     try {
-      const payload = {
-        uuid: selectedState?.uuid,
-        ref: selectedRef,
-        char: selectedChar.id,
-        comment: selectedComment,
-        badges: selectedBadges,
-      };
-      const result = await saveStateRemote({ ...payload, list: version.id });
+      const result = await saveStateRemote({ ...payload, list: listId });
+      if (version.id !== listId) return;
       states = result.states ?? states;
-      selectedRef = null;
-    } finally {
-      saving = false;
+      status = "saved";
+      clearTimeout(savedStatusTimer);
+      savedStatusTimer = setTimeout(() => (status = "idle"), 1500);
+    } catch (error) {
+      if (version.id !== listId) return;
+      console.error(error);
+      status = "error";
     }
   }
 
@@ -215,8 +387,23 @@
 </script>
 
 <div class="flex h-full min-h-svh flex-col justify-between">
-  {#if version.disclaimer}
-    <div class="sr-only">มีภาพเงื่อนไขสำหรับเทียร์ลิสต์นี้</div>
+  {#if version.disclaimer && disclaimerOpen}
+    <div class="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm">
+      <FadeImage
+        src={`/cdn/${version.disclaimer}`}
+        alt="Disclaimer"
+        class="h-full w-full object-contain"
+      />
+      <Button
+        variant="outline"
+        class="absolute top-2 right-2"
+        size="icon"
+        onclick={() => (disclaimerOpen = false)}
+        aria-label="Close Disclaimer"
+      >
+        <X />
+      </Button>
+    </div>
   {/if}
   <div class="min-h-0 flex-1 overflow-auto">
     <div
@@ -252,10 +439,22 @@
                     ? "sync ล้มเหลว"
                     : "พร้อมแก้ไข"}
             </span>
-          {:else}
-            <a href={`/tl/${type.id}/${version.id}/admin`}>
+          {:else if canEdit}
+            <a href={resolve("/tl/[type]/[ver]/admin", { type: type.id, ver: version.id })}>
               <Pencil class="size-4 text-gray-400" />
             </a>
+          {:else}
+            <span
+              class={cn(
+                "inline-block size-2 rounded-full",
+                connection === "ready"
+                  ? "bg-green-400"
+                  : connection === "connecting"
+                    ? "bg-yellow-400"
+                    : "bg-gray-400",
+              )}
+              title={`Realtime: ${connection}`}
+            ></span>
           {/if}
         </span>
       </div>
@@ -271,8 +470,11 @@
         </button>
       </div>
 
-      {#each columns as column}
-        <div class="relative flex items-center justify-center bg-[#0005] text-2xl font-bold">
+      {#each columns as column (column.id)}
+        <div
+          class="relative flex items-center justify-center bg-[#0005] text-2xl font-bold"
+          bind:this={columnElement}
+        >
           {#if column.image}
             <FadeImage
               src={`/cdn/${column.image}`}
@@ -285,7 +487,7 @@
         </div>
       {/each}
 
-      {#each tiers as tier}
+      {#each tiers as tier (tier.id)}
         <div class="flex items-center justify-center bg-[#0005] text-4xl font-bold">
           {#if tier.image}
             <FadeImage
@@ -297,7 +499,7 @@
             {tier.name}
           {/if}
         </div>
-        {#each columns as column}
+        {#each columns as column (column.id)}
           {@const cellId = `${tier.id}-${column.id}`}
           <section
             class="flex flex-wrap content-start items-start gap-2 p-1"
@@ -309,6 +511,8 @@
               dragDisabled: !editable,
               dropFromOthersDisabled: !editable,
               flipDurationMs: 120,
+              morphDisabled: true,
+              centreDraggedOnCursor: true,
             }}
             onconsider={(event) => updateCell(cellId, event)}
             onfinalize={(event) => handleFinalize(cellId, event)}
@@ -318,7 +522,10 @@
               {#if char}
                 <button
                   type="button"
-                  class="relative rounded hover:brightness-110"
+                  class={cn(
+                    "relative rounded hover:brightness-110",
+                    editable && "cursor-grab active:cursor-grabbing",
+                  )}
                   aria-label={char.name}
                   onclick={() => openPanel(item.id)}
                   oncontextmenu={(event) => {
@@ -337,6 +544,11 @@
                     badgeSlots,
                     badgePositions,
                   })}
+                  {#if editable && deleteMode}
+                    <span class="absolute inset-0 grid place-items-center rounded bg-black/40 text-red-500 opacity-0 transition-opacity hover:opacity-100">
+                      <Trash2 />
+                    </span>
+                  {/if}
                 </button>
               {/if}
             {/each}
@@ -373,7 +585,7 @@
             }}
           >
             <option value="">เพิ่มตัวละคร</option>
-            {#each chars.toSorted((a, b) => a.name.localeCompare(b.name)) as char}
+            {#each chars.toSorted((a, b) => a.name.localeCompare(b.name)) as char (char.id)}
               <option value={char.id}>{char.name}</option>
             {/each}
           </select>
@@ -391,8 +603,9 @@
         </div>
       {/if}
     </Button>
-    {#if untieredOpen}
-      <section
+    <div bind:this={untieredElement}>
+      {#if untieredOpen}
+        <section
         class="flex flex-wrap gap-2 overflow-auto bg-[#0005] p-1"
         aria-label="Untiered characters"
         style={`max-height: ${(tileSize + 4) * 3 + 4}px`}
@@ -402,6 +615,8 @@
           dragDisabled: !editable,
           dropFromOthersDisabled: !editable,
           flipDurationMs: 120,
+          morphDisabled: true,
+          centreDraggedOnCursor: true,
         }}
         onconsider={(event) => updateCell("untiered", event)}
         onfinalize={(event) => handleFinalize("untiered", event)}
@@ -411,7 +626,10 @@
           {#if char}
             <button
               type="button"
-              class="relative rounded hover:brightness-110"
+              class={cn(
+                "relative rounded hover:brightness-110",
+                editable && "cursor-grab active:cursor-grabbing",
+              )}
               aria-label={char.name}
               onclick={() => openPanel(item.id)}
               oncontextmenu={(event) => {
@@ -430,11 +648,17 @@
                 badgeSlots,
                 badgePositions,
               })}
+              {#if editable && deleteMode}
+                <span class="absolute inset-0 grid place-items-center rounded bg-black/40 text-red-500 opacity-0 transition-opacity hover:opacity-100">
+                  <Trash2 />
+                </span>
+              {/if}
             </button>
           {/if}
         {/each}
-      </section>
-    {/if}
+        </section>
+      {/if}
+    </div>
   </div>
 </div>
 
@@ -449,13 +673,29 @@
       </div>
       <div class="grid gap-4">
         <label class="grid gap-2">
-          <span>ขนาดตัวละคร (px)</span>
+          <span class="flex items-center gap-1">
+            ขนาดตัวละคร (px)
+            {#if !tileSizeSetting}<Calculator class="size-4 text-emerald-400" />{/if}
+          </span>
           <input
             class="rounded border bg-background px-2 py-1"
             type="number"
-            bind:value={tileSize}
+            value={tileSizeSetting || Math.round(tileSizeAuto)}
+            oninput={(event) =>
+              (tileSizeSetting = Number((event.currentTarget as HTMLInputElement).value) || null)}
             min="40"
           />
+          <div class="flex gap-2">
+            <Button variant="outline" onclick={() => (tileSizeSetting = (tileSizeSetting || tileSize) + 1)}>
+              <ChevronUp />
+            </Button>
+            <Button variant="outline" onclick={() => (tileSizeSetting = (tileSizeSetting || tileSize) - 1)}>
+              <ChevronDown />
+            </Button>
+            <Button variant="outline" onclick={() => (tileSizeSetting = null)}>
+              <Calculator /> อัตโนมัติ
+            </Button>
+          </div>
         </label>
         <label class="grid gap-2">
           <span>ขนาดเครื่องหมาย (px)</span>
@@ -466,24 +706,44 @@
             min="12"
           />
         </label>
-        <a href="/tl" class="flex items-center gap-2 text-muted-foreground hover:underline">
+        <a href={resolve("/tl")} class="flex items-center gap-2 text-muted-foreground hover:underline">
           <Home class="size-4" /> หน้าหลัก
         </a>
+        {#if canEdit && !editable}
+          <a
+            href={resolve("/tl/[type]/[ver]/admin", { type: type.id, ver: version.id })}
+            class="flex items-center gap-2 text-muted-foreground hover:underline"
+          >
+            <Pencil class="size-4" /> ไปหน้าแก้ไข
+          </a>
+        {/if}
+        {#if version.disclaimer}
+          <button
+            type="button"
+            class="flex items-center gap-2 text-left text-muted-foreground hover:underline"
+            onclick={() => {
+              settingsOpen = false;
+              disclaimerOpen = true;
+            }}
+          >
+            <FileQuestionMark class="size-4" /> แสดงเงื่อนไข
+          </button>
+        {/if}
       </div>
     </div>
   </div>
 {/if}
 
 {#if selectedRef && selectedChar}
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-lg rounded-xl border bg-card p-4">
+  <div class="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-background/70 p-4 backdrop-blur-sm">
+    <div class="max-h-full w-full max-w-lg overflow-auto rounded-xl border bg-card p-4">
       <div class="mb-3 flex items-center justify-between">
         <h2 class="text-xl font-bold">{selectedChar.name}</h2>
-        <Button size="icon" variant="ghost" onclick={() => (selectedRef = null)}>
+        <Button size="icon" variant="ghost" onclick={closePanel}>
           <X />
         </Button>
       </div>
-      <div class="flex gap-4">
+      <div class="flex flex-col gap-4 sm:flex-row">
         <div class="shrink-0">
           {@render CharacterTile({
             char: selectedChar,
@@ -507,7 +767,7 @@
         <div class="grid grow gap-3">
           {#if editable}
             <div class="grid grid-cols-4 gap-1">
-              {#each badges.filter((badge) => !badge.tier.length || selectedBadges.includes(badge.id)) as badge}
+              {#each badges.filter((badge) => selectedBadges.includes(badge.id) || !badge.tier.length || !selectedTier || badge.tier.includes(selectedTier)) as badge (badge.id)}
                 <button
                   type="button"
                   class={cn(
@@ -533,6 +793,7 @@
               class="aspect-square resize-none rounded border bg-background p-2 disabled:opacity-90"
               placeholder="Comment..."
               bind:value={selectedComment}
+              oninput={() => scheduleStateSave(500)}
               disabled={!editable}
             ></textarea>
           </label>
@@ -541,9 +802,15 @@
               <Button variant="destructive" type="button" onclick={() => removeCharacter(selectedRef!)}>
                 <Trash2 /> ลบตัวละคร
               </Button>
-              <Button type="button" disabled={saving} onclick={saveState}>
-                {saving ? "กำลังบันทึก..." : "บันทึก"}
-              </Button>
+              <span class="self-center text-xs text-muted-foreground">
+                {status === "saving"
+                  ? "กำลังบันทึก..."
+                  : status === "saved"
+                    ? "บันทึกแล้ว"
+                    : status === "error"
+                      ? "บันทึกล้มเหลว"
+                      : "บันทึกอัตโนมัติ"}
+              </span>
             </div>
           {/if}
         </div>
@@ -584,7 +851,7 @@
       width={tileSize}
       height={tileSize}
     />
-    {#each badgeSlots(refId) as item, index}
+    {#each badgeSlots(refId) as item, index (`${item}-${index}`)}
       {#if item === "__comment__"}
         <div
           style={`width: ${badgeSize}px; height: ${badgeSize}px`}

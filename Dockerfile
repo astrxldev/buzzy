@@ -10,8 +10,19 @@ COPY patches ./patches
 # Install into cache, then persist into real node_modules
 RUN --mount=type=cache,target=/root/.bun bun install --frozen-lockfile
 
-### Stage 2: builder ###
+### Stage 2: production deps ###
+FROM oven/bun:1.3.14-alpine AS production-deps
+WORKDIR /home/container
+
+COPY package*.json bun.lock ./
+COPY patches ./patches
+
+RUN --mount=type=cache,target=/root/.bun bun install --frozen-lockfile --production
+
+### Stage 3: builder ###
 FROM oven/bun:1.3.14-alpine AS builder
+
+ARG BUILD_VERSION
 
 # Isolation
 RUN adduser -Du 1001 container
@@ -26,20 +37,14 @@ COPY --from=deps /home/container/bun.lock ./
 # App source
 COPY --chown=1001 . .
 
-# Deployment versioning
-RUN bun -e "const id = Bun.randomUUIDv7(); Bun.write('.version', id); Bun.write('.env.deployment', 'NEXT_DEPLOYMENT_ID='+id)"
+# Generate one deployment identity in the image so every replica reports the same version.
+RUN bun -e 'await Bun.write(".version", process.env.BUILD_VERSION || crypto.randomUUID())'
 
-# Bind mount recursively makes non-existent directories as root, instead of configured user
-RUN mkdir -p .next
-
-# Build nextjs
-RUN --mount=type=cache,target=/home/container/.next/cache,uid=1001,gid=1001 \
+# Build SvelteKit's adapter-node server
+RUN --mount=type=cache,target=/home/container/node_modules/.vite,uid=1001,gid=1001 \
     bun run build
 
-# Fix nextjs caching(bind mount removes it after build process)
-RUN mkdir -p .next/cache
-
-### Stage 3: migration ###
+### Stage 4: migration ###
 FROM oven/bun:1.3.14-alpine AS migration
 WORKDIR /home/container
 
@@ -53,7 +58,7 @@ COPY lib/db/ ./lib/db/
 
 CMD ["bun", "drizzle-kit"]
 
-### Stage 4: runner ###
+### Stage 5: runner ###
 FROM oven/bun:1.3.14-alpine AS runner
 
 # Isolation
@@ -61,10 +66,16 @@ RUN adduser -Du 1001 container
 USER container
 WORKDIR /home/container
 
-COPY --from=builder /home/container/.next/standalone ./
-COPY --from=builder /home/container/public ./public
-COPY --from=builder /home/container/.next/static ./.next/static
+COPY --from=production-deps /home/container/node_modules ./node_modules
+COPY --from=builder /home/container/build ./build
+COPY --from=builder /home/container/package.json ./package.json
+COPY --from=builder /home/container/tsconfig.json ./tsconfig.json
+COPY --from=builder /home/container/.svelte-kit/tsconfig.json ./.svelte-kit/tsconfig.json
 COPY --from=builder /home/container/.version ./.version
+COPY --from=builder /home/container/lib ./lib
+COPY --from=builder /home/container/util ./util
 
-ENV HOSTNAME=0.0.0.0
-CMD ["bun", "server.js"]
+ENV NODE_ENV=production \
+    HOST=0.0.0.0 \
+    BODY_SIZE_LIMIT=30M
+CMD ["bun", "build/index.js"]

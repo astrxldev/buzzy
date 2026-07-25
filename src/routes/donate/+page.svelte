@@ -1,12 +1,60 @@
 <script lang="ts">
-  import { QrCode, Send, Upload } from "lucide-svelte";
+  import { Check, Download, LoaderCircle, QrCode, Send } from "lucide-svelte";
+  import type { SubmitFunction } from "@sveltejs/kit";
+  import { enhance } from "$app/forms";
+  import { resolve } from "$app/paths";
   import FadeImage from "$lib/components/FadeImage.svelte";
   import { Button } from "$lib/components/ui/button";
   import type { ActionData, PageData } from "./$types";
+  import ImageCropper from "./ImageCropper.svelte";
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   let type = $state<"tmn" | "pp">("tmn");
   let artifact = $state(false);
+  let amount = $state<number | undefined>(undefined);
+  let message = $state("");
+  let link = $state("");
+  let uid = $state("");
+  let slipName = $state("");
+  let submitting = $state(false);
+  let cropKey = $state(0);
+  let formElement: HTMLFormElement;
+  const amountFeedback = $derived(amount !== undefined && amount < 10 ? "ยอดต่ำกว่า 10 บาทจะไม่ขึ้นจอ" : "");
+
+  function captureForm(node: HTMLFormElement) {
+    formElement = node;
+  }
+
+  function downloadQr() {
+    fetch("/assets/promptpay_full.jpg")
+      .then((response) => response.blob())
+      .then((blob) => {
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = "promptpay-qr.jpg";
+        anchor.click();
+        URL.revokeObjectURL(url);
+      });
+  }
+
+  const submit: SubmitFunction = () => {
+    submitting = true;
+    return async ({ result, update }) => {
+      await update({ reset: false });
+      submitting = false;
+      if (result.type !== "success") return;
+      formElement.reset();
+      type = "tmn";
+      artifact = false;
+      amount = undefined;
+      message = "";
+      link = "";
+      uid = "";
+      slipName = "";
+      cropKey += 1;
+    };
+  };
 </script>
 
 <svelte:head>
@@ -16,7 +64,7 @@
 <div class="flex min-h-svh items-center justify-center">
   <section class="w-full max-w-md rounded-md border bg-card p-5">
     <div class="relative aspect-[304.5/30] w-full">
-      <a href="/">
+      <a href={resolve("/")}>
         <FadeImage
           src="/logos/donate.webp"
           alt="Donate Logo"
@@ -25,15 +73,9 @@
       </a>
     </div>
 
-    <form method="POST" enctype="multipart/form-data" class="mt-8 flex flex-col gap-4">
+    <form {@attach captureForm} method="POST" enctype="multipart/form-data" class="mt-8 flex flex-col gap-4" use:enhance={submit}>
       <div class="flex flex-col items-center gap-2 sm:flex-row sm:items-end">
-        <label
-          class="flex aspect-square w-28 cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed bg-background/40 text-sm text-muted-foreground"
-        >
-          <Upload class="size-5" />
-          รูปขึ้นจอ
-          <input class="hidden" name="image" type="file" accept="image/*" />
-        </label>
+        {#key cropKey}<ImageCropper />{/key}
         <div class="grid w-full grow gap-4 [&>label]:-mb-2">
           <label class="grid gap-2">
             <span>ชื่อ <small class="text-muted-foreground">ไม่จำเป็น</small></span>
@@ -56,8 +98,10 @@
               min="1"
               max="10000"
               placeholder="ขั้นต่ำ 1 บาท"
+              bind:value={amount}
               required
             />
+            {#if amountFeedback}<small class="text-amber-400">{amountFeedback}</small>{/if}
           </label>
         </div>
       </div>
@@ -69,7 +113,9 @@
           name="message"
           placeholder="ข้อความ"
           maxlength="500"
+          bind:value={message}
         ></textarea>
+        <small class="text-right text-muted-foreground">{message.length}/500</small>
       </label>
 
       {#if !data.artifactConfig.locked}
@@ -89,6 +135,9 @@
               class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 shadow-xs outline-none placeholder:text-muted-foreground focus-visible:ring-ring/50 focus-visible:ring-[3px]"
               name="uid"
               placeholder="814006303"
+              pattern="[1-9][0-9]{8}"
+              bind:value={uid}
+              required
             />
           </label>
         {/if}
@@ -117,23 +166,31 @@
             class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 shadow-xs outline-none placeholder:text-muted-foreground focus-visible:ring-ring/50 focus-visible:ring-[3px]"
             name="link"
             placeholder="https://gift.truemoney.com/campaign/?v=..."
+            bind:value={link}
+            required
           />
+          {#if link && !link.startsWith("https://gift.truemoney.com/")}
+            <small class="text-amber-400">โปรดตรวจสอบว่าเป็นลิงก์อั่งเปา TrueMoney</small>
+          {/if}
         </label>
       {:else}
         <div class="grid gap-3">
-          <img
-            src="/assets/promptpay.jpg"
-            alt="PromptPay QR"
-            class="mx-auto max-h-72 rounded-md border object-contain"
-          />
+          <div class="flex gap-3 rounded-md border p-3">
+            <img src="/assets/promptpay.jpg" alt="PromptPay QR" class="max-w-32 shrink-0 rounded object-contain" />
+            <div class="flex min-w-0 flex-col text-sm">
+              <b>บัญชีรับโดเนท</b>
+              <span class="text-muted-foreground">ผู้รับ: นาย พัชรพล พลพันธุ์</span>
+              <span class="text-muted-foreground">บัญชี: xxx-x-x8666-x</span>
+              <span class="text-muted-foreground">เลขที่อ้างอิง: 004999056945438</span>
+              <Button class="mt-auto" size="sm" type="button" variant="ghost" onclick={downloadQr}><Download /> ดาวน์โหลด QR Code</Button>
+            </div>
+          </div>
           <label class="grid gap-2">
             <span>สลิปโอนเงิน</span>
-            <input
-              class="rounded-md border border-input bg-transparent px-3 py-2"
-              name="slip"
-              type="file"
-              accept="image/*"
-            />
+            <span class={["flex cursor-pointer items-center justify-center gap-2 rounded-md border px-3 py-2", slipName && "border-emerald-500 text-emerald-300"]}>
+              {#if slipName}<Check class="size-4" /> {slipName}{:else}เลือกสลิปโอนเงิน{/if}
+              <input class="sr-only" name="slip" type="file" accept="image/*" required onchange={(event) => (slipName = event.currentTarget.files?.[0]?.name ?? "")} />
+            </span>
           </label>
         </div>
       {/if}
@@ -148,9 +205,8 @@
         </p>
       {/if}
 
-      <Button type="submit" class="w-full">
-        <Send />
-        ส่งโดเนท
+      <Button type="submit" class="w-full" disabled={submitting}>
+        {#if submitting}<LoaderCircle class="animate-spin" />กำลังตรวจสอบการชำระเงิน{:else}<Send />ส่งโดเนท{/if}
       </Button>
     </form>
   </section>

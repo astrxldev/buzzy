@@ -1,6 +1,6 @@
 import { error } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
-import { adminCheck } from "@/lib/auth";
+import { adminCheck } from "@/lib/auth-core";
 import { db } from "@/lib/db";
 import { tierlistStates } from "@/lib/db/schema";
 import { saveTierlistState } from "$lib/server/data";

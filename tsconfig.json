@@ -23,6 +23,8 @@
     "lib/payment-types.ts",
     "lib/youtube-types.ts",
     "lib/auth.ts",
+    "lib/auth-core.ts",
+    "lib/amber.ts",
     "lib/db/**/*.ts",
     "types/**/*.d.ts",
     ".svelte-kit/ambient.d.ts",

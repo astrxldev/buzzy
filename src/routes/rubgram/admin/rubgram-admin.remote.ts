@@ -1,7 +1,7 @@
 import { error } from "@sveltejs/kit";
 import { command, getRequestEvent } from "$app/server";
 import { z } from "zod";
-import { adminCheck } from "@/lib/auth";
+import { adminCheck } from "@/lib/auth-core";
 import {
   addRubgramNote,
   bulkDeleteRubgram,

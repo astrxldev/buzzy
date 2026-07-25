@@ -3,9 +3,12 @@
     BugPlay,
     ChevronsLeftRightEllipsis,
     Copy,
+    CircleAlert,
+    CircleCheck,
     Goal,
     Image as ImageIcon,
     MessageCircleWarning,
+    QrCode,
     Wallet,
   } from "lucide-svelte";
   import { onMount } from "svelte";
@@ -26,6 +29,8 @@
   let { data }: { data: PageData } = $props();
   let busy = $state("");
   let query = $state("");
+  let now = $state(Date.now());
+  let feedback = $state<{ ok: boolean; text: string } | null>(null);
   const latest = $derived(data.rows[0]);
   const rows = $derived(
     data.rows.filter((row) =>
@@ -33,11 +38,26 @@
     ),
   );
 
-  async function run(key: string, fn: () => Promise<unknown>) {
+  function relativeTime(value: string | Date) {
+    const seconds = Math.round((new Date(value).getTime() - now) / 1000);
+    const formatter = new Intl.RelativeTimeFormat("th", { numeric: "auto" });
+    if (Math.abs(seconds) < 60) return formatter.format(seconds, "second");
+    const minutes = Math.round(seconds / 60);
+    if (Math.abs(minutes) < 60) return formatter.format(minutes, "minute");
+    const hours = Math.round(minutes / 60);
+    if (Math.abs(hours) < 24) return formatter.format(hours, "hour");
+    return formatter.format(Math.round(hours / 24), "day");
+  }
+
+  async function run(key: string, label: string, fn: () => Promise<unknown>) {
     busy = key;
+    feedback = null;
     try {
       await fn();
       await invalidateAll();
+      feedback = { ok: true, text: `${label} สำเร็จ` };
+    } catch (error) {
+      feedback = { ok: false, text: error instanceof Error ? error.message : `${error}` };
     } finally {
       busy = "";
     }
@@ -48,7 +68,11 @@
     source.addEventListener("ping", () => void invalidateAll());
     source.addEventListener("update", () => void invalidateAll());
     source.addEventListener("refresh", () => void invalidateAll());
-    return () => source.close();
+    const interval = window.setInterval(() => (now = Date.now()), 1000);
+    return () => {
+      source.close();
+      window.clearInterval(interval);
+    };
   });
 </script>
 
@@ -68,13 +92,13 @@
       </p>
     </div>
     <div class="flex flex-wrap gap-1">
-      <Button variant="outline" disabled={!!busy} onclick={() => run("test", () => testPopup())}>
+      <Button variant="outline" disabled={!!busy} onclick={() => run("test", "ส่ง test popup", () => testPopup())}>
         <BugPlay class="size-4" /> Test popup
       </Button>
-      <Button variant="outline" disabled={!!busy} onclick={() => run("reload", () => reloadWidget())}>
+      <Button variant="outline" disabled={!!busy} onclick={() => run("reload", "รีโหลด widgets", () => reloadWidget())}>
         <ChevronsLeftRightEllipsis class="size-4" /> Reload widgets
       </Button>
-      <Button variant="outline" disabled={!!busy} onclick={() => run("goal", () => resetGoal())}>
+      <Button variant="outline" disabled={!!busy} onclick={() => run("goal", "รีเซ็ต goal", () => resetGoal())}>
         <Goal class="size-4" /> Reset goal
       </Button>
       <Button variant="outline" href="/donate/admin/moderator">Moderator</Button>
@@ -82,12 +106,19 @@
     </div>
   </header>
 
+  {#if feedback}
+    <div class={["flex items-center gap-2 rounded-md border p-2 text-sm", feedback.ok ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-300" : "border-destructive/50 bg-destructive/10 text-destructive"]}>
+      {#if feedback.ok}<CircleCheck class="size-4" />{:else}<CircleAlert class="size-4" />{/if}
+      {feedback.text}
+    </div>
+  {/if}
+
   <div class="grid gap-3 md:grid-cols-[2fr_1fr_1fr]">
     <Card.Card class="bg-card/70 backdrop-blur">
       <Card.CardHeader>
         <Card.CardTitle>Latest donation</Card.CardTitle>
         <Card.CardDescription>
-          {latest ? new Date(latest.created).toLocaleString() : "No donation yet"}
+          {latest ? `${relativeTime(latest.created)} · ${new Date(latest.created).toLocaleString("th-TH")}` : "No donation yet"}
         </Card.CardDescription>
       </Card.CardHeader>
       <Card.CardContent>
@@ -148,16 +179,22 @@
         </Table.TableRow>
       </Table.TableHeader>
       <Table.TableBody>
-        {#each rows as row}
+        {#each rows as row (row.id)}
           <Table.TableRow>
             <Table.TableCell class="font-medium">{row.name}</Table.TableCell>
             <Table.TableCell>{row.amount}฿</Table.TableCell>
             <Table.TableCell class="max-w-md truncate">{row.message || ""}</Table.TableCell>
             <Table.TableCell>
-              <Badge variant="outline">{row.method}</Badge>
+              <Badge variant="outline" class="gap-1">
+                {#if row.method === "pp"}
+                  <QrCode class="size-3.5" /> PromptPay
+                {:else}
+                  <img src="/assets/tmn.webp" alt="" class="h-4 w-7 object-cover grayscale" /> TrueMoney
+                {/if}
+              </Badge>
             </Table.TableCell>
             <Table.TableCell class="whitespace-nowrap text-muted-foreground">
-              {new Date(row.created).toLocaleString()}
+              <span title={new Date(row.created).toLocaleString("th-TH")}>{relativeTime(row.created)}</span>
             </Table.TableCell>
             <Table.TableCell class="text-right">
               <div class="inline-flex gap-1">
@@ -165,7 +202,7 @@
                   variant="outline"
                   size="icon-sm"
                   disabled={busy === row.id}
-                  onclick={() => run(row.id, () => resendPopup(row.id))}
+                  onclick={() => run(row.id, `ส่ง popup ของ ${row.name}`, () => resendPopup(row.id))}
                   title="Resend popup"
                 >
                   <MessageCircleWarning class="size-4" />

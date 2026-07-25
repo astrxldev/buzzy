@@ -1,5 +1,5 @@
 import { redirect } from "@sveltejs/kit";
-import { adminCheck } from "@/lib/auth";
+import { adminCheck } from "@/lib/auth-core";
 import { getAdminShellData } from "$lib/server/data";
 import type { LayoutServerLoad } from "./$types";
 

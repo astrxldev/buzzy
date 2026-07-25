@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { Dice3, Lock, Search, Trash2, Unlock } from "lucide-svelte";
+  import { Copy, Dice3, Lock, Search, Trash2, Unlock } from "lucide-svelte";
   import { onMount } from "svelte";
   import { goto, invalidateAll } from "$app/navigation";
+  import { resolve } from "$app/paths";
   import { page } from "$app/state";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
@@ -18,6 +19,7 @@
     $props();
   let query = $state("");
   let busy = $state("");
+  let feedback = $state("");
 
   const selectedId = $derived(page.params.id);
   const filtered = $derived(
@@ -28,10 +30,16 @@
     ),
   );
 
-  async function run<T>(key: string, fn: () => Promise<T>) {
+  async function run<T>(key: string, fn: () => Promise<T>, success = "บันทึกการเปลี่ยนแปลงแล้ว") {
     busy = key;
+    feedback = "";
     try {
-      return await fn();
+      const result = await fn();
+      feedback = success;
+      return result;
+    } catch (error) {
+      feedback = `เกิดข้อผิดพลาด: ${error instanceof Error ? error.message : error}`;
+      return undefined;
     } finally {
       busy = "";
       await invalidateAll();
@@ -40,7 +48,7 @@
 
   async function goRandom() {
     const sub = await run("random", () => random());
-    if (sub?.id) await goto(`/artifact/admin/${sub.id}`);
+    if (sub?.id) await goto(resolve("/artifact/admin/[id]", { id: sub.id }));
   }
 
   async function updateLimit() {
@@ -54,8 +62,17 @@
 
   async function wipeAll() {
     if (!window.confirm("ล้างข้อมูล artifact submissions ทั้งหมด?")) return;
-    await run("wipe", () => wipe());
-    await goto("/artifact/admin");
+    const result = await run("wipe", () => wipe());
+    if (result) await goto(resolve("/artifact/admin"));
+  }
+
+  async function copyUid(uid: string) {
+    try {
+      await navigator.clipboard.writeText(uid);
+      feedback = "คัดลอก UID แล้ว";
+    } catch {
+      feedback = "เกิดข้อผิดพลาด: คัดลอก UID ไม่สำเร็จ";
+    }
   }
 
   onMount(() => {
@@ -78,9 +95,9 @@
 </svelte:head>
 
 <div class="grid min-h-svh bg-background/20 md:grid-cols-[20rem_1fr]">
-  <aside class="flex min-h-svh flex-col border-r bg-card/70 backdrop-blur-xl">
+  <aside class="flex h-[45svh] min-h-0 flex-col border-r bg-card/70 backdrop-blur-xl md:h-auto md:min-h-svh">
     <header class="flex items-center justify-between border-b p-3">
-      <a class="font-bold" href="/admin">Admin</a>
+      <a class="font-bold" href={resolve("/admin")}>Admin</a>
       <div class="flex gap-1">
         <Button variant="ghost" size="icon" disabled={!!busy} onclick={goRandom}>
           <Dice3 class="size-5" />
@@ -90,6 +107,9 @@
         </Button>
       </div>
     </header>
+    {#if feedback}
+      <p class="border-b px-3 py-2 text-xs text-muted-foreground" aria-live="polite">{feedback}</p>
+    {/if}
 
     <div class="grid gap-2 p-3">
       <label class="relative">
@@ -108,31 +128,38 @@
 
     <nav class="flex-1 overflow-y-auto px-2 pb-3">
       {#each filtered as sub (sub.id)}
-        <a
+        <div
           class={[
             "mb-1 flex min-h-9 items-center justify-between rounded-md border px-2 py-1 text-sm transition-colors hover:bg-accent",
             selectedId === sub.id && "bg-accent text-accent-foreground",
             (sub.queue === null || sub.promoted) && "border-yellow-400",
             sub.checked && "opacity-60",
           ]}
-          href={`/artifact/admin/${sub.id}`}
         >
-          <span class="min-w-0 truncate">
-            {#if sub.queue === null}
-              ลัดคิว · {sub.name}
-            {:else}
-              {sub.queue}. {sub.name}
+          <a class="min-w-0 flex-1" href={resolve("/artifact/admin/[id]", { id: sub.id })}>
+            <span class="block truncate">
+              {#if sub.queue === null}ลัดคิว · {sub.name}{:else}{sub.queue}. {sub.name}{/if}
+            </span>
+            {#if sub.queue === null || sub.promoted}
+              <span class="block truncate text-[10px] text-muted-foreground">{sub.uid} · {sub.comment || "ไม่มีข้อความ"}</span>
             {/if}
-          </span>
+          </a>
+          {#if sub.queue === null || sub.promoted}
+            <button
+              class="mr-1 rounded p-1 hover:bg-background"
+              type="button"
+              title="คัดลอก UID"
+              onclick={() => copyUid(sub.uid)}
+            ><Copy class="size-3.5" /></button>
+          {/if}
           <input
             class="size-4 shrink-0 accent-primary"
             type="checkbox"
             checked={sub.checked}
             aria-label={`Toggle ${sub.name}`}
-            onclick={(ev) => ev.stopPropagation()}
             onchange={() => run(`check-${sub.id}`, () => toggleCheck(sub.id))}
           />
-        </a>
+        </div>
       {/each}
     </nav>
 

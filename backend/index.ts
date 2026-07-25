@@ -2,8 +2,7 @@ import { env } from "node:process";
 import { cron, redis } from "bun";
 import { formatDistanceToNow } from "date-fns";
 import { and, asc, eq, gt, isNull, lt, not, sql } from "drizzle-orm";
-import { removeExpiredSubmissions } from "@/app/(ui)/rubgram/api";
-import { auth, issueInternalToken } from "@/lib/auth";
+import { auth, issueInternalToken } from "@/lib/auth-core";
 import { db } from "@/lib/db";
 import {
   artifactSettings,
@@ -18,6 +17,7 @@ import {
   user,
 } from "@/lib/db/schema";
 import { rubgramWebhookTemplate } from "./webhook";
+import { removeExpiredRubgramSubmissions } from "@/src/lib/server/data";
 
 function logger(group: string) {
   const prefix = `[${group}]`;
@@ -62,7 +62,7 @@ function logger(group: string) {
 
 async function checkRubgramExpiration() {
   const { log, schedule } = logger("rubgramExpiration");
-  const { removed } = await removeExpiredSubmissions();
+  const { removed } = await removeExpiredRubgramSubmissions();
   if (removed) log("Purged", removed, "submissions");
 
   const expirable = await db

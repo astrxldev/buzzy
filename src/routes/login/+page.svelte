@@ -1,33 +1,13 @@
 <script lang="ts">
-  import { Loader2, UserLock } from "lucide-svelte";
-  import { goto } from "$app/navigation";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import type { PageData } from "./$types";
+import { UserLock } from "lucide-svelte";
+import { resolve } from "$app/paths";
+import { Button } from "$lib/components/ui/button";
+import { Input } from "$lib/components/ui/input";
+import type { ActionData, PageData } from "./$types";
 
-  let { data }: { data: PageData } = $props();
-  let email = $state("");
-  let password = $state("");
-  let loading = $state(false);
-  let message = $state("");
-
-  async function submit(ev: SubmitEvent) {
-    ev.preventDefault();
-    loading = true;
-    message = "";
-    const res = await fetch("/api/auth/sign-in/email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    const body = await res.json().catch(() => null);
-    if (!res.ok || body?.error) {
-      message = body?.error?.message || body?.message || "Invalid email or password";
-      loading = false;
-      return;
-    }
-    await goto(data.next || "/admin", { invalidateAll: true });
-  }
+let { data, form }: { data: PageData; form: ActionData } = $props();
+let email = $state(form?.email || "");
+let password = $state("");
 </script>
 
 <svelte:head>
@@ -38,16 +18,21 @@
   <form
     class="grid w-full max-w-sm gap-6 rounded-2xl border bg-card/90 p-6 shadow-xl"
     method="POST"
-    onsubmit={submit}
   >
+    <input type="hidden" name="next" value={data.next || "/admin"} />
+
     <div class="flex flex-col items-center gap-2 text-center">
-      <a href="/" class="flex size-10 items-center justify-center rounded-md">
+      <a href={resolve("/")} class="flex size-10 items-center justify-center rounded-md">
         <UserLock class="size-7" />
         <span class="sr-only">Buzzy</span>
       </a>
       <h1 class="text-xl font-bold">Welcome to Buzzy.</h1>
       <p class="text-sm text-muted-foreground">
         Sign in with an admin account to continue.
+      </p>
+      <p class="text-sm">
+        Don't have an account?
+        <a class="underline underline-offset-4" href="https://cdn.gunshiz.top/signup">Sign Up</a>
       </p>
     </div>
 
@@ -74,18 +59,14 @@
       />
     </label>
 
-    {#if message}
+    {#if form?.message}
       <p class="rounded-md border border-destructive/50 bg-destructive/10 p-2 text-sm text-destructive">
-        {message}
+        {form.message}
       </p>
     {/if}
 
-    <Button type="submit" disabled={loading} class="w-full">
-      {#if loading}
-        <Loader2 class="animate-spin" />
-      {:else}
-        Login
-      {/if}
+    <Button type="submit" class="w-full">
+      Login
     </Button>
   </form>
 </div>

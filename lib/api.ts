@@ -24,6 +24,7 @@ import {
 } from "./db/schema";
 import { sse, tlSse } from "./db/sse-endpoints";
 import { b2s } from "./utils";
+export { getAmberVh } from "./amber";
 
 export async function getCharacters(chars: string[]) {
   return await db
@@ -406,27 +407,4 @@ export async function actionLog(text: string, details?: unknown) {
   } catch {}
 
   if (res) sse.log.pub("update", res);
-}
-
-export async function getAmberVh() {
-  try {
-    const cached = await redis?.get("amber:vh");
-    if (cached) return cached;
-  } catch {}
-
-  const Schema = z.object({
-    response: z.number().positive(),
-    data: z.object({
-      vh: z.string().max(10),
-    }),
-  });
-  const {
-    data: { vh },
-  } = Schema.parse(
-    await fetch("https://gi.yatta.moe/api/v2/static/version").then((e) =>
-      e.json(),
-    ),
-  );
-  queueMicrotask(() => redis?.setex("amber:vh", 86400, vh));
-  return vh;
 }

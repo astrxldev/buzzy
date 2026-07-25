@@ -3,19 +3,24 @@
     Copy,
     CopyCheck,
     Image as ImageIcon,
+    OctagonAlert,
     RefreshCw,
     ScanSearch,
+    SquircleDashed,
   } from "lucide-svelte";
+  import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
   import type { PageData } from "./$types";
-  import { revalidateCard } from "../artifact-admin.remote";
+  import { getCardStatus, revalidateCard } from "../artifact-admin.remote";
 
   let { data }: { data: PageData } = $props();
   let copied = $state(false);
   let useWeb = $state(false);
   let ready = $state(false);
   let failed = $state("");
+  let cached = $state(true);
   let tick = $state(Date.now());
+  let feedback = $state("");
 
   async function copyUid() {
     if (copied) return;
@@ -27,9 +32,25 @@
   async function refreshCard() {
     ready = false;
     failed = "";
-    if (!useWeb) await revalidateCard(data.sub.id);
-    tick = Date.now();
+    cached = false;
+    feedback = "";
+    try {
+      if (!useWeb) await revalidateCard(data.sub.id);
+      tick = Date.now();
+      feedback = "กำลังโหลดรูปใหม่";
+    } catch (error) {
+      failed = `${error instanceof Error ? error.message : error}`;
+    }
   }
+
+  onMount(() => {
+    void getCardStatus(data.sub.id)
+      .then((status) => {
+        cached = status.cached;
+        if (!status.cached && status.error) failed = status.error;
+      })
+      .catch((error) => (failed = `${error instanceof Error ? error.message : error}`));
+  });
 </script>
 
 <svelte:head>
@@ -57,6 +78,12 @@
           {data.sub.checked ? "checked" : "pending"}
         </div>
       </div>
+      {#if data.sub.queue === null || data.sub.promoted}
+        <div class="mt-4 rounded-md border border-yellow-400/70 bg-yellow-400/10 p-3 text-sm">
+          <strong>{data.sub.queue === null ? "คิวโดเนท" : "คิวโปรโมต"}</strong>
+          <p class="mt-1 text-muted-foreground">UID {data.sub.uid} · {data.sub.char || "ไม่ระบุตัวละคร"}</p>
+        </div>
+      {/if}
       <div class="mt-5 flex items-center gap-2">
         <span class="font-mono text-muted-foreground">{data.sub.uid}</span>
         <Button variant="ghost" size="icon" onclick={copyUid} disabled={copied}>
@@ -94,15 +121,21 @@
 
   <section class="relative min-h-0 flex-1 overflow-hidden rounded-xl border bg-card/75 backdrop-blur">
     {#if data.config.enka}
-      {#if !ready && !failed}
+      {#if !ready && !failed && (cached || useWeb)}
         <div class="absolute top-1/2 left-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2 rounded-xl border bg-background/80 p-4 backdrop-blur">
           <ScanSearch class="size-8 animate-pulse" />
           <span>กำลังโหลดข้อมูล...</span>
         </div>
       {/if}
+      {#if !ready && !failed && !cached && !useWeb}
+        <div class="absolute top-1/2 left-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2 rounded-xl border bg-background/90 p-4 text-center backdrop-blur">
+          <SquircleDashed class="size-8 text-orange-500" />
+          <span>ยังไม่ได้เตรียมการ์ดไว้ล่วงหน้า จะใช้เวลาสักพัก</span>
+        </div>
+      {/if}
       {#if failed}
-        <div class="absolute top-1/2 left-1/2 z-10 max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-destructive/50 bg-background/90 p-4 text-center text-destructive backdrop-blur">
-          {failed}
+        <div class="absolute top-1/2 left-1/2 z-10 flex max-w-sm -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2 rounded-xl border border-destructive/50 bg-background/90 p-4 text-center text-destructive backdrop-blur">
+          <OctagonAlert class="size-8" />{failed}
         </div>
       {/if}
 
@@ -118,7 +151,7 @@
         >
           <ImageIcon class="size-4" />
         </Button>
-        <Button variant="outline" size="icon" onclick={refreshCard}>
+        <Button variant="outline" size="icon" onclick={refreshCard} disabled={!failed && !ready}>
           <RefreshCw class="size-4" />
         </Button>
       </div>
@@ -144,12 +177,15 @@
           onload={() => {
             ready = true;
             failed = "";
+            cached = true;
+            feedback = "โหลดการ์ดแล้ว";
           }}
           onerror={() => {
             failed = "ไม่สามารถโหลดข้อมูลตัวละคร";
           }}
         />
       {/if}
+      {#if feedback}<span class="sr-only" aria-live="polite">{feedback}</span>{/if}
     {:else}
       <div class="flex h-full items-center justify-center p-6 text-muted-foreground">
         Enka card preview is disabled in settings.

@@ -1,9 +1,10 @@
 import { error } from "@sveltejs/kit";
-import { command, getRequestEvent } from "$app/server";
+import { command, getRequestEvent, query } from "$app/server";
 import { z } from "zod";
-import { adminCheck } from "@/lib/auth";
+import { adminCheck } from "@/lib/auth-core";
 import {
   randomArtifactSubmission,
+  getCardStatus as getArtifactCardStatus,
   revalidateArtifactCard,
   setArtifactLimit,
   toggleArtifactCheck,
@@ -46,4 +47,9 @@ export const random = command(async () => {
 export const revalidateCard = command(z.string(), async (id) => {
   const user = await requireAdmin();
   return await revalidateArtifactCard(id, user.name);
+});
+
+export const getCardStatus = query(z.string(), async (id) => {
+  await requireAdmin();
+  return await getArtifactCardStatus(id);
 });

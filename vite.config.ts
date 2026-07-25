@@ -5,6 +5,6 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [tailwindcss(), sveltekit()],
   server: {
-    allowedHosts: ["astral", "nyx", "dev3000.astrxl.dev"],
+    allowedHosts: ["astral", "nyx", "dev3000.astrxl.dev", "dev5173.astrxl.dev"],
   },
 });

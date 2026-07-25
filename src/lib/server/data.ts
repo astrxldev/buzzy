@@ -127,9 +127,7 @@ export async function getArtifactPageData(
 
 const artifactSubmissionSchema = z.object({
   name: z.string().max(64, "ชื่อยาวเกินไป ต้องไม่เกิน 64 ตัวอักษร"),
-  uid: z
-    .string()
-    .regex(uidRegex, "UID ไม่ถูกต้อง ต้องเป็นเลข 9 หรือ 10 หลัก เท่านั้น"),
+  uid: z.string().regex(uidRegex, "UID ไม่ถูกต้อง ต้องเป็นเลข 9 หรือ 10 หลัก เท่านั้น"),
   character: z.string().min(1, "เลือกตัวละครก่อน"),
   comment: z
     .string()
@@ -265,6 +263,9 @@ export async function submitDonationForm(formData: FormData) {
     return { error: "รูปแบบ UID สำหรับลัดคิวไม่ถูกต้อง" };
   }
 
+  let promptPaySlip:
+    | { buffer: Buffer; processed: Extract<SlipokResponse, { success: true }> }
+    | undefined;
   if (data.type === "pp") {
     if (!(slip instanceof File) || slip.size === 0) {
       return { error: "อัพโหลดสลิปโอนเงินด้วย" };
@@ -275,18 +276,7 @@ export async function submitDonationForm(formData: FormData) {
       return { error: `${processed.code}: ${processed.message}` };
     }
 
-    const [check] = await db
-      .insert(endgameSlips)
-      .values({
-        slip: buffer,
-        amount: data.amount.toString(),
-        data: processed,
-        ref: processed.data.transRef,
-      })
-      .returning()
-      .catch(() => [{ id: "conflict" }]);
-
-    if (check.id === "conflict") return { error: "สลิปนี้ถูกใช้ไปแล้ว" };
+    promptPaySlip = { buffer, processed };
   } else {
     if (!data.link) return { error: "ใส่ลิ้งค์อั่งเปา TrueMoney ก่อน" };
     if (!TMN_DEST_PHONE_NUM || !SASTIFY_API_PRIVKEY) {
@@ -323,37 +313,56 @@ export async function submitDonationForm(formData: FormData) {
           .toBuffer()
       : undefined;
 
-  const [{ id }] = await db
-    .insert(donations)
-    .values({
-      name: data.name || "Anonymous",
-      amount: data.amount,
-      message: data.message,
-      image: imageBuffer,
-      method: data.type,
-      uid: artifact ? data.uid : null,
-      sent: data.amount < 10,
-    })
-    .returning();
+  const persisted = await db.transaction(async (tx) => {
+    if (promptPaySlip) {
+      const [createdSlip] = await tx
+        .insert(endgameSlips)
+        .values({
+          slip: promptPaySlip.buffer,
+          amount: data.amount.toString(),
+          data: promptPaySlip.processed,
+          ref: promptPaySlip.processed.data.transRef,
+        })
+        .onConflictDoNothing({ target: endgameSlips.ref })
+        .returning();
+      if (!createdSlip) return { error: "สลิปนี้ถูกใช้ไปแล้ว" } as const;
+    }
 
-  if (artifact && data.uid) {
-    await db
-      .insert(submissions)
+    const [{ id }] = await tx
+      .insert(donations)
       .values({
         name: data.name || "Anonymous",
-        comment: data.message,
-        uid: data.uid,
-        queue: null as unknown as undefined,
+        amount: data.amount,
+        message: data.message,
+        image: imageBuffer,
+        method: data.type,
+        uid: artifact ? data.uid : null,
+        sent: data.amount < 10,
       })
-      .onConflictDoUpdate({
-        target: submissions.uid,
-        set: {
-          comment: sql`${submissions.comment} || ${"\n"}::text || ${data.message}::text`,
-          promoted: true,
-        },
-      })
-      .catch(console.error);
-  }
+      .returning();
+
+    if (artifact && data.uid) {
+      await tx
+        .insert(submissions)
+        .values({
+          name: data.name || "Anonymous",
+          comment: data.message,
+          uid: data.uid,
+          queue: null as unknown as undefined,
+        })
+        .onConflictDoUpdate({
+          target: submissions.uid,
+          set: {
+            comment: sql`${submissions.comment} || ${"\n"}::text || ${data.message}::text`,
+            promoted: true,
+          },
+        });
+    }
+
+    return { id } as const;
+  });
+  if ("error" in persisted) return persisted;
+  const { id } = persisted;
 
   if (data.amount >= 10) {
     sse.donate.pub("ping", {
@@ -440,7 +449,11 @@ export async function getArtifactSubmissionDetail(id: string) {
   if (!sub) return null;
 
   const [char] = sub.char
-    ? await db.select().from(characters).where(eq(characters.name, sub.char)).limit(1)
+    ? await db
+        .select()
+        .from(characters)
+        .where(eq(characters.name, sub.char))
+        .limit(1)
     : [];
 
   return { sub, char, config };
@@ -452,7 +465,11 @@ export async function toggleArtifactCheck(id: string, author?: string) {
     .set({ checked: not(submissions.checked) })
     .where(eq(submissions.id, id));
   sse.artifact.pub("update", { type: "toggleCheck" });
-  await writeAuditLog("Toggled an artifact submission check mark", { id }, author);
+  await writeAuditLog(
+    "Toggled an artifact submission check mark",
+    { id },
+    author,
+  );
   return { ok: true };
 }
 
@@ -479,13 +496,19 @@ export async function setArtifactLimit(limit: number, author?: string) {
     await db.insert(artifactSettings).values({ limit: normalized });
   }
   sse.artifact.pub("update", { type: "setLimit" });
-  await writeAuditLog("Set artifact submission limit", { limit: normalized }, author);
+  await writeAuditLog(
+    "Set artifact submission limit",
+    { limit: normalized },
+    author,
+  );
   return { ok: true, limit: normalized };
 }
 
 export async function wipeArtifactSubmissions(author?: string) {
   await db.delete(submissions);
-  await db.execute(sql`ALTER SEQUENCE artifact.submissions_queue_seq RESTART WITH 1`);
+  await db.execute(
+    sql`ALTER SEQUENCE artifact.submissions_queue_seq RESTART WITH 1`,
+  );
   sse.artifact.pub("update", { type: "wipe" });
   await writeAuditLog("Deleted artifact submissions", undefined, author);
   return { ok: true };
@@ -517,36 +540,45 @@ export async function getArtifactCardImage(id: string) {
     return {
       status: 200,
       body: new Uint8Array(image.image),
-      headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=3600" },
+      headers: {
+        "Content-Type": "image/png",
+        "Cache-Control": "public, max-age=3600",
+      },
     } as const;
   }
 
   const [char] = sub.char
-    ? await db.select().from(characters).where(eq(characters.name, sub.char)).limit(1)
+    ? await db
+        .select()
+        .from(characters)
+        .where(eq(characters.name, sub.char))
+        .limit(1)
     : [];
-  if (!char) return { status: 500, body: `Unknown character: ${sub.char}` } as const;
+  if (!char)
+    return { status: 500, body: `Unknown character: ${sub.char}` } as const;
 
   const card = await fetch(
     `https://api.astrxl.dev/v1/card/genshin/${sub.uid}/${char.amber.split("-")[0]}?lang=th&substat=true&quality=true`,
   );
   if (!card.ok) {
+    const upstreamError = await card.text().catch(() => card.statusText);
     await db
       .insert(cards)
       .values({
-        error: await card.text().catch(() => card.statusText),
+        error: upstreamError,
         submission: id,
         tries: 1,
       })
       .onConflictDoUpdate({
         target: cards.submission,
         set: {
-          error: card.statusText,
+          error: upstreamError,
           tries: sql`${cards.tries} + 1`,
         },
       });
     return {
       status: card.status,
-      body: card.statusText,
+      body: upstreamError,
       headers: { "Content-Type": "text/plain; charset=utf-8" },
     } as const;
   }
@@ -563,7 +595,9 @@ export async function getArtifactCardImage(id: string) {
   return {
     status: 200,
     body: new Uint8Array(fresh),
-    headers: { "Content-Type": card.headers.get("Content-Type") ?? "image/png" },
+    headers: {
+      "Content-Type": card.headers.get("Content-Type") ?? "image/png",
+    },
   } as const;
 }
 
@@ -607,12 +641,20 @@ export async function getRubgramAdminData() {
 
 export async function getRubgramSubmissionDetail(id: string) {
   const [[sub], types] = await Promise.all([
-    db.select().from(endgameSubmissions).where(eq(endgameSubmissions.id, id)).limit(1),
+    db
+      .select()
+      .from(endgameSubmissions)
+      .where(eq(endgameSubmissions.id, id))
+      .limit(1),
     db.select().from(endgameTypes).orderBy(endgameTypes.order),
   ]);
   if (!sub) return null;
   const [[discord], [slip]] = await Promise.all([
-    db.select().from(endgameDiscord).where(eq(endgameDiscord.uid, sub.user)).limit(1),
+    db
+      .select()
+      .from(endgameDiscord)
+      .where(eq(endgameDiscord.uid, sub.user))
+      .limit(1),
     sub.slip
       ? db
           .select({
@@ -626,7 +668,9 @@ export async function getRubgramSubmissionDetail(id: string) {
           .limit(1)
       : Promise.resolve([]),
   ]);
-  const typeNames = Object.fromEntries(types.map((type) => [type.id, type.display]));
+  const typeNames = Object.fromEntries(
+    types.map((type) => [type.id, type.display]),
+  );
   return { sub, discord, slip, typeNames };
 }
 
@@ -636,7 +680,11 @@ export async function toggleRubgramCheck(id: string, author?: string) {
     .set({ checked: not(endgameSubmissions.checked) })
     .where(eq(endgameSubmissions.id, id));
   sse.rubgram.pub("update", { type: "toggleCheck" });
-  await writeAuditLog("Toggled a rubgram submission check mark", { id }, author);
+  await writeAuditLog(
+    "Toggled a rubgram submission check mark",
+    { id },
+    author,
+  );
   return { ok: true };
 }
 
@@ -663,7 +711,11 @@ export async function setRubgramLimit(limit: number, author?: string) {
     await db.insert(endgameSettings).values({ limit: normalized });
   }
   sse.rubgram.pub("update", { type: "setLimit" });
-  await writeAuditLog("Set rubgram submission limit", { limit: normalized }, author);
+  await writeAuditLog(
+    "Set rubgram submission limit",
+    { limit: normalized },
+    author,
+  );
   return { ok: true, limit: normalized };
 }
 
@@ -677,7 +729,11 @@ export async function setRubgramFree(free: number, author?: string) {
     await db.insert(endgameSettings).values({ free: normalized });
   }
   sse.rubgram.pub("update", { type: "setFree" });
-  await writeAuditLog("Set rubgram free submission amount", { free: normalized }, author);
+  await writeAuditLog(
+    "Set rubgram free submission amount",
+    { free: normalized },
+    author,
+  );
   return { ok: true, free: normalized };
 }
 
@@ -692,7 +748,9 @@ export async function randomRubgramSubmission() {
   const [sub] = await db
     .select({ id: endgameSubmissions.id })
     .from(endgameSubmissions)
-    .where(and(endgameSubmissions.paid.getSQL(), not(endgameSubmissions.deleted)))
+    .where(
+      and(endgameSubmissions.paid.getSQL(), not(endgameSubmissions.deleted)),
+    )
     .orderBy(sql`${endgameSubmissions.checked} ASC, RANDOM()`)
     .limit(1);
   return sub ?? null;
@@ -709,7 +767,11 @@ export async function bulkDeleteRubgram(ids: string[], author?: string) {
   return { ok: true };
 }
 
-export async function addRubgramNote(id: string, text: string, author?: string) {
+export async function addRubgramNote(
+  id: string,
+  text: string,
+  author?: string,
+) {
   const note: Note = {
     id: uuidv7(),
     text,
@@ -729,7 +791,11 @@ export async function addRubgramNote(id: string, text: string, author?: string) 
   return note;
 }
 
-export async function deleteRubgramNote(id: string, noteId: string, author?: string) {
+export async function deleteRubgramNote(
+  id: string,
+  noteId: string,
+  author?: string,
+) {
   const [sub] = await db
     .select({ notes: endgameSubmissions.notes })
     .from(endgameSubmissions)
@@ -746,7 +812,8 @@ export async function deleteRubgramNote(id: string, noteId: string, author?: str
 
 export async function callRubgramDiscord(id: string) {
   const webhook = process.env.DISCORD_WEBHOOK_URL;
-  if (!webhook) return { ok: false, error: "DISCORD_WEBHOOK_URL is not configured" };
+  if (!webhook)
+    return { ok: false, error: "DISCORD_WEBHOOK_URL is not configured" };
   const res = await fetch(webhook, {
     method: "POST",
     body: JSON.stringify({
@@ -758,7 +825,11 @@ export async function callRubgramDiscord(id: string) {
   return { ok: res.ok, status: res.status };
 }
 
-export async function debugUploadRubgramSlip(id: string, slip: File, author?: string) {
+export async function debugUploadRubgramSlip(
+  id: string,
+  slip: File,
+  author?: string,
+) {
   if (!slip.size) return { error: "กรุณาอัพโหลดสลิปให้ครบถ้วน" };
   const buffer = Buffer.from(await slip.arrayBuffer());
   const [createdSlip] = await db
@@ -797,7 +868,8 @@ export async function createManualRubgramSubmission(
   author?: string,
 ) {
   if (!input.name.trim()) return { error: "Name is required" };
-  if (!input.discord.match(/^\d{17,20}$/)) return { error: "Discord ID is invalid" };
+  if (!input.discord.match(/^\d{17,20}$/))
+    return { error: "Discord ID is invalid" };
   if (!input.services.length) return { error: "Select at least one service" };
 
   const types = await db.select({ id: endgameTypes.id }).from(endgameTypes);
@@ -852,7 +924,11 @@ export async function createManualRubgramSubmission(
     .returning();
 
   sse.rubgram.pub("update", { type: "submit", sub: sub.id });
-  await writeAuditLog("Manually added rubgram submission", { id: sub.id }, author);
+  await writeAuditLog(
+    "Manually added rubgram submission",
+    { id: sub.id },
+    author,
+  );
   return { ok: true, id: sub.id };
 }
 
@@ -860,7 +936,15 @@ export async function getRubgramCalendarData(monthParam?: string) {
   const date = monthParam ? new Date(`${monthParam}-01T00:00:00`) : new Date();
   if (Number.isNaN(date.getTime())) return null;
   const from = new Date(date.getFullYear(), date.getMonth(), 1);
-  const to = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+  const to = new Date(
+    date.getFullYear(),
+    date.getMonth() + 1,
+    0,
+    23,
+    59,
+    59,
+    999,
+  );
   const { slip: _slipColumn, ...slipColumns } = getTableColumns(endgameSlips);
   const [rows, [config]] = await Promise.all([
     db
@@ -874,7 +958,10 @@ export async function getRubgramCalendarData(monthParam?: string) {
       .leftJoin(endgameDiscord, eq(endgameDiscord.uid, endgameSubmissions.user))
       .leftJoin(endgameSlips, eq(endgameSlips.id, endgameSubmissions.slip))
       .orderBy(endgameSubmissions.submit_day, endgameSubmissions.queue),
-    db.select({ monthly: endgameSettings.monthly }).from(endgameSettings).limit(1),
+    db
+      .select({ monthly: endgameSettings.monthly })
+      .from(endgameSettings)
+      .limit(1),
   ]);
   return {
     date,
@@ -893,14 +980,15 @@ export async function toggleRubgramMonth(month: string, author?: string) {
     ...(settingsRow?.monthly ?? {}),
     [month]: !(settingsRow?.monthly?.[month] ?? false),
   };
-  await db
-    .insert(endgameSettings)
-    .values({ monthly })
-    .onConflictDoUpdate({
-      target: endgameSettings.id,
-      set: { monthly },
-    });
-  await writeAuditLog("Toggled rubgram monthly accounting state", { month }, author);
+  await db.insert(endgameSettings).values({ monthly }).onConflictDoUpdate({
+    target: endgameSettings.id,
+    set: { monthly },
+  });
+  await writeAuditLog(
+    "Toggled rubgram monthly accounting state",
+    { month },
+    author,
+  );
   return { ok: true, checked: monthly[month] };
 }
 
@@ -960,7 +1048,9 @@ export async function resendDonationPopup(id: string, author?: string) {
     ...donation,
     message: donation.message ?? "",
     image: donation.image
-      ? await fileToDataUrl(new File([Buffer.from(donation.image)], "donation.jpeg"))
+      ? await fileToDataUrl(
+          new File([Buffer.from(donation.image)], "donation.jpeg"),
+        )
       : undefined,
   });
   await writeAuditLog("Resent donation popup", { id }, author);
@@ -998,7 +1088,8 @@ export async function resetDonationGoal(author?: string) {
 }
 
 export async function setDonationGoal(goal: number | null, author?: string) {
-  const normalized = goal === null || !Number.isFinite(goal) ? null : Math.max(0, goal);
+  const normalized =
+    goal === null || !Number.isFinite(goal) ? null : Math.max(0, goal);
   await db
     .insert(settings)
     .values({ donateGoal: normalized })
@@ -1012,7 +1103,10 @@ export async function setDonationGoal(goal: number | null, author?: string) {
 }
 
 export async function getDonationGoalData() {
-  const [row] = await db.select({ donateGoal: settings.donateGoal }).from(settings).limit(1);
+  const [row] = await db
+    .select({ donateGoal: settings.donateGoal })
+    .from(settings)
+    .limit(1);
   return { donateGoal: row?.donateGoal ?? null };
 }
 
@@ -1047,7 +1141,11 @@ export async function rejectLatestDonation(id: string, author?: string) {
 
 export async function getAdminShellData() {
   const [versionsList, tlVersions] = await Promise.all([
-    db.select().from(versions).orderBy(desc(versions.id)).catch(() => []),
+    db
+      .select()
+      .from(versions)
+      .orderBy(desc(versions.id))
+      .catch(() => []),
     db
       .select({
         name: sql<string>`${tierlistTypes.name} || ' ' || ${tierlistVersions.name}`.as(
@@ -1064,15 +1162,25 @@ export async function getAdminShellData() {
 }
 
 export async function getAdminDashboardData() {
-  const [artifactCount, rubgramCount, donationStats, guideCount, charCount, cdnCount] =
-    await Promise.all([
-      db.$count(submissions).catch(() => 0),
-      db.$count(endgameSubmissions, not(endgameSubmissions.deleted)).catch(() => 0),
-      getDonationAdminData().then((data) => data.stats).catch(() => ({ total: 0, today: 0 })),
-      db.$count(guides).catch(() => 0),
-      db.$count(characters).catch(() => 0),
-      db.$count(cdn).catch(() => 0),
-    ]);
+  const [
+    artifactCount,
+    rubgramCount,
+    donationStats,
+    guideCount,
+    charCount,
+    cdnCount,
+  ] = await Promise.all([
+    db.$count(submissions).catch(() => 0),
+    db
+      .$count(endgameSubmissions, not(endgameSubmissions.deleted))
+      .catch(() => 0),
+    getDonationAdminData()
+      .then((data) => data.stats)
+      .catch(() => ({ total: 0, today: 0 })),
+    db.$count(guides).catch(() => 0),
+    db.$count(characters).catch(() => 0),
+    db.$count(cdn).catch(() => 0),
+  ]);
   return {
     artifactCount,
     rubgramCount,
@@ -1094,7 +1202,9 @@ export async function getAuditLogData() {
     ) t
     ORDER BY id ASC;
   `);
-  const users = await db.select({ name: authUsers.name, email: authUsers.email }).from(authUsers);
+  const users = await db
+    .select({ name: authUsers.name, email: authUsers.email })
+    .from(authUsers);
   return {
     logs: rowsFromExecute<typeof auditLog.$inferSelect>(rawLogs),
     users,
@@ -1141,7 +1251,11 @@ export async function getTierlistAdminVersionsData() {
 
 export async function getSettingsAdminData() {
   const [globalSettings, artifactConfig, rubgramConfig] = await Promise.all([
-    db.select().from(settings).limit(1).then((rows) => rows[0] ?? null),
+    db
+      .select()
+      .from(settings)
+      .limit(1)
+      .then((rows) => rows[0] ?? null),
     getArtifactConfig(),
     getEndgameConfig(),
   ]);
@@ -1295,13 +1409,14 @@ export async function removeExpiredRubgramSubmissions() {
     not(endgameSubmissions.paid),
     lt(endgameSubmissions.expires, new Date()),
   );
-  await db.transaction(async (tx) => {
+  const removed = await db.transaction(async (tx) => {
     const expiredQueues = await tx
       .select()
       .from(endgameSubmissions)
       .where(expiredCond)
       .orderBy(desc(endgameSubmissions.queue));
-    if (expiredQueues.length) await tx.insert(endgameExpired).values(expiredQueues);
+    if (expiredQueues.length)
+      await tx.insert(endgameExpired).values(expiredQueues);
     await tx.delete(endgameSubmissions).where(expiredCond);
     for (const { queue } of expiredQueues) {
       await tx
@@ -1315,13 +1430,19 @@ export async function removeExpiredRubgramSubmissions() {
     await tx.execute(
       sql`SELECT setval('endgame.submissions_queue_seq', ${(maxQueue[0]?.max || 0) + 1}, false)`,
     );
+    return expiredQueues.length;
   });
+  return { removed };
 }
 
 export async function submitRubgramRegistration(formData: FormData) {
   const { full, locked, limit, types, free } = await getEndgameConfig();
   const name = String(formData.get("name") || "");
-  const server = String(formData.get("server") || "") as "as" | "eu" | "us" | "tw";
+  const server = String(formData.get("server") || "") as
+    | "as"
+    | "eu"
+    | "us"
+    | "tw";
   const service = formData.getAll("service").map(String);
   const user = String(formData.get("user") || "");
 
@@ -1572,7 +1693,10 @@ export async function saveTierlistState(
     .where(
       or(
         eq(tierlistStates.uuid, `${data.uuid}`),
-        and(eq(tierlistStates.ref, data.ref), eq(tierlistStates.list, data.list)),
+        and(
+          eq(tierlistStates.ref, data.ref),
+          eq(tierlistStates.list, data.list),
+        ),
       ),
     );
   if (existing) {
@@ -1581,7 +1705,9 @@ export async function saveTierlistState(
       .set(data)
       .where(eq(tierlistStates.uuid, existing.uuid));
   } else {
-    await db.insert(tierlistStates).values(data as typeof tierlistStates.$inferInsert);
+    await db
+      .insert(tierlistStates)
+      .values(data as typeof tierlistStates.$inferInsert);
   }
   const states = await db
     .select()

@@ -1,5 +1,5 @@
 import { error, redirect } from "@sveltejs/kit";
-import { adminCheck } from "@/lib/auth";
+import { adminCheck } from "@/lib/auth-core";
 import { getTierlistConfig } from "$lib/server/data";
 import type { PageServerLoad } from "./$types";
 

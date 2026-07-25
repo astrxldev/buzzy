@@ -1,5 +1,5 @@
 import type { RequestHandler } from "./$types";
-import { adminCheck } from "@/lib/auth";
+import { adminCheck } from "@/lib/auth-core";
 import { adminSseList, sse, tlSse } from "@/lib/db/sse-endpoints";
 
 function isValidKey<T extends { [x: string]: unknown }>(
