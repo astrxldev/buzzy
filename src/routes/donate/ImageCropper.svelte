@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { ImageUp, RotateCcw, X, ZoomIn, ZoomOut } from "lucide-svelte";
+import { ImageUp, RotateCcw, X, ZoomIn, ZoomOut } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button";
   import * as Dialog from "$lib/components/ui/dialog";
+  import { Input } from "$lib/components/ui/input";
 
   let input: HTMLInputElement;
   let image = $state<HTMLImageElement>();
@@ -85,8 +86,9 @@
 </script>
 
 <div class="relative inline-flex">
-  <button
-    class="relative flex size-28 items-center justify-center overflow-hidden rounded-lg border border-dashed border-input bg-background/40 transition hover:bg-accent/50 sm:size-32"
+  <Button
+    class="relative size-28 h-28 w-28 overflow-hidden rounded-lg border-dashed border-input bg-background/40 transition hover:bg-accent/50 sm:size-32 sm:h-32 sm:w-32"
+    variant="outline"
     type="button"
     aria-label={previewUrl ? "Change donation image" : "Upload donation image"}
     onclick={() => input.click()}
@@ -96,13 +98,13 @@
     {:else}
       <span class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><ImageUp class="size-7" />รูปขึ้นจอ</span>
     {/if}
-  </button>
+  </Button>
   {#if previewUrl}
     <Button class="absolute -top-2 -right-2 rounded-full" type="button" size="icon-sm" aria-label="Remove image" onclick={remove}>
       <X class="size-3.5" />
     </Button>
   {/if}
-  <input {@attach captureInput} class="sr-only" name="image" type="file" accept="image/*" onchange={selectFile} />
+  <Input {@attach captureInput} class="sr-only" name="image" type="file" accept="image/*" onchange={selectFile} />
 </div>
 
 <Dialog.Root bind:open>

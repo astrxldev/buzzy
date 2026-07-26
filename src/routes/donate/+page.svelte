@@ -4,7 +4,11 @@
   import { enhance } from "$app/forms";
   import { resolve } from "$app/paths";
   import FadeImage from "$lib/components/FadeImage.svelte";
+  import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
+  import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
+  import { Textarea } from "$lib/components/ui/textarea";
   import type { ActionData, PageData } from "./$types";
   import ImageCropper from "./ImageCropper.svelte";
 
@@ -62,7 +66,7 @@
 </svelte:head>
 
 <div class="flex min-h-svh items-center justify-center">
-  <section class="w-full max-w-md rounded-md border bg-card p-5">
+  <Card.Root class="w-full max-w-md p-5">
     <div class="relative aspect-[304.5/30] w-full">
       <a href={resolve("/")}>
         <FadeImage
@@ -73,25 +77,24 @@
       </a>
     </div>
 
-    <form {@attach captureForm} method="POST" enctype="multipart/form-data" class="mt-8 flex flex-col gap-4" use:enhance={submit}>
+    <Card.Content class="mt-8 p-0">
+    <form {@attach captureForm} method="POST" enctype="multipart/form-data" class="flex flex-col gap-4" use:enhance={submit}>
       <div class="flex flex-col items-center gap-2 sm:flex-row sm:items-end">
         {#key cropKey}<ImageCropper />{/key}
         <div class="grid w-full grow gap-4 [&>label]:-mb-2">
-          <label class="grid gap-2">
-            <span>ชื่อ <small class="text-muted-foreground">ไม่จำเป็น</small></span>
-            <input
-              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 shadow-xs outline-none placeholder:text-muted-foreground focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+          <Label class="grid gap-2">
+            ชื่อ <small class="text-muted-foreground">ไม่จำเป็น</small>
+            <Input
               name="name"
               placeholder="Anonymous"
             />
-          </label>
-          <label class="grid gap-2">
+          </Label>
+          <Label class="grid gap-2">
             <span>
               จำนวนโดเนท
               <small class="text-muted-foreground">ขึ้นจอขั้นต่ำ 10 บาท</small>
             </span>
-            <input
-              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 shadow-xs outline-none placeholder:text-muted-foreground focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+            <Input
               name="amount"
               inputmode="decimal"
               type="number"
@@ -102,21 +105,20 @@
               required
             />
             {#if amountFeedback}<small class="text-amber-400">{amountFeedback}</small>{/if}
-          </label>
+          </Label>
         </div>
       </div>
 
-      <label class="grid gap-2">
+      <Label class="grid gap-2">
         <span>ข้อความ <small class="text-muted-foreground">สูงสุด 500 ตัวอักษร</small></span>
-        <textarea
-          class="min-h-20 rounded-md border border-input bg-transparent px-3 py-2 shadow-xs outline-none placeholder:text-muted-foreground focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+        <Textarea
           name="message"
           placeholder="ข้อความ"
-          maxlength="500"
+          maxlength={500}
           bind:value={message}
-        ></textarea>
+        />
         <small class="text-right text-muted-foreground">{message.length}/500</small>
-      </label>
+      </Label>
 
       {#if !data.artifactConfig.locked}
         <label class="flex items-center gap-2 rounded-md border p-3">
@@ -129,17 +131,16 @@
           ลัดคิวเสือกไอดีชาวบ้าน
         </label>
         {#if artifact}
-          <label class="grid gap-2">
+          <Label class="grid gap-2">
             <span>UID สำหรับเสือกไอดีชาวบ้าน</span>
-            <input
-              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 shadow-xs outline-none placeholder:text-muted-foreground focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+            <Input
               name="uid"
               placeholder="814006303"
               pattern="[1-9][0-9]{8}"
               bind:value={uid}
               required
             />
-          </label>
+          </Label>
         {/if}
       {/if}
 
@@ -162,8 +163,7 @@
       {#if type === "tmn"}
         <label class="grid gap-2">
           <span>ลิงก์อั่งเปา TrueMoney</span>
-          <input
-            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 shadow-xs outline-none placeholder:text-muted-foreground focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+          <Input
             name="link"
             placeholder="https://gift.truemoney.com/campaign/?v=..."
             bind:value={link}
@@ -189,7 +189,7 @@
             <span>สลิปโอนเงิน</span>
             <span class={["flex cursor-pointer items-center justify-center gap-2 rounded-md border px-3 py-2", slipName && "border-emerald-500 text-emerald-300"]}>
               {#if slipName}<Check class="size-4" /> {slipName}{:else}เลือกสลิปโอนเงิน{/if}
-              <input class="sr-only" name="slip" type="file" accept="image/*" required onchange={(event) => (slipName = event.currentTarget.files?.[0]?.name ?? "")} />
+              <Input class="sr-only" name="slip" type="file" accept="image/*" required onchange={(event) => (slipName = event.currentTarget.files?.[0]?.name ?? "")} />
             </span>
           </label>
         </div>
@@ -209,5 +209,6 @@
         {#if submitting}<LoaderCircle class="animate-spin" />กำลังตรวจสอบการชำระเงิน{:else}<Send />ส่งโดเนท{/if}
       </Button>
     </form>
-  </section>
+    </Card.Content>
+  </Card.Root>
 </div>

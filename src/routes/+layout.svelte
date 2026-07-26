@@ -5,6 +5,7 @@
   import DeploymentStatus from "$lib/components/DeploymentStatus.svelte";
   import Navbar from "$lib/components/Navbar.svelte";
   import PostHog from "$lib/components/PostHog.svelte";
+  import { Toaster } from "svelte-sonner";
   import type { LayoutData } from "./$types";
 
   let { data, children }: { data: LayoutData; children: import("svelte").Snippet } = $props();
@@ -67,6 +68,8 @@
   <Navbar />
   <DeploymentStatus />
 {/if}
+
+<Toaster position="bottom-right" richColors />
 
 {#if data.posthog}
   <PostHog {...data.posthog} />

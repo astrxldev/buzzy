@@ -9,7 +9,10 @@
     SquircleDashed,
   } from "lucide-svelte";
   import { onMount } from "svelte";
+  import { toast } from "svelte-sonner";
+  import Tooltip from "$lib/components/Tooltip.svelte";
   import { Button } from "$lib/components/ui/button";
+  import CharacterCard from "$lib/components/CharacterCard.svelte";
   import type { PageData } from "./$types";
   import { getCardStatus, revalidateCard } from "../artifact-admin.remote";
 
@@ -20,7 +23,6 @@
   let failed = $state("");
   let cached = $state(true);
   let tick = $state(Date.now());
-  let feedback = $state("");
 
   async function copyUid() {
     if (copied) return;
@@ -33,13 +35,13 @@
     ready = false;
     failed = "";
     cached = false;
-    feedback = "";
     try {
       if (!useWeb) await revalidateCard(data.sub.id);
       tick = Date.now();
-      feedback = "กำลังโหลดรูปใหม่";
+      toast.success("กำลังโหลดรูปใหม่");
     } catch (error) {
       failed = `${error instanceof Error ? error.message : error}`;
+      toast.error(failed);
     }
   }
 
@@ -57,9 +59,10 @@
   <title>{data.sub.name} · Artifact Admin</title>
 </svelte:head>
 
-<div class="flex h-svh flex-col gap-2 p-2">
-  <section class="grid gap-2 md:grid-cols-[1fr_11rem]">
-    <article class="rounded-xl border bg-card/75 p-5 shadow-sm backdrop-blur">
+  <div class="h-full p-2">
+  <div class="flex h-full w-full flex-col gap-2">
+  <section class="flex w-full justify-between gap-2">
+    <article class="w-full rounded-md border bg-card/75 pb-1 shadow-sm backdrop-blur">
       <div class="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h1 class="text-2xl font-bold">
@@ -69,14 +72,6 @@
             {data.sub.comment || "ไม่มีข้อความเพิ่มเติม"}
           </p>
         </div>
-        <div
-          class={[
-            "rounded-full border px-3 py-1 text-xs",
-            data.sub.checked ? "border-emerald-400 text-emerald-300" : "border-yellow-400 text-yellow-300",
-          ]}
-        >
-          {data.sub.checked ? "checked" : "pending"}
-        </div>
       </div>
       {#if data.sub.queue === null || data.sub.promoted}
         <div class="mt-4 rounded-md border border-yellow-400/70 bg-yellow-400/10 p-3 text-sm">
@@ -84,7 +79,7 @@
           <p class="mt-1 text-muted-foreground">UID {data.sub.uid} · {data.sub.char || "ไม่ระบุตัวละคร"}</p>
         </div>
       {/if}
-      <div class="mt-5 flex items-center gap-2">
+        <div class="mt-5 flex items-center gap-2 px-5">
         <span class="font-mono text-muted-foreground">{data.sub.uid}</span>
         <Button variant="ghost" size="icon" onclick={copyUid} disabled={copied}>
           {#if copied}
@@ -96,21 +91,9 @@
       </div>
     </article>
 
-    <aside class="overflow-hidden rounded-xl border bg-card/75 p-3 backdrop-blur">
+    <aside class="flex items-center justify-center overflow-hidden rounded-md border bg-card/75 backdrop-blur">
       {#if data.char}
-        <div class="relative aspect-square overflow-hidden rounded-md border bg-black/20">
-          <img
-            class="h-full w-full object-cover"
-            src={`/cdn/${data.char.image}`}
-            alt={data.char.name}
-          />
-        </div>
-        <div class="mt-2 text-center">
-          <div class="font-semibold">{data.char.name}</div>
-          <div class="text-xs text-muted-foreground">
-            {data.char.stars}★ · {data.char.vision} · {data.char.weapon}
-          </div>
-        </div>
+        <CharacterCard char={data.char} />
       {:else}
         <div class="flex aspect-square items-center justify-center rounded-md border text-sm text-muted-foreground">
           No character
@@ -140,20 +123,22 @@
       {/if}
 
       <div class="absolute bottom-2 left-2 z-20 flex gap-1">
-        <Button
-          variant="outline"
-          size="icon"
-          onclick={() => {
-            ready = false;
-            failed = "";
-            useWeb = !useWeb;
-          }}
-        >
-          <ImageIcon class="size-4" />
-        </Button>
-        <Button variant="outline" size="icon" onclick={refreshCard} disabled={!failed && !ready}>
-          <RefreshCw class="size-4" />
-        </Button>
+        <Tooltip text={useWeb ? "สลับเป็นรูปภาพ" : "สลับเป็น Enka"}>
+          <Button
+            variant="outline"
+            size="icon"
+            onclick={() => {
+              ready = false;
+              failed = "";
+              useWeb = !useWeb;
+            }}
+          ><ImageIcon class="size-4" /></Button>
+        </Tooltip>
+        <Tooltip text="โหลดรูปใหม่">
+          <Button variant="outline" size="icon" onclick={refreshCard} disabled={!failed && !ready}>
+            <RefreshCw class="size-4" />
+          </Button>
+        </Tooltip>
       </div>
 
       {#if useWeb}
@@ -178,18 +163,18 @@
             ready = true;
             failed = "";
             cached = true;
-            feedback = "โหลดการ์ดแล้ว";
+            toast.success("โหลดการ์ดแล้ว");
           }}
           onerror={() => {
             failed = "ไม่สามารถโหลดข้อมูลตัวละคร";
           }}
         />
       {/if}
-      {#if feedback}<span class="sr-only" aria-live="polite">{feedback}</span>{/if}
     {:else}
       <div class="flex h-full items-center justify-center p-6 text-muted-foreground">
         Enka card preview is disabled in settings.
       </div>
     {/if}
   </section>
+  </div>
 </div>

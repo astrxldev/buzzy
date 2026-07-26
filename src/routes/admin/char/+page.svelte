@@ -2,9 +2,11 @@
   import { Pencil, Plus, Trash2 } from "lucide-svelte";
   import { invalidateAll } from "$app/navigation";
   import { Button } from "$lib/components/ui/button";
+  import ConfirmDialog from "$lib/components/ConfirmDialog.svelte";
   import * as Dialog from "$lib/components/ui/dialog";
   import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
+import { Label } from "$lib/components/ui/label";
+   import * as Select from "$lib/components/ui/select";
   import type { PageData } from "./$types";
   import { deleteCharacter, saveCharacter } from "../admin.remote";
 
@@ -18,6 +20,7 @@
   let busy = $state(false);
   let message = $state("");
   let draft = $state<Character>(emptyCharacter());
+  let removeOpen = $state(false);
 
   const chars = $derived(
     data.chars.filter((char) =>
@@ -71,7 +74,12 @@
   }
 
   async function remove() {
-    if (!originalId || !window.confirm(`Delete ${draft.name}?`)) return;
+    if (!originalId) return;
+    removeOpen = true;
+  }
+
+  async function confirmRemove() {
+    if (!originalId) return;
     busy = true;
     try {
       await deleteCharacter(originalId);
@@ -119,12 +127,12 @@
       <div class="grid gap-3 sm:grid-cols-2">
         <label class="grid gap-1.5"><Label>Name</Label><Input required bind:value={draft.name} placeholder="Traveler (Electro)" /></label>
         <label class="grid gap-1.5"><Label>ID</Label><Input required disabled={!!originalId} bind:value={draft.id} placeholder="traveler_electro" /></label>
-        <label class="grid gap-1.5"><Label>Element</Label><select class="h-8 rounded-lg border bg-background px-2 text-sm" bind:value={draft.vision}>{#each ["anemo", "geo", "dendro", "hydro", "pyro", "cryo", "electro"] as vision (vision)}<option value={vision}>{vision}</option>{/each}</select></label>
-        <label class="grid gap-1.5"><Label>Stars</Label><select class="h-8 rounded-lg border bg-background px-2 text-sm" value={String(draft.stars)} onchange={(event) => (draft.stars = Number(event.currentTarget.value) as Stars)}><option value="4">4</option><option value="5">5</option></select></label>
-        <label class="grid gap-1.5"><Label>Version</Label><select class="h-8 rounded-lg border bg-background px-2 text-sm" bind:value={draft.version}>{#each data.versions as version (version.id)}<option value={version.id}>{version.name} ({version.id})</option>{/each}</select></label>
+          <label class="grid gap-1.5"><Label>Element</Label><Select.Root type="single" bind:value={draft.vision}><Select.Trigger class="w-full"><span>{draft.vision}</span></Select.Trigger><Select.Content>{#each ["anemo", "geo", "dendro", "hydro", "pyro", "cryo", "electro"] as vision (vision)}<Select.Item value={vision}>{vision}</Select.Item>{/each}</Select.Content></Select.Root></label>
+          <label class="grid gap-1.5"><Label>Stars</Label><Select.Root type="single" value={String(draft.stars)} onValueChange={(value) => (draft.stars = Number(value) as Stars)}><Select.Trigger class="w-full"><span>{draft.stars}</span></Select.Trigger><Select.Content><Select.Item value="4">4</Select.Item><Select.Item value="5">5</Select.Item></Select.Content></Select.Root></label>
+          <label class="grid gap-1.5"><Label>Version</Label><Select.Root type="single" bind:value={draft.version}><Select.Trigger class="w-full"><span>{data.versions.find((version) => version.id === draft.version)?.name || draft.version}</span></Select.Trigger><Select.Content>{#each data.versions as version (version.id)}<Select.Item value={version.id}>{version.name} ({version.id})</Select.Item>{/each}</Select.Content></Select.Root></label>
         <label class="grid gap-1.5"><Label>Order</Label><Input required type="number" bind:value={draft.order} /></label>
-        <label class="grid gap-1.5 sm:col-span-2"><Label>Image</Label><select class="h-8 rounded-lg border bg-background px-2 text-sm" required bind:value={draft.image}><option value="">Choose CDN file</option>{#each data.files as file (file.id)}<option value={file.id}>{file.name || file.id}</option>{/each}</select>{#if draft.image}<img class="h-24 w-24 rounded-md border object-cover" src={`/cdn/${draft.image}`} alt="Selected character" />{/if}</label>
-        <label class="grid gap-1.5"><Label>Weapon</Label><select class="h-8 rounded-lg border bg-background px-2 text-sm" bind:value={draft.weapon}><option value="WEAPON_SWORD_ONE_HAND">Sword</option><option value="WEAPON_CATALYST">Catalyst</option><option value="WEAPON_CLAYMORE">Claymore</option><option value="WEAPON_BOW">Bow</option><option value="WEAPON_POLE">Polearm</option></select></label>
+          <label class="grid gap-1.5 sm:col-span-2"><Label>Image</Label><Select.Root type="single" bind:value={draft.image}><Select.Trigger class="w-full"><span>{draft.image ? data.files.find((file) => file.id === draft.image)?.name || draft.image : "Choose CDN file"}</span></Select.Trigger><Select.Content><Select.Item value="">Choose CDN file</Select.Item>{#each data.files as file (file.id)}<Select.Item value={file.id}>{file.name || file.id}</Select.Item>{/each}</Select.Content></Select.Root>{#if draft.image}<img class="h-24 w-24 rounded-md border object-cover" src={`/cdn/${draft.image}`} alt="Selected character" />{/if}</label>
+          <label class="grid gap-1.5"><Label>Weapon</Label><Select.Root type="single" bind:value={draft.weapon}><Select.Trigger class="w-full"><span>{draft.weapon}</span></Select.Trigger><Select.Content><Select.Item value="WEAPON_SWORD_ONE_HAND">Sword</Select.Item><Select.Item value="WEAPON_CATALYST">Catalyst</Select.Item><Select.Item value="WEAPON_CLAYMORE">Claymore</Select.Item><Select.Item value="WEAPON_BOW">Bow</Select.Item><Select.Item value="WEAPON_POLE">Polearm</Select.Item></Select.Content></Select.Root></label>
         <label class="grid gap-1.5"><Label>Amber ID</Label><Input required bind:value={draft.amber} placeholder="10000005-electro" /></label>
       </div>
       {#if message}<p class="text-sm text-destructive" aria-live="polite">{message}</p>{/if}
@@ -136,3 +144,10 @@
     </form>
   </Dialog.Content>
 </Dialog.Root>
+
+<ConfirmDialog
+  bind:open={removeOpen}
+  title="Confirm deletion"
+  description={`Delete ${draft.name}?`}
+  onConfirm={confirmRemove}
+/>

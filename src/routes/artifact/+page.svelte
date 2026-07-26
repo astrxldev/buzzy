@@ -13,7 +13,12 @@
   import Blocker from "$lib/components/Blocker.svelte";
   import FadeImage from "$lib/components/FadeImage.svelte";
   import Tooltip from "$lib/components/Tooltip.svelte";
+  import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
+  import { Kbd } from "$lib/components/ui/kbd";
+  import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
+  import { Textarea } from "$lib/components/ui/textarea";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import type { ActionData, PageData } from "./$types";
   import CharacterChooser from "./CharacterChooser.svelte";
@@ -37,7 +42,7 @@
 
   let uid = $state(untrack(() => (data.editing ? (data.submission?.uid ?? "") : "")));
   let selected = $state(untrack(() => (data.editing ? (data.submission?.char ?? "") : "")));
-  let rulesOpen = $state(untrack(() => !blocked && !data.editing));
+  let rulesOpen = $state(false);
   let guideOpen = $state(false);
   let warning = $state<Warning>(null);
   let pendingForm = $state<HTMLFormElement>();
@@ -104,7 +109,7 @@
 </svelte:head>
 
 <div class="flex min-h-svh items-center justify-around px-2 py-16">
-  <section class="relative w-full max-w-md rounded-xl border bg-card py-6 shadow-sm">
+  <Card.Root class="relative w-full max-w-md overflow-visible py-0">
     {#if !data.editing && data.submission}
       <Blocker>
         <div class="flex flex-col items-center gap-1">
@@ -154,15 +159,9 @@
           </Tooltip>
         </div>
       </Blocker>
-    {:else if !data.editing}
-      <Blocker>
-        <Button variant="destructive" type="button" onclick={() => (rulesOpen = true)}>
-          <BookAlert /> อ่านกฎ
-        </Button>
-      </Blocker>
     {/if}
 
-    <header class="flex justify-center px-6">
+    <Card.Header class="flex justify-center px-6 pt-6">
       <div class="w-[276.5px]">
         <a href={resolve("/")}>
           <FadeImage
@@ -175,28 +174,28 @@
           />
         </a>
       </div>
-    </header>
+    </Card.Header>
 
-    <form method="POST" id="mainform" class="px-6" onsubmit={submit}>
+    <Card.Content class="px-6">
+      <form method="POST" id="mainform" onsubmit={submit}>
       {#if data.editing && data.submission}
         <input type="hidden" name="editSub" value={data.submission.id} />
         <input type="hidden" name="editToken" value={data.submission.editToken} />
       {/if}
       <div class="flex flex-col gap-3">
-        <label class="grid gap-2">
-          <span>ชื่อ*</span>
-          <input
-            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+        <Label class="grid gap-2">
+          ชื่อ*
+          <Input
             id="name"
             name="name"
             type="text"
             placeholder="Mr.Buzz"
             autocomplete="name"
-            maxlength="64"
+            maxlength={64}
             required
             value={data.editing ? data.submission?.name : ""}
           />
-        </label>
+        </Label>
         {#if data.config.enka}
           <CharacterChooser
             characters={data.characters}
@@ -205,49 +204,49 @@
             bind:guideOpen
           />
         {:else}
-          <label class="grid gap-2">
-            <span>UID*</span>
-            <input
-              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+          <Label class="grid gap-2">
+            UID*
+            <Input
               id="uid"
               name="uid"
-              type="number"
-              required
+               type="text"
+               required
               placeholder="814006303"
-              maxlength="10"
+               maxlength={10}
               bind:value={uid}
             />
-          </label>
-          <label class="grid gap-2">
-            <span>ตัวละคร*</span>
-            <input
-              class="flex h-9 w-full rounded-md border border-input bg-card px-3 py-1 shadow-xs outline-none transition-colors focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+          </Label>
+          <Label class="grid gap-2">
+            ตัวละคร*
+            <Input
               id="character"
               name="character"
               list="artifact-character-list"
               placeholder="ค้นหาตัวละคร"
               required
               bind:value={selected}
+            class="bg-card"
             />
             <datalist id="artifact-character-list">
               {#each data.clist as char (char.value)}
                 <option value={char.value}>{char.label}</option>
               {/each}
             </datalist>
-          </label>
+          </Label>
         {/if}
-        <label class="grid gap-2">
-          <span>ข้อความเพิ่มเติม</span>
-          <textarea
-            class="min-h-20 w-full rounded-md border border-input bg-card px-3 py-2 shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+        <Label class="grid gap-2">
+          ข้อความเพิ่มเติม
+          <Textarea
             id="comment"
             name="comment"
             placeholder="เช่น Er พอไหมครับ, คริสวยยังครับ (ไม่บังคับ)"
-            maxlength="1024"
-          >{data.editing ? data.submission?.comment : ""}</textarea>
-        </label>
+            maxlength={1024}
+            value={data.editing ? data.submission?.comment : ""}
+          />
+        </Label>
       </div>
-    </form>
+      </form>
+    </Card.Content>
 
     {#if form?.error || clientError}
       <p class="mx-6 mt-3 rounded-md border border-destructive/50 bg-destructive/10 p-2 text-sm text-destructive">
@@ -255,7 +254,7 @@
       </p>
     {/if}
 
-    <footer class="mt-6 flex justify-between gap-2 px-6">
+    <Card.Footer class="mt-6 justify-between gap-2 p-6">
       <div class="flex gap-2">
         <Tooltip text="โดเนทลัดคิว ขั้นต่ำ 10 บาท">
           <Button variant="outline" href={resolve("/donate")} target="_blank" rel="noreferrer">
@@ -278,11 +277,9 @@
         {/if}
       </div>
       <div class="flex items-center gap-2">
-        <kbd
-          class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100"
-        >
+        <Kbd class="font-sans text-xs">
           {data.count} / {data.config.limit < 0 ? "∞" : data.config.limit} คิว
-        </kbd>
+        </Kbd>
         <Tooltip text="ส่งเลยจัฟลูกพี่">
           <Button type="submit" form="mainform" disabled={blocked || checking}>
             {#if data.editing}
@@ -293,8 +290,8 @@
           </Button>
         </Tooltip>
       </div>
-    </footer>
-  </section>
+    </Card.Footer>
+  </Card.Root>
 </div>
 
 <RulesDialog bind:open={rulesOpen} />

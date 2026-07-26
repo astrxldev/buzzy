@@ -10,9 +10,12 @@
   } from "lucide-svelte";
   import { onMount } from "svelte";
   import { goto, invalidateAll } from "$app/navigation";
+  import { resolve } from "$app/paths";
   import { page } from "$app/state";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
+  import ConfirmDialog from "$lib/components/ConfirmDialog.svelte";
+  import PromptDialog from "$lib/components/PromptDialog.svelte";
   import type { LayoutData } from "./$types";
   import {
     bulkDelete,
@@ -30,6 +33,12 @@
   let debug = $state(false);
   let selected = $state<string[]>([]);
   let busy = $state("");
+  let limitDialogOpen = $state(false);
+  let freeDialogOpen = $state(false);
+  let wipeDialogOpen = $state(false);
+  let bulkDialogOpen = $state(false);
+  let limitValue = $state("");
+  let freeValue = $state("");
 
   const selectedId = $derived(page.params.id);
   const shown = $derived(
@@ -52,35 +61,43 @@
 
   async function goRandom() {
     const sub = await run("random", () => random());
-    if (sub?.id) await goto(`/rubgram/admin/${sub.id}`);
+    if (sub?.id) await goto(resolve("/rubgram/admin/[id]", { id: sub.id }));
   }
 
-  async function updateLimit() {
-    const value = window.prompt(
-      "ตั้งจำกัดคิว (-1 = ไม่จำกัด)",
-      data.config.limit >= 0 ? `${data.config.limit}` : "",
-    );
-    if (value === null) return;
+  function updateLimit() {
+    limitValue = data.config.limit >= 0 ? `${data.config.limit}` : "";
+    limitDialogOpen = true;
+  }
+
+  async function saveLimit(value: string) {
     await run("limit", () => setLimit(Number(value) || -1));
   }
 
-  async function updateFree() {
-    const value = window.prompt("ตั้งจำนวนคิวฟรี", `${data.config.free || 0}`);
-    if (value === null) return;
+  function updateFree() {
+    freeValue = `${data.config.free || 0}`;
+    freeDialogOpen = true;
+  }
+
+  async function saveFree(value: string) {
     await run("free", () => setFree(Number(value) || 0));
   }
 
-  async function wipeAll() {
-    if (!window.confirm("ลบ Rubgram submissions ทั้งหมด?")) return;
+  async function confirmWipe() {
     await run("wipe", () => wipe());
-    await goto("/rubgram/admin");
+    await goto(resolve("/rubgram/admin"));
   }
 
-  async function deleteSelected() {
-    if (!selected.length) return;
-    if (!window.confirm(`ลบ ${selected.length} รายการ?`)) return;
+  function wipeAll() {
+    wipeDialogOpen = true;
+  }
+
+  async function confirmDeleteSelected() {
     await run("bulk", () => bulkDelete(selected));
     selected = [];
+  }
+
+  function deleteSelected() {
+    if (selected.length) bulkDialogOpen = true;
   }
 
   function toggleSelected(id: string, checked: boolean) {
@@ -109,15 +126,15 @@
 <div class="grid min-h-svh bg-background/20 md:grid-cols-[20rem_1fr]">
   <aside class="flex min-h-svh flex-col border-r bg-card/70 backdrop-blur-xl">
     <header class="flex items-center justify-between border-b p-3">
-      <a class="font-bold" href="/admin">Admin</a>
+      <a class="font-bold" href={resolve("/admin")}>Admin</a>
       <div class="flex gap-1">
-        <Button variant="ghost" size="icon" href="/rubgram/admin/manual">
+        <Button variant="ghost" size="icon" href={resolve("/rubgram/admin/manual")}>
           <Plus class="size-5" />
         </Button>
         <Button variant="ghost" size="icon" disabled={!!busy} onclick={goRandom}>
           <Dice5 class="size-5" />
         </Button>
-        <Button variant="ghost" size="icon" href="/rubgram/admin/calendar">
+        <Button variant="ghost" size="icon" href={resolve("/rubgram/admin/calendar")}>
           <Calendar class="size-5" />
         </Button>
         <Button variant="ghost" size="icon" disabled={!!busy} onclick={wipeAll}>
@@ -169,7 +186,7 @@
               selectedId === sub.id && "bg-accent text-accent-foreground",
               (!sub.paid || sub.deleted) && "opacity-55",
             ]}
-            href={`/rubgram/admin/${sub.id}`}
+            href={resolve("/rubgram/admin/[id]", { id: sub.id })}
           >
             <span class="min-w-0 truncate">
               {#if sub.checked}
@@ -236,3 +253,32 @@
     {@render children()}
   </main>
 </div>
+
+<PromptDialog
+  bind:open={limitDialogOpen}
+  bind:value={limitValue}
+  title="ตั้งจำนวนคิว"
+  description="ใส่ -1 เพื่อไม่จำกัดจำนวนคิว"
+  onConfirm={saveLimit}
+/>
+<PromptDialog
+  bind:open={freeDialogOpen}
+  bind:value={freeValue}
+  title="ตั้งจำนวนคิวฟรี"
+  description="กำหนดจำนวนคิวที่ไม่คิดค่าบริการ"
+  onConfirm={saveFree}
+/>
+<ConfirmDialog
+  bind:open={wipeDialogOpen}
+  title="ลบข้อมูล Rubgram ทั้งหมด?"
+  description="การลบ submissions ทั้งหมดไม่สามารถย้อนกลับได้"
+  onConfirm={confirmWipe}
+  confirmText="ลบข้อมูล"
+/>
+<ConfirmDialog
+  bind:open={bulkDialogOpen}
+  title="ลบรายการที่เลือก?"
+  description={`คุณกำลังจะลบ ${selected.length} รายการ`}
+  onConfirm={confirmDeleteSelected}
+  confirmText="ลบรายการ"
+/>

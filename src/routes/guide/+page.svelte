@@ -1,6 +1,9 @@
 <script lang="ts">
   import { Compass, Loader2, Search, SearchX } from "lucide-svelte";
+  import { resolve } from "$app/paths";
   import FadeImage from "$lib/components/FadeImage.svelte";
+  import * as Card from "$lib/components/ui/card";
+  import { Input } from "$lib/components/ui/input";
   import { cn, debounce } from "$lib/utils";
   import { searchGuides } from "./guide.remote";
 
@@ -27,7 +30,7 @@
   <div class="flex w-full flex-col border xl:max-w-2/3">
     <div>
       <a
-        href="/"
+        href={resolve("/")}
         class="flex items-center gap-2 border-b p-3 leading-none font-semibold"
       >
         <Compass class="opacity-50" />
@@ -38,8 +41,8 @@
       <div
         class="border-input bg-background flex h-10 w-full min-w-0 items-center rounded-md border px-3 shadow-xs"
       >
-        <input
-          class="h-full grow bg-transparent outline-none placeholder:text-muted-foreground"
+        <Input
+          class="h-full grow rounded-none border-0 bg-transparent px-0 shadow-none outline-none placeholder:text-muted-foreground focus-visible:ring-0"
           placeholder="ค้นหา..."
           bind:value={search}
           oninput={runSearch}
@@ -66,13 +69,11 @@
           <p class="text-lg">ลองคำอื่นที่ความหมายใกล้เคียงกันดูนะ</p>
         </div>
       {:else}
-        {#each list as card}
+        {#each list as card (card.id)}
           <a href={card.link} target="_blank" rel="noreferrer">
-            <article
-              class="rounded-sm border bg-card/50 py-3 text-card-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-border sm:rounded-xl sm:py-6"
-            >
-              <div class="px-3 sm:px-6">
-                <h2 class="leading-none font-semibold">{card.name}</h2>
+            <Card.Root class="rounded-sm bg-card/50 py-3 backdrop-blur-sm transition-colors hover:bg-border sm:rounded-xl sm:py-6">
+              <Card.Header class="px-3 sm:px-6">
+                <Card.Title>{card.name}</Card.Title>
                 <div
                   class="relative mt-2 aspect-square w-full overflow-hidden rounded-sm border sm:rounded-lg"
                 >
@@ -84,8 +85,8 @@
                     />
                   {/if}
                 </div>
-              </div>
-            </article>
+              </Card.Header>
+            </Card.Root>
           </a>
         {/each}
       {/if}

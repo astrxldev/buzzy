@@ -19,8 +19,12 @@
   import Blocker from "$lib/components/Blocker.svelte";
   import FadeImage from "$lib/components/FadeImage.svelte";
   import Tooltip from "$lib/components/Tooltip.svelte";
+  import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import * as Dialog from "$lib/components/ui/dialog";
+  import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
   import type { ActionData, PageData } from "./$types";
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -112,7 +116,7 @@
 </svelte:head>
 
 <div class="flex h-svh flex-col items-center justify-center gap-2">
-  <section class="relative w-full max-w-md rounded-xl border bg-card py-6 shadow-sm">
+  <Card.Root class="relative w-full max-w-md py-0">
     {#if data.q && data.q.paid}
       <Blocker>
         <div class="flex flex-col items-center gap-1">
@@ -190,7 +194,7 @@
       </Blocker>
     {/if}
 
-    <header class="flex justify-center px-6">
+    <Card.Header class="flex justify-center px-6">
       <div class="w-[276.5px]">
         <a href={resolve("/")}>
           <FadeImage
@@ -203,9 +207,9 @@
           />
         </a>
       </div>
-    </header>
+    </Card.Header>
 
-    <div class="px-6">
+    <Card.Content class="px-6">
       {#if data.q && !data.q.paid}
         <form method="POST" action="?/payment" enctype="multipart/form-data" id="mainform" use:enhance={enhanced}>
           <div class="flex flex-col items-center gap-2">
@@ -239,7 +243,7 @@
               ]}
             >
               {slipSelected ? "เลือกสลิปแล้ว" : "อัพโหลดสลิป"}
-              <input
+              <Input
                 type="file"
                 name="slip"
                 accept="image/*"
@@ -255,21 +259,20 @@
       {:else}
         <form method="POST" action="?/registration" id="mainform" use:enhance={enhanced}>
           <div class="flex flex-col gap-3">
-            <label class="grid gap-2">
-              <span>ชื่อ*</span>
-              <input
-                class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 shadow-xs outline-none placeholder:text-muted-foreground focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+            <Label class="grid gap-2">
+              ชื่อ*
+              <Input
                 id="name"
                 name="name"
                 type="text"
                 placeholder={data.session?.display || "Mr. Buzz"}
                 autocomplete="name"
-                maxlength="32"
+                maxlength={32}
                 required
               />
-            </label>
-            <label class="grid gap-2">
-              <span>เซิร์ฟเวอร์*</span>
+            </Label>
+            <Label class="grid gap-2">
+              เซิร์ฟเวอร์*
               <select
                 class="flex h-9 w-full rounded-md border border-input bg-card px-3 py-1 shadow-xs outline-none"
                 name="server"
@@ -281,7 +284,7 @@
                 <option value="eu">Europe</option>
                 <option value="tw">TW, HK, MO</option>
               </select>
-            </label>
+            </Label>
             <div class="grid gap-2">
               <span>บริการ*</span>
               <div class="grid gap-2 rounded-md border p-2">
@@ -315,7 +318,7 @@
           <input hidden name="user" readonly value={data.session?.uid || ""} />
         </form>
       {/if}
-    </div>
+    </Card.Content>
 
     {#if form?.error}
       <p class="mx-6 mt-3 rounded-md border border-destructive/50 bg-destructive/10 p-2 text-sm text-destructive">
@@ -323,7 +326,7 @@
       </p>
     {/if}
 
-    <footer class="mt-6 flex justify-between gap-2 px-6">
+    <Card.Footer class="mt-6 justify-between gap-2 px-6">
       <div class="flex gap-2">
         <Tooltip text="ลัดคิว 50 บาท (ไม่รวมยอดที่ต้องจ่าย)">
           <Button
@@ -392,8 +395,8 @@
           </Button>
         </Tooltip>
       </div>
-    </footer>
-  </section>
+    </Card.Footer>
+  </Card.Root>
 
   <span class="m-1 rounded-sm border p-1 text-xs">
     หากติดปัญหา โปรดแจ้งผ่านทาง
@@ -403,15 +406,11 @@
   </span>
 </div>
 
-{#if showList}
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4 backdrop-blur-sm">
-    <div class="max-h-[80svh] w-full max-w-lg overflow-y-auto rounded-xl border bg-card p-4">
-      <div class="mb-3 flex items-center justify-between">
-        <h2 class="text-xl font-bold">รายการคิวของฉัน</h2>
-        <Button size="icon" variant="ghost" onclick={() => (showList = false)}>
-          <X />
-        </Button>
-      </div>
+<Dialog.Root bind:open={showList}>
+  <Dialog.Content class="max-h-[80svh] overflow-y-auto p-4 sm:max-w-lg">
+    <Dialog.Header>
+      <Dialog.Title>รายการคิวของฉัน</Dialog.Title>
+    </Dialog.Header>
       <div class="flex flex-col gap-2">
         {#if data.userSubs.length === 0}
           <p class="text-sm text-muted-foreground">ไม่มีรายการคิว</p>
@@ -444,6 +443,5 @@
           </form>
         {/each}
       </div>
-    </div>
-  </div>
-{/if}
+  </Dialog.Content>
+</Dialog.Root>

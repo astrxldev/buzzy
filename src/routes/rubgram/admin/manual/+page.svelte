@@ -4,7 +4,9 @@
   import { goto, invalidateAll } from "$app/navigation";
   import { resolve } from "$app/paths";
   import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
+import { Input } from "$lib/components/ui/input";
+  import { Checkbox } from "$lib/components/ui/checkbox";
+  import * as Select from "$lib/components/ui/select";
   import type { PageData } from "./$types";
   import { manualCreate } from "../rubgram-admin.remote";
 
@@ -106,12 +108,7 @@
       </label>
       <label class="grid gap-1">
         <span class="text-sm font-medium">Server</span>
-        <select class="h-9 rounded-md border bg-card px-3 outline-none" bind:value={server}>
-          <option value="as">Asia</option>
-          <option value="us">America</option>
-          <option value="eu">Europe</option>
-          <option value="tw">TW, HK, MO</option>
-        </select>
+        <Select.Root type="single" bind:value={server}><Select.Trigger class="w-full"><span>{server === "as" ? "Asia" : server === "us" ? "America" : server === "eu" ? "Europe" : "TW, HK, MO"}</span></Select.Trigger><Select.Content><Select.Item value="as">Asia</Select.Item><Select.Item value="us">America</Select.Item><Select.Item value="eu">Europe</Select.Item><Select.Item value="tw">TW, HK, MO</Select.Item></Select.Content></Select.Root>
       </label>
       <label class="grid gap-1">
         <span class="text-sm font-medium">Slip</span>
@@ -169,12 +166,10 @@
             <span>{type.display}</span>
             <span class="flex items-center gap-2">
               <span class="text-xs text-muted-foreground">{type.price}฿</span>
-              <input
-                class="accent-primary"
-                type="checkbox"
+                <Checkbox
                 checked={services.includes(type.id)}
-                onchange={(ev) => toggleService(type.id, ev.currentTarget.checked)}
-              />
+                onCheckedChange={(checked) => toggleService(type.id, checked)}
+                />
             </span>
           </label>
         {/each}

@@ -50,7 +50,7 @@
       {/each}
     </div>
 
-    <div class="max-h-[calc(100svh-264px)] w-full overflow-y-auto rounded-xl border bg-card/70 backdrop-blur-md">
+    <Card.Root class="max-h-[calc(100svh-264px)] w-full overflow-y-auto bg-card/70 py-0 backdrop-blur-md">
       <Table.Root>
         <Table.Header>
           <Table.Row>
@@ -84,6 +84,6 @@
           {/each}
         </Table.Body>
       </Table.Root>
-    </div>
+    </Card.Root>
   </div>
 </div>

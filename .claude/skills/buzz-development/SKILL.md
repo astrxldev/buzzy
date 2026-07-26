@@ -10,6 +10,12 @@ metadata:
 
 This skill covers the local dev environment, common maintenance tasks, and BrowserMCP setup.
 
+## Rule 1: Do Not Build
+
+Never run `bun run build`, `bun build`, `bun nextbuild`, or another project
+build command unless the user explicitly requests it. Use `bun run check` for
+validation and BrowserMCP for runtime/UI verification instead.
+
 ## Prerequisites
 
 - **Bun** (matching the project's Bun version in Docker)
@@ -71,7 +77,7 @@ Seeding is idempotent — it skips if an admin account already exists.
 | `bun dev`       | Start all dev containers with file watch                    |
 | `bun ds <cmd>`  | Run a command in the app container                          |
 | `bun nextdev`   | Start Next.js dev server directly (outside Docker)          |
-| `bun build`     | Build for production (Turbopack)                            |
+| `bun run build` | Do not run unless explicitly requested by the user            |
 | `bun start`     | Start production server                                     |
 | `bun lint`      | Run Biome check with auto-fix                               |
 | `bun format`    | Run Biome formatter                                         |

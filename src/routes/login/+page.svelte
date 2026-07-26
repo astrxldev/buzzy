@@ -6,7 +6,7 @@ import { Input } from "$lib/components/ui/input";
 import type { ActionData, PageData } from "./$types";
 
 let { data, form }: { data: PageData; form: ActionData } = $props();
-let email = $state(form?.email || "");
+let email = $state("");
 let password = $state("");
 </script>
 
@@ -39,7 +39,8 @@ let password = $state("");
     <label class="grid gap-1">
       <span class="text-sm font-medium">Email</span>
       <Input
-        bind:value={email}
+        value={email || form?.email || ""}
+        oninput={(event) => (email = event.currentTarget.value)}
         name="email"
         type="email"
         autocomplete="email"

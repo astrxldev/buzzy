@@ -1,7 +1,8 @@
 <script lang="ts">
   import { ChevronDown, ChevronRight, FileText } from "lucide-svelte";
   import { onMount, untrack } from "svelte";
-  import { Input } from "$lib/components/ui/input";
+import { Input } from "$lib/components/ui/input";
+  import * as Select from "$lib/components/ui/select";
   import type { PageData } from "./$types";
 
   type Log = PageData["logs"][number];
@@ -56,8 +57,8 @@
 <div class="flex h-svh w-full flex-col gap-2 overflow-hidden bg-[#2225] p-2 md:pl-0">
   <div class="grid gap-2 sm:grid-cols-[minmax(12rem,1fr)_12rem_10rem]">
     <Input type="search" bind:value={query} class="bg-input" placeholder="Search audit log..." />
-    <select class="h-8 rounded-lg border bg-input px-2 text-sm" bind:value={author} aria-label="Filter author"><option value="">All authors</option>{#each data.users as user (user.email)}<option value={user.name}>{user.email}</option>{/each}</select>
-    <select class="h-8 rounded-lg border bg-input px-2 text-sm" bind:value={category} aria-label="Filter category"><option value="">All categories</option>{#each categories as value (value)}<option value={value}>{value}</option>{/each}</select>
+    <Select.Root type="single" bind:value={author}><Select.Trigger class="w-full bg-input" aria-label="Filter author"><span>{author || "All authors"}</span></Select.Trigger><Select.Content><Select.Item value="">All authors</Select.Item>{#each data.users as user (user.email)}<Select.Item value={user.name}>{user.email}</Select.Item>{/each}</Select.Content></Select.Root>
+    <Select.Root type="single" bind:value={category}><Select.Trigger class="w-full bg-input" aria-label="Filter category"><span>{category || "All categories"}</span></Select.Trigger><Select.Content><Select.Item value="">All categories</Select.Item>{#each categories as value (value)}<Select.Item value={value}>{value}</Select.Item>{/each}</Select.Content></Select.Root>
   </div>
   <div id="admin-log-container" class="min-h-0 flex-1 overflow-auto">
     {#each filtered as log, index (log.id)}

@@ -6,22 +6,33 @@
     Computer,
     GitGraph,
     IdCard,
-    Menu,
     Package,
     ScrollText,
     Settings,
     SquareUserRound,
-    X,
   } from "lucide-svelte";
   import { resolve } from "$app/paths";
   import { page } from "$app/state";
   import AdminHealth from "$lib/components/AdminHealth.svelte";
-  import { Button } from "$lib/components/ui/button";
+  import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
+    SidebarHeader,
+    SidebarInset,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarProvider,
+    SidebarTrigger,
+  } from "$lib/components/ui/sidebar";
   import type { LayoutData } from "./$types";
 
   let { data, children }: { data: LayoutData; children: import("svelte").Snippet } =
     $props();
-  let mobileOpen = $state(false);
 
   const links = $derived([
     { href: resolve("/admin"), label: "Dashboard", icon: Computer },
@@ -41,78 +52,154 @@
       ? page.url.pathname === href
       : page.url.pathname.startsWith(href);
   }
-
 </script>
 
 <svelte:head>
   <title>Admin</title>
 </svelte:head>
 
-<div class="min-h-svh bg-background/20 md:grid md:grid-cols-[17rem_1fr]">
-  <header class="sticky top-0 z-40 flex h-12 items-center gap-2 border-b bg-card/80 px-2 backdrop-blur-xl md:hidden">
-    <Button variant="ghost" size="icon" onclick={() => (mobileOpen = !mobileOpen)} aria-label="Toggle admin navigation">
-      {#if mobileOpen}<X />{:else}<Menu />{/if}
-    </Button>
-    <a class="flex items-center gap-2 font-semibold" href={resolve("/admin")}><Computer class="size-5" /> Buzzy Inc.</a>
-    <nav class="ml-auto flex min-w-0 gap-1 overflow-x-auto">
-      {#each links.slice(4) as item (item.href)}
-        {@const Icon = item.icon}
-        <a class={["flex size-8 shrink-0 items-center justify-center rounded-md", active(item.href) ? "bg-accent" : "text-muted-foreground hover:bg-accent"]} href={resolve(item.href as "/admin")} aria-label={item.label} title={item.label}><Icon class="size-4" /></a>
-      {/each}
-    </nav>
-  </header>
+<SidebarProvider>
+  <Sidebar variant="floating">
+    <SidebarHeader>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton isActive={active("/admin")}>
+            {#snippet child({ props })}
+              <a {...props} href={resolve("/admin")}>
+                <Computer class="size-5" />
+                <span class="text-base font-semibold">Buzzy Inc.</span>
+              </a>
+            {/snippet}
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarHeader>
 
-  {#if mobileOpen}
-    <button class="fixed inset-0 z-40 bg-black/60 md:hidden" aria-label="Close admin navigation" onclick={() => (mobileOpen = false)}></button>
-  {/if}
+    <SidebarContent>
+      <SidebarGroup>
+        <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {#each links.slice(0, 1) as item (item.href)}
+              {@const Icon = item.icon}
+              <SidebarMenuItem>
+                <SidebarMenuButton isActive={active(item.href)} tooltipContent={item.label}>
+                  {#snippet child({ props })}
+                    <a {...props} href={resolve(item.href as "/admin")}>
+                      <Icon />
+                      <span>{item.label}</span>
+                    </a>
+                  {/snippet}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            {/each}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
 
-  <aside class={["fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r bg-card p-3 shadow-xl backdrop-blur-xl transition-transform md:sticky md:top-0 md:z-auto md:min-h-svh md:w-auto md:translate-x-0 md:bg-card/70 md:shadow-none", mobileOpen ? "translate-x-0" : "-translate-x-full"]}>
-    <a class="mb-3 flex items-center gap-2 rounded-md px-2 py-1.5 font-bold" href={resolve("/admin")}>
-      <Computer class="size-5" />
-      Buzzy Inc.
-    </a>
+      <SidebarGroup>
+        <SidebarGroupLabel>Admin Pages</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {#each links.slice(1, 5) as item (item.href)}
+              {@const Icon = item.icon}
+              <SidebarMenuItem>
+                <SidebarMenuButton isActive={active(item.href)} tooltipContent={item.label}>
+                  {#snippet child({ props })}
+                    <a {...props} href={resolve(item.href as "/admin")}>
+                      <Icon />
+                      <span>{item.label}</span>
+                    </a>
+                  {/snippet}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            {/each}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
 
-    <nav class="grid gap-1">
-      {#each links as item (item.href)}
-        {@const Icon = item.icon}
-        <a
-          class={[
-            "flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors hover:bg-accent",
-            active(item.href) && "bg-accent text-accent-foreground",
-          ]}
-          href={resolve(item.href as "/admin")}
-          onclick={() => (mobileOpen = false)}
-        >
-          <Icon class="size-4" />
-          {item.label}
-        </a>
-      {/each}
-    </nav>
+      <SidebarGroup>
+        <SidebarGroupLabel>Tierlist Admin</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {#each links.slice(7, 8) as item (item.href)}
+              {@const Icon = item.icon}
+              <SidebarMenuItem>
+                <SidebarMenuButton isActive={active(item.href)} tooltipContent={item.label}>
+                  {#snippet child({ props })}
+                    <a {...props} href={resolve(item.href as "/admin")}>
+                      <Icon />
+                      <span>{item.label}</span>
+                    </a>
+                  {/snippet}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            {/each}
+            {#each data.tierlists as tierlist (tierlist.url)}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={active(
+                    resolve("/tl/[type]/[ver]/admin", {
+                      type: tierlist.url.split("/")[0],
+                      ver: tierlist.url.split("/")[1],
+                    }),
+                  )}
+                >
+                  {#snippet child({ props })}
+                    <a
+                      {...props}
+                      href={resolve("/tl/[type]/[ver]/admin", {
+                        type: tierlist.url.split("/")[0],
+                        ver: tierlist.url.split("/")[1],
+                      })}
+                    >
+                      <span>{tierlist.name}</span>
+                    </a>
+                  {/snippet}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            {/each}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    </SidebarContent>
 
-    {#if data.tierlists.length}
-      <div class="mt-5 border-t pt-3">
-        <div class="px-2 text-xs font-medium text-muted-foreground">Tierlist Admin</div>
-        <div class="mt-1 grid gap-1">
-          {#each data.tierlists as tierlist (tierlist.url)}
-            <a
-              class="truncate rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
-              href={resolve("/tl/[type]/[ver]/admin", { type: tierlist.url.split("/")[0], ver: tierlist.url.split("/")[1] })}
-              onclick={() => (mobileOpen = false)}
-            >
-              {tierlist.name}
-            </a>
-          {/each}
-        </div>
+    <SidebarFooter>
+      <SidebarGroup>
+        <SidebarGroupLabel>Global</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {#each [...links.slice(5, 7), ...links.slice(8)] as item (item.href)}
+              {@const Icon = item.icon}
+              <SidebarMenuItem>
+                <SidebarMenuButton isActive={active(item.href)} tooltipContent={item.label}>
+                  {#snippet child({ props })}
+                    <a {...props} href={resolve(item.href as "/admin")}>
+                      <Icon />
+                      <span>{item.label}</span>
+                    </a>
+                  {/snippet}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            {/each}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+      <div class="px-2 text-xs text-muted-foreground">
+        <AdminHealth />
+        <span>{data.versions.length} game versions indexed</span>
       </div>
-    {/if}
+    </SidebarFooter>
+  </Sidebar>
 
-    <div class="mt-auto grid gap-1 pt-4 text-xs text-muted-foreground">
-      <AdminHealth />
-      <span>{data.versions.length} game versions indexed</span>
-    </div>
-  </aside>
-
-  <main class="min-w-0 overflow-x-hidden">
+  <SidebarInset class="bg-transparent">
+    <header class="sticky top-0 z-40 flex h-12 items-center gap-2 border-b bg-card/80 px-2 backdrop-blur-xl md:hidden">
+      <SidebarTrigger aria-label="Toggle admin navigation" />
+      <a class="flex items-center gap-2 font-semibold" href={resolve("/admin")}>
+        <Computer class="size-5" />
+        Buzzy Inc.
+      </a>
+    </header>
     {@render children()}
-  </main>
-</div>
+  </SidebarInset>
+</SidebarProvider>

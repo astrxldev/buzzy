@@ -3,6 +3,7 @@
   import { invalidateAll } from "$app/navigation";
   import { untrack } from "svelte";
   import { Button } from "$lib/components/ui/button";
+  import ConfirmDialog from "$lib/components/ConfirmDialog.svelte";
   import * as Dialog from "$lib/components/ui/dialog";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
@@ -26,6 +27,8 @@
   let message = $state("");
   let typeDraft = $state<TypeDraft>(emptyType());
   let versionDraft = $state<VersionDraft>(untrack(() => emptyVersion(data.types[0]?.id ?? "")));
+  let removeTypeOpen = $state(false);
+  let removeVersionOpen = $state(false);
 
   function emptyType(): TypeDraft {
     return {
@@ -121,7 +124,12 @@
   }
 
   async function removeType() {
-    if (!originalId || !window.confirm(`Delete ${typeDraft.name} and all of its versions and states?`)) return;
+    if (!originalId) return;
+    removeTypeOpen = true;
+  }
+
+  async function confirmRemoveType() {
+    if (!originalId) return;
     busy = true;
     try {
       await deleteTierlistType(originalId);
@@ -135,7 +143,12 @@
   }
 
   async function removeVersion() {
-    if (!originalId || !window.confirm(`Delete ${versionDraft.name} and all of its states?`)) return;
+    if (!originalId) return;
+    removeVersionOpen = true;
+  }
+
+  async function confirmRemoveVersion() {
+    if (!originalId) return;
     busy = true;
     try {
       await deleteTierlistVersion({ id: originalId, type: versionDraft.type });
@@ -199,6 +212,19 @@
     </form>
   </Dialog.Content>
 </Dialog.Root>
+
+<ConfirmDialog
+  bind:open={removeTypeOpen}
+  title="Confirm deletion"
+  description={`Delete ${typeDraft.name} and all of its versions and states?`}
+  onConfirm={confirmRemoveType}
+/>
+<ConfirmDialog
+  bind:open={removeVersionOpen}
+  title="Confirm deletion"
+  description={`Delete ${versionDraft.name} and all of its states?`}
+  onConfirm={confirmRemoveVersion}
+/>
 
 <Dialog.Root open={dialog === "version"} onOpenChange={(open) => !open && (dialog = null)}>
   <Dialog.Content class="max-h-[calc(100svh-2rem)] overflow-y-auto sm:max-w-2xl">

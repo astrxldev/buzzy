@@ -9,9 +9,12 @@
   } from "lucide-svelte";
   import { invalidateAll } from "$app/navigation";
   import { Button } from "$lib/components/ui/button";
+  import ConfirmDialog from "$lib/components/ConfirmDialog.svelte";
   import * as Dialog from "$lib/components/ui/dialog";
-  import { Input } from "$lib/components/ui/input";
+import { Input } from "$lib/components/ui/input";
+  import { Checkbox } from "$lib/components/ui/checkbox";
   import { Textarea } from "$lib/components/ui/textarea";
+  import PromptDialog from "$lib/components/PromptDialog.svelte";
   import type { PageData } from "./$types";
   import { deleteCdn, importCdn, renameCdn, uploadCdn } from "../admin.remote";
 
@@ -22,6 +25,11 @@
   let message = $state("");
   let importOpen = $state(false);
   let urls = $state("");
+  let renameOpen = $state(false);
+  let renameId = $state("");
+  let renameValue = $state("");
+  let removeOpen = $state(false);
+  let removeIds = $state<string[]>([]);
 
   const files = $derived(
     data.files.filter((file) =>
@@ -72,18 +80,29 @@
     }
   }
 
-  async function rename(id: string, current: string | null) {
-    const name = window.prompt("New file name", current ?? "");
-    if (!name?.trim()) return;
-    await run(() => renameCdn({ id, name }), "File renamed.");
+  function rename(id: string, current: string | null) {
+    renameId = id;
+    renameValue = current ?? "";
+    renameOpen = true;
   }
 
-  async function remove(ids: string[]) {
-    if (!ids.length || !window.confirm(`Delete ${ids.length} file(s)?`)) return;
+  async function saveRename(value: string) {
+    const name = value.trim();
+    if (!name) return;
+    await run(() => renameCdn({ id: renameId, name }), "File renamed.");
+  }
+
+  function remove(ids: string[]) {
+    if (!ids.length) return;
+    removeIds = [...ids];
+    removeOpen = true;
+  }
+
+  async function confirmRemove() {
     busy = true;
     message = "";
     try {
-      const result = await deleteCdn(ids);
+      const result = await deleteCdn(removeIds);
       if (result.blocked?.length) {
         message = `Cannot delete: ${result.blocked.map((item) => `${item.id} is used by ${item.reference}`).join(", ")}`;
         return;
@@ -141,16 +160,14 @@
       <thead class="sticky top-0 z-10 border-b bg-card">
         <tr>
           <th class="w-10 p-2">
-            <input
-              type="checkbox"
+            <Checkbox
               aria-label="Select visible files"
               checked={files.length > 0 && files.every((file) => selected.includes(file.id))}
-              onchange={(event) => {
-                const state = event.currentTarget.checked;
+              onCheckedChange={(state) => {
                 const visible = new Set(files.map((file) => file.id));
                 selected = state ? Array.from(new Set([...selected, ...visible])) : selected.filter((id) => !visible.has(id));
               }}
-            />
+              />
           </th>
           <th class="p-2">Name</th><th class="p-2">ID</th><th class="p-2">Type</th><th class="p-2">Size</th><th class="p-2"></th>
         </tr>
@@ -158,7 +175,7 @@
       <tbody>
         {#each files as file (file.id)}
           <tr class="border-b last:border-0 hover:bg-muted/30">
-            <td class="p-2"><input type="checkbox" aria-label={`Select ${file.name || file.id}`} checked={selected.includes(file.id)} onchange={(event) => checked(file.id, event.currentTarget.checked)} /></td>
+            <td class="p-2"><Checkbox aria-label={`Select ${file.name || file.id}`} checked={selected.includes(file.id)} onCheckedChange={(state) => checked(file.id, state)} /></td>
             <td class="max-w-64 truncate p-2">{file.name || "Unnamed"}</td>
             <td class="max-w-72 truncate p-2 font-mono text-xs text-muted-foreground">{file.id}</td>
             <td class="whitespace-nowrap p-2 text-muted-foreground">{file.type}</td>
@@ -177,3 +194,18 @@
     </table>
   </div>
 </div>
+
+<PromptDialog
+  bind:open={renameOpen}
+  bind:value={renameValue}
+  title="Rename file"
+  description="New file name"
+  onConfirm={saveRename}
+  confirmText="Rename"
+/>
+<ConfirmDialog
+  bind:open={removeOpen}
+  title="Confirm deletion"
+  description={`Delete ${removeIds.length} file(s)?`}
+  onConfirm={confirmRemove}
+/>

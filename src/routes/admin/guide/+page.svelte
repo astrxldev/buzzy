@@ -2,9 +2,12 @@
   import { Eye, EyeOff, Pencil, Plus, Trash2 } from "lucide-svelte";
   import { invalidateAll } from "$app/navigation";
   import { Button } from "$lib/components/ui/button";
+  import ConfirmDialog from "$lib/components/ConfirmDialog.svelte";
   import * as Dialog from "$lib/components/ui/dialog";
   import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
+import { Label } from "$lib/components/ui/label";
+  import { Checkbox } from "$lib/components/ui/checkbox";
+  import * as Select from "$lib/components/ui/select";
   import type { PageData } from "./$types";
   import { deleteGuide, saveGuide, toggleGuide } from "../admin.remote";
 
@@ -15,6 +18,7 @@
   let busy = $state("");
   let message = $state("");
   let draft = $state<Guide>(emptyGuide());
+  let removeOpen = $state(false);
 
   function emptyGuide(): Guide {
     return { id: "", name: "", link: "", image: null, order: data.nextOrder, hidden: false };
@@ -63,7 +67,12 @@
   }
 
   async function remove() {
-    if (!editingId || !window.confirm(`Delete ${draft.name}?`)) return;
+    if (!editingId) return;
+    removeOpen = true;
+  }
+
+  async function confirmRemove() {
+    if (!editingId) return;
     busy = "delete";
     try {
       await deleteGuide(editingId);
@@ -113,8 +122,8 @@
         <label class="grid gap-1.5"><Label>Order</Label><Input required type="number" bind:value={draft.order} /></label>
       </div>
       <label class="grid gap-1.5"><Label>Link</Label><Input required type="url" bind:value={draft.link} placeholder="https://docs.google.com/..." /></label>
-      <label class="grid gap-1.5"><Label>Image (optional)</Label><select class="h-8 rounded-lg border bg-background px-2 text-sm" value={draft.image ?? ""} onchange={(event) => (draft.image = event.currentTarget.value || null)}><option value="">No image</option>{#each data.files as file (file.id)}<option value={file.id}>{file.name || file.id}</option>{/each}</select></label>
-      <label class="flex items-center gap-2 text-sm"><input type="checkbox" bind:checked={draft.hidden} /> Hidden</label>
+       <label class="grid gap-1.5"><Label>Image (optional)</Label><Select.Root type="single" value={draft.image ?? ""} onValueChange={(value) => (draft.image = value || null)}><Select.Trigger class="w-full"><span>{draft.image ? data.files.find((file) => file.id === draft.image)?.name || draft.image : "No image"}</span></Select.Trigger><Select.Content><Select.Item value="">No image</Select.Item>{#each data.files as file (file.id)}<Select.Item value={file.id}>{file.name || file.id}</Select.Item>{/each}</Select.Content></Select.Root></label>
+       <label class="flex items-center gap-2 text-sm"><Checkbox bind:checked={draft.hidden} /> Hidden</label>
       {#if message}<p class="text-sm text-destructive" aria-live="polite">{message}</p>{/if}
       <Dialog.Footer>
         {#if editingId}<Button type="button" variant="destructive" disabled={!!busy} onclick={remove}><Trash2 /> Delete</Button>{/if}
@@ -124,3 +133,10 @@
     </form>
   </Dialog.Content>
 </Dialog.Root>
+
+<ConfirmDialog
+  bind:open={removeOpen}
+  title="Confirm deletion"
+  description={`Delete ${draft.name}?`}
+  onConfirm={confirmRemove}
+/>

@@ -20,6 +20,10 @@
   import { dndzone } from "svelte-dnd-action";
   import FadeImage from "$lib/components/FadeImage.svelte";
   import { Button } from "$lib/components/ui/button";
+  import * as Dialog from "$lib/components/ui/dialog";
+  import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
+  import * as Select from "$lib/components/ui/select";
   import { cn } from "$lib/utils";
   import {
     savePlacements as savePlacementsRemote,
@@ -97,7 +101,8 @@
   const tileSize = $derived(tileSizeSetting || tileSizeAuto);
   let badgeSize = $state(24);
   let settingsOpen = $state(false);
-  let disclaimerOpen = $derived(!!version.disclaimer);
+  let disclaimerOpen = $state(false);
+  let newCharacter = $state("");
   let deleteMode = $state(false);
   let selectedRef = $state<string | null>(null);
   let selectedComment = $state("");
@@ -132,6 +137,12 @@
     settingsOpen = false;
     disclaimerOpen = !!version.disclaimer;
     deleteMode = false;
+  });
+
+  $effect(() => {
+    if (!newCharacter) return;
+    addCharacter(newCharacter);
+    newCharacter = "";
   });
 
   $effect(() => {
@@ -388,22 +399,18 @@
 
 <div class="flex h-full min-h-svh flex-col justify-between">
   {#if version.disclaimer && disclaimerOpen}
-    <div class="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm">
+    <Dialog.Root open={disclaimerOpen} onOpenChange={(open) => (disclaimerOpen = open)}>
+      <Dialog.Content class="z-[100] h-full w-full max-w-none border-0 bg-black/70 p-0 backdrop-blur-sm">
       <FadeImage
         src={`/cdn/${version.disclaimer}`}
         alt="Disclaimer"
         class="h-full w-full object-contain"
       />
-      <Button
-        variant="outline"
-        class="absolute top-2 right-2"
-        size="icon"
-        onclick={() => (disclaimerOpen = false)}
-        aria-label="Close Disclaimer"
-      >
-        <X />
-      </Button>
-    </div>
+      <Dialog.Close class="absolute top-2 right-2">
+        {#snippet child({ props })}<Button variant="outline" size="icon" {...props} aria-label="Close Disclaimer"><X /></Button>{/snippet}
+      </Dialog.Close>
+      </Dialog.Content>
+    </Dialog.Root>
   {/if}
   <div class="min-h-0 flex-1 overflow-auto">
     <div
@@ -575,20 +582,14 @@
       </span>
       {#if editable && untieredOpen}
         <div class="flex items-center justify-center gap-2">
-          <select
-            class="max-w-44 rounded border bg-card px-2 py-1 text-sm"
-            onclick={(event) => event.stopPropagation()}
-            onchange={(event) => {
-              const value = (event.currentTarget as HTMLSelectElement).value;
-              if (value) addCharacter(value);
-              (event.currentTarget as HTMLSelectElement).value = "";
-            }}
-          >
-            <option value="">เพิ่มตัวละคร</option>
-            {#each chars.toSorted((a, b) => a.name.localeCompare(b.name)) as char (char.id)}
-              <option value={char.id}>{char.name}</option>
-            {/each}
-          </select>
+          <Select.Root type="single" bind:value={newCharacter}>
+            <Select.Trigger class="max-w-44" onclick={(event) => event.stopPropagation()}><span>เพิ่มตัวละคร</span></Select.Trigger>
+            <Select.Content>
+              {#each chars.toSorted((a, b) => a.name.localeCompare(b.name)) as char (char.id)}
+                <Select.Item value={char.id}>{char.name}</Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
           <button
             type="button"
             aria-label="Toggle delete mode"
@@ -662,23 +663,16 @@
   </div>
 </div>
 
-{#if settingsOpen}
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-md rounded-xl border bg-card p-4">
-      <div class="mb-4 flex items-center justify-between">
-        <h2 class="text-xl font-bold">การตั้งค่า</h2>
-        <Button size="icon" variant="ghost" onclick={() => (settingsOpen = false)}>
-          <X />
-        </Button>
-      </div>
+<Dialog.Root bind:open={settingsOpen}>
+  <Dialog.Content class="w-full max-w-md">
+      <Dialog.Header><Dialog.Title>การตั้งค่า</Dialog.Title></Dialog.Header>
       <div class="grid gap-4">
-        <label class="grid gap-2">
+        <Label class="grid gap-2">
           <span class="flex items-center gap-1">
             ขนาดตัวละคร (px)
             {#if !tileSizeSetting}<Calculator class="size-4 text-emerald-400" />{/if}
           </span>
-          <input
-            class="rounded border bg-background px-2 py-1"
+          <Input
             type="number"
             value={tileSizeSetting || Math.round(tileSizeAuto)}
             oninput={(event) =>
@@ -696,16 +690,15 @@
               <Calculator /> อัตโนมัติ
             </Button>
           </div>
-        </label>
-        <label class="grid gap-2">
+        </Label>
+        <Label class="grid gap-2">
           <span>ขนาดเครื่องหมาย (px)</span>
-          <input
-            class="rounded border bg-background px-2 py-1"
+          <Input
             type="number"
             bind:value={badgeSize}
             min="12"
           />
-        </label>
+        </Label>
         <a href={resolve("/tl")} class="flex items-center gap-2 text-muted-foreground hover:underline">
           <Home class="size-4" /> หน้าหลัก
         </a>
@@ -730,19 +723,13 @@
           </button>
         {/if}
       </div>
-    </div>
-  </div>
-{/if}
+  </Dialog.Content>
+</Dialog.Root>
 
 {#if selectedRef && selectedChar}
-  <div class="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-background/70 p-4 backdrop-blur-sm">
-    <div class="max-h-full w-full max-w-lg overflow-auto rounded-xl border bg-card p-4">
-      <div class="mb-3 flex items-center justify-between">
-        <h2 class="text-xl font-bold">{selectedChar.name}</h2>
-        <Button size="icon" variant="ghost" onclick={closePanel}>
-          <X />
-        </Button>
-      </div>
+  <Dialog.Root open={true} onOpenChange={(open) => !open && closePanel()}>
+    <Dialog.Content class="max-h-full w-full max-w-lg overflow-auto">
+      <Dialog.Header><Dialog.Title>{selectedChar.name}</Dialog.Title></Dialog.Header>
       <div class="flex flex-col gap-4 sm:flex-row">
         <div class="shrink-0">
           {@render CharacterTile({
@@ -815,8 +802,8 @@
           {/if}
         </div>
       </div>
-    </div>
-  </div>
+    </Dialog.Content>
+  </Dialog.Root>
 {/if}
 
 {#snippet CharacterTile({

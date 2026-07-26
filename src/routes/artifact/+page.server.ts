@@ -17,6 +17,7 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
         value: characters.name,
         amber: characters.amber,
         image: characters.image,
+        stars: characters.stars,
       })
       .from(characters)
       .orderBy(characters.name),
