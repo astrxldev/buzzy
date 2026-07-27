@@ -76,7 +76,9 @@ const checks = {
     });
   },
   async tts() {
-    const client = new GoogleGenAI({ apiKey: GEMINI_TTS_API_KEY });
+    const client = new GoogleGenAI({
+      apiKey: GEMINI_TTS_API_KEY.split(",").pop(),
+    });
     return client.models
       .list()
       .then(() => true)
