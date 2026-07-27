@@ -297,7 +297,7 @@ export function DonateAdminPage({
       <DataTable
         columns={columns}
         emptyDescription="No donation came in yet."
-        data={data.slice(1)}
+        data={data}
         className="w-full overflow-y-auto bg-black/25 backdrop-blur-sm"
         style={{
           maxHeight,
