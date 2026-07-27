@@ -35,7 +35,7 @@ async function probe(name: string, fn: () => Promise<unknown>) {
 }
 
 export async function GET(request: Request) {
-  if (!adminCheck()) {
+  if (!await adminCheck()) {
     return new Response("Unauthorized", { status: 401 });
   }
 
