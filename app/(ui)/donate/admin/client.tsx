@@ -311,10 +311,30 @@ export function DonateAdminPage({
 // component cuz simplicity sake
 export function DonateWatcher() {
   const router = useRouter();
+  const [newDonates, setNewDonates] = useState(0);
+
+  useEffect(() => {
+    if (newDonates <= 0) return ((document.title = "โดเนททั้งหมด"), undefined);
+    var blink = true;
+    const interval = setInterval(() => {
+      blink = !blink;
+      document.title = blink ? "โดเนททั้งหมด" : `${newDonates} โดเนทใหม่`;
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [newDonates]);
+
+  useEffect(() => {
+    function listener() {
+      setNewDonates(0);
+    }
+    window.addEventListener("focus", listener);
+    return () => window.removeEventListener("focus", listener);
+  }, []);
+
   useEffect(() => {
     if (!router) return;
     return sse.donate.subMany({
-      ping: router.refresh.bind(router),
+      ping: () => (router.refresh(), setNewDonates((x) => x + 1)),
       update: router.refresh.bind(router),
     }).clean;
   }, [router]);
