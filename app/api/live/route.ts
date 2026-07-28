@@ -66,8 +66,10 @@ export async function GET() {
     },
   );
 
-  if (!response.ok)
-    throw new Error(`YouTube API error: ${response.statusText}`);
+  if (!response.ok) {
+    console.error(`YouTube API error: ${response.statusText}`);
+    return NextResponse.json("none");
+  }
 
   const data: APISearchResponse = await response.json();
 
@@ -87,5 +89,7 @@ export async function GET() {
 
   return NextResponse.json<YoutubeLiveInfo>(res);
 }
+
+export const POST = GET;
 
 export const revalidate = 60;

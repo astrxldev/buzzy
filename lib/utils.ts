@@ -72,3 +72,18 @@ export function parseSearchString(
 export function pausePass<R>(time: number): (res: R) => Promise<R> {
   return (res) => new Promise((r) => setTimeout(() => r(res), time));
 }
+
+// taken from astral/api
+export class ResponseNotOkError extends Error {
+  constructor(
+    readonly status: number,
+    readonly response: Response,
+  ) {
+    super(`RESPONSE_NOT_OK: Got status ${status}`);
+  }
+}
+
+export function throwNotOk(res: Response) {
+  if (!res.ok) throw new ResponseNotOkError(res.status, res);
+  return res;
+}
