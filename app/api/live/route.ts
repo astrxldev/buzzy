@@ -87,3 +87,5 @@ export async function GET() {
 
   return NextResponse.json<YoutubeLiveInfo>(res);
 }
+
+export const revalidate = 60;
