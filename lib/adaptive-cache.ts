@@ -85,6 +85,20 @@ export class AdaptiveCache {
     for (const [key, value] of this.cache)
       if (value.expires <= now) this.cache.delete(key);
   }
+
+  debugStats() {
+    const projected =
+      this.requests.length * (this.options.period / this.options.lookback!);
+
+    return [
+      `AdaptiveCache`,
+      this.shouldCache() ? "HOT" : "COLD",
+      `recent=${this.requests.length}`,
+      `projected=${projected.toFixed(1)}/${this.options.maxRequests}`,
+      `usage=${((projected / this.options.maxRequests) * 100).toFixed(0)}%`,
+      `entries=${this.cache.size}`,
+    ].join(" | ");
+  }
 }
 
 export const youtubeCache = new AdaptiveCache({

@@ -61,7 +61,7 @@ const checks = {
     });
   },
   async yt() {
-    return fetch("https://buzz.sudloh.com/api/live", {
+    return fetch("https://buzz.sudloh.com/api/live?last=true", {
       signal: AbortSignal.timeout(5000),
     });
   },

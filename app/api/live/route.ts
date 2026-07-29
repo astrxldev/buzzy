@@ -1,3 +1,4 @@
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { sse } from "@/lib/db/sse-endpoints";
 import { youtubeCache } from "@/lib/adaptive-cache";
@@ -53,7 +54,12 @@ type APISearchResponse = {
   items: APISearchResource[];
 };
 
-export async function GET() {
+var lastResponse: Response;
+
+export async function GET(req: NextRequest) {
+  if (req.nextUrl.searchParams.has("last") && lastResponse)
+    return lastResponse.clone();
+
   const channelId = process.env.YOUTUBE_CHANNEL_ID;
   const apiKey = process.env.YOUTUBE_API_KEY;
 
@@ -87,7 +93,7 @@ export async function GET() {
 
   sse.active.pub("live", res);
 
-  return NextResponse.json<YoutubeLiveInfo>(res);
+  return (lastResponse = NextResponse.json<YoutubeLiveInfo>(res));
 }
 
 export const POST = GET;
