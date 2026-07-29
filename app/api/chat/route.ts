@@ -7,7 +7,10 @@ type LiveResponse =
   | "none";
 
 export async function GET(request: Request) {
-  const liveUrl = new URL("https://buzz.sudloh.com/api/live", request.url).toString();
+  const liveUrl = new URL(
+    "https://buzz.sudloh.com/api/live",
+    request.url,
+  ).toString();
   const response = await fetch(liveUrl, {
     cache: "no-store",
   });
