@@ -310,7 +310,7 @@ async function HealthStatus() {
             </div>
             <span>
               {Object.values(health).some((x) => !x)
-                ? `${{ database: "ฐานข้อมูล", enka: "Enka ", amber: "Amber ", red: "SSE " }[Object.entries(health).find(([, v]) => !v)![0]]}มีปัญหา`
+                ? `${((h: string) => ({ database: "ฐานข้อมูล", enka: "Enka ", amber: "Amber ", red: "SSE " })[h] ?? `${h} `)(Object.entries(health).find(([, v]) => !v)![0])}มีปัญหา`
                 : "ปกติทุกอย่าง"}
             </span>
           </div>
