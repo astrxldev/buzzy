@@ -303,6 +303,7 @@ export const tierlistVersions = tierlist.table("versions", {
     }),
   order: integer().notNull(),
   placements: jsonb().notNull().$type<{ [x: string]: string[] }>().default({}),
+  snapshot: jsonb().$type<Record<string, unknown> | null>().default(null),
 });
 
 export const tierlistStates = tierlist.table("states", {

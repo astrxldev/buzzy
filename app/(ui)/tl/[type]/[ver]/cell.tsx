@@ -7,7 +7,6 @@ import {
   SortableContext,
   useSortable,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import { type ReactNode, useContext } from "react";
 import type { tierlistColumns, tierlistTiers } from "@/lib/db/schema";
 import { TierListContext } from "./context";
@@ -69,7 +68,9 @@ export function SortableDraggable({
   } = useSortable({ id, disabled: !editable });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: transform
+      ? `translate3d(${transform.x}px, ${transform.y}px, 0) scaleX(${transform.scaleX}) scaleY(${transform.scaleY})`
+      : undefined,
     transition,
     opacity: isDragging ? 0.5 : 1,
   };

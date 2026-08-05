@@ -1,22 +1,22 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { count, desc, eq, sql } from "drizzle-orm";
 import {
   ArrowLeftRight,
-  Badge,
   BadgeDollarSign,
   BitcoinIcon,
   BookUser,
-  Columns3Cog,
+  Columns3CogIcon,
   Compass,
   Computer,
   Database,
   ExternalLink,
-  GitGraph,
   Grid3X3,
   IdCard,
+  Layout,
   ListTree,
   MoreHorizontal,
   Package,
   PlusCircle,
+  PlusIcon,
   ScrollText,
   Settings,
   SquareUserRound,
@@ -54,6 +54,7 @@ import {
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
@@ -90,6 +91,18 @@ export default async function AdminLayout({
     .from(tierlistVersions)
     .orderBy(tierlistTypes.order, tierlistVersions.order)
     .innerJoin(tierlistTypes, eq(tierlistTypes.id, tierlistVersions.type))
+    .catch(() => []);
+
+  const tlTypes = db
+    .select({
+      id: tierlistTypes.id,
+      name: tierlistTypes.name,
+      count: count(tierlistVersions.id),
+    })
+    .from(tierlistTypes)
+    .orderBy(tierlistTypes.id)
+    .leftJoin(tierlistVersions, eq(tierlistTypes.id, tierlistVersions.type))
+    .groupBy(tierlistTypes.id)
     .catch(() => []);
 
   return (
@@ -129,27 +142,24 @@ export default async function AdminLayout({
             </SidebarGroupContent>
           </SidebarGroup>
           <SidebarGroup>
-            <SidebarGroupLabel>Tierlist [WIP]</SidebarGroupLabel>
+            <SidebarGroupLabel>Tierlist</SidebarGroupLabel>
+            <SimpleTooltip text="Create new type...">
+              <SidebarGroupAction asChild>
+                <Link href="/admin/tl/ver/create">
+                  <PlusIcon />
+                </Link>
+              </SidebarGroupAction>
+            </SimpleTooltip>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarLink href="/admin/tl/ver">
-                    <GitGraph />
-                    Versions
+                  <SidebarLink href="/admin/tl/layout">
+                    <Columns3CogIcon /> Layout Editor
                   </SidebarLink>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarLink href="/admin/tl/badges" disabled>
-                    <Badge />
-                    Badges
-                  </SidebarLink>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarLink href="/admin/tl/layout" disabled>
-                    <Columns3Cog />
-                    Layout
-                  </SidebarLink>
-                </SidebarMenuItem>
+                <Suspense>
+                  <TierlistList types={tlTypes} />
+                </Suspense>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -257,6 +267,7 @@ export default async function AdminLayout({
         <Suspense>
           <AdminNavbarLoader
             adminShortcuts={tlVersions}
+            tierlistTypes={tlTypes}
             tierlistVersions={vers}
           />
         </Suspense>
@@ -322,12 +333,20 @@ async function HealthStatus() {
 
 async function AdminNavbarLoader({
   adminShortcuts,
+  tierlistTypes,
   tierlistVersions,
 }: {
   adminShortcuts: Promise<
     {
       name: string;
       url: string;
+    }[]
+  >;
+  tierlistTypes: Promise<
+    {
+      id: string;
+      name: string;
+      count: number;
     }[]
   >;
   tierlistVersions: Promise<
@@ -340,9 +359,27 @@ async function AdminNavbarLoader({
   return (
     <AdminNavbar
       adminShortcuts={await adminShortcuts}
+      tierlistTypes={await tierlistTypes}
       tierlistVersions={await tierlistVersions}
     />
   );
+}
+
+async function TierlistList({
+  types: prom,
+}: {
+  types: Promise<{ id: string; name: string; count: number }[]>;
+}) {
+  const types = await prom;
+  return types.map((t) => (
+    <SidebarMenuItem key={t.id}>
+      <SidebarLink href={`/admin/tl/${t.id}`}>
+        <Layout />
+        {t.name}
+        <SidebarMenuBadge>{t.count}</SidebarMenuBadge>
+      </SidebarLink>
+    </SidebarMenuItem>
+  ));
 }
 
 async function VersionsList({
