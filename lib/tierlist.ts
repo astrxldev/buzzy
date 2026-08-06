@@ -103,7 +103,7 @@ async function buildLiveTierlistConfig(
 }
 
 function shouldSnapshot(config: TierlistResolvedConfig) {
-  const deprecatedAt = Date.parse(config.version.deprecates);
+  const deprecatedAt = parseDate(config.version.deprecates);
   const olderThanMonth =
     Number.isFinite(deprecatedAt) &&
     deprecatedAt <= Date.now() - 30 * 24 * 60 * 60 * 1000;
@@ -118,6 +118,24 @@ function shouldSnapshot(config: TierlistResolvedConfig) {
     config.chars.every((char) => placed.has(char.id));
 
   return olderThanMonth || allTiered;
+}
+
+function parseDate(value: string) {
+  const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!match) return Number.NaN;
+
+  const [, day, month, year] = match;
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+
+  if (
+    date.getFullYear() !== Number(year) ||
+    date.getMonth() !== Number(month) - 1 ||
+    date.getDate() !== Number(day)
+  ) {
+    return Number.NaN;
+  }
+
+  return date.getTime();
 }
 
 async function maybeSnapshotVersion(
