@@ -91,6 +91,20 @@ const extra: Avatar[] = [
     route: "Dendro Traveler Boy",
     release: 1657659600,
   },
+  {
+    id: "10000005-cyro",
+    rank: 5,
+    name: "Traveler Cyro",
+    element: "Ice",
+    weaponType: "WEAPON_SWORD_ONE_HAND",
+    region: "MAINACTOR",
+    specialProp: "FIGHT_PROP_ATTACK_PERCENT",
+    bodyType: "BOY",
+    icon: "custom/traveler_dendro.webp:image/webp",
+    birthday: [0, 0],
+    route: "Cyro Traveler Boy",
+    release: 1657659700,
+  },
 ];
 
 async function main() {
