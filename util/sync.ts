@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { inArray } from "drizzle-orm";
+import { inArray, sql } from "drizzle-orm";
 import { cdnify, checkCdnRefs } from "@/lib/api";
 import { AmberElementMap } from "@/lib/const";
 import { db } from "@/lib/db";
@@ -223,7 +223,9 @@ async function main() {
         })
         .onConflictDoNothing();
     }
-    let i = 0;
+    let [{ maxOrder: i }] = await db
+      .select({ maxOrder: sql<number>`MAX(${characters.order})` })
+      .from(characters);
     for (const char of newChars) {
       i += 10;
       process.stdout.write(
