@@ -100,10 +100,10 @@ const extra: Avatar[] = [
     region: "MAINACTOR",
     specialProp: "FIGHT_PROP_ATTACK_PERCENT",
     bodyType: "BOY",
-    icon: "custom/traveler_cyro.webp:image/webp",
+    icon: "custom/traveler_cyro.png:image/png",
     birthday: [0, 0],
     route: "Cyro Traveler Boy",
-    release: 1657659700,
+    release: 1786496400,
   },
 ];
 
