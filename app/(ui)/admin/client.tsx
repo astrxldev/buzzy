@@ -14,78 +14,74 @@ export function VersionCreateDialogForm() {
 export function RandomWelcomeMessage() {
   const items = [
     {
-      header: "ความลับแห่งแรงจันทราผัน",
+      header: "ไป Snezhnaya ได้ตั้งแต่ AR 18",
       message:
-        "แรงจันทราผัน (Kuuvahki) ใน Nod-Krai มีคุณสมบัติเหมือนแรงแม่เหล็ก ซึ่งเป็นกุญแจสำคัญในการแก้ปริศนาโบราณ",
+        "เมื่อจบ Archon Quest Prologue: Act III แล้ว จุด Teleport Waypoint ที่นำไปยัง Snezhnaya จะปลดล็อกให้อัตโนมัติ โดยไม่ต้องจบเควสต์ของภูมิภาคอื่นก่อน",
     },
     {
-      header: "การล่าอันบ้าคลั่ง: Wild Hunt",
+      header: "ห้าพื้นที่ใหม่ในเวอร์ชัน 7.0",
       message:
-        "เมื่อเผชิญหน้ากับกองทัพ Wild Hunt การลด HP ให้เหลือ 0 เป็นเพียงจุดเริ่มต้นเท่านั้น คุณต้องลดค่า Max HP ของพวกมันให้เหลือ 0 ในขณะที่พวกมันติดสถานะ Grief-Stricken เพื่อกำจัดพวกมันอย่างถาวร ",
+        "Snezhnaya เปิดให้สำรวจ Volkodlak Tundra, White Birch Snowgrave, Everfrozen Earth, Flamefeather Valley และ Fellfrost Peak ในเวอร์ชัน 7.0",
     },
     {
-      header: "ประกายจันทร์: Ascendant Gleam",
+      header: "อย่าลืมเก็บ Cryo Sigil",
       message:
-        "การจัดทีมที่มีตัวละครจาก Nod-Krai อย่างน้อย 2 ตัว จะเปิดใช้งาน Ascendant Gleam เพื่อให้ใช้ความสามรถตัวละครได้อย่างเต็มที่",
+        "Cryo Sigil ที่พบระหว่างสำรวจ Snezhnaya ใช้สร้างและเพิ่มเลเวล Meeting Points เพื่อรับเสบียงและรางวัลเพิ่มเติม",
     },
     {
-      header: "มรดกแห่งดวงจันทร์ทั้งสาม",
+      header: "Meeting Points สามแห่ง",
       message:
-        "Nod-Krai เคยถูกเรียกว่า Nephilheim และถูกเชื่อว่าเป็นเศษเสี้ยวของดวงจันทร์ดวงที่สี่ซึ่งแตกสลายก่อนจะก่อตัวเสร็จสิ้น ทำให้ดินแดนแห่งนี้มีความเชื่อมโยงกับพลังจันทราอย่างลึกซึ้ง",
+        "Meeting Points ในเวอร์ชัน 7.0 ได้แก่ Tidesong Cavern, Huntsman's Cabin และ The Korolevskiy Theater ปลดล็อกได้จากเนื้อเรื่อง Act I",
     },
     {
-      header: "คำสาบานของผู้เฝ้าประภาคาร",
+      header: "ปลดล็อก Daily Commission",
       message:
-        "กลุ่ม Lightkeepers ยึดถือคติ 'ใช้เลือดและกระดูกเป็นเชื้อเพลิง' พวกเขาเฝ้าประภาคารที่ Piramida มานานกว่า 500 ปีเพื่อไม่ให้ความมืดจาก Abyss ล่มสลายดินแดนของมนุษย์",
+        "ต้องเล่น Archon Quest Chapter VII: Act I จนถึงช่วง Great Deeds on the Tundra ก่อน จึงจะเปิด Daily Commission ของ Snezhnaya ได้",
     },
     {
-      header: "อาวุธชำระล้าง Terpikeraunas",
+      header: "Traveler ใช้ธาตุ Cryo ได้แล้ว",
       message:
-        "Arrow of Terpikeraunas เป็นโบราณวัตถุจาก Hyperborea ที่สามารถเปลี่ยนพลังงานจาก Light Realm ให้เป็นเปลวไฟที่ใช้บริสุทธิ์พลังงานจาก Void Realm (Abyss) ได้",
+        "นำ Traveler ไปสั่นพ้องกับ Statue of The Seven ใน Snezhnaya เพื่อปลดล็อกธาตุ Cryo ซึ่งเล่นได้ทั้งแบบลงสนามและสลับมาทำดาเมจนอกสนาม",
     },
     {
-      header: "วงล้อจันทรา: สิ่งมาก่อนวิชั่น",
+      header: "Stellar Conduct",
       message:
-        "ใน Nod-Krai ผู้คนอาจได้รับ 'Moon Wheel' (กงล้อจันทรา) ซึ่งเป็นอุปกรณ์ที่ช่วยให้สามารถควบคุมแรงจันทราผันเพื่อปกป้องตนเองในถิ่นทุรกันดาร",
+        "เมื่อมีตัวละครที่เปิดใช้ Stellar Glimmer อยู่ในทีม ปฏิกิริยา Electro + Cryo จะเปลี่ยนจาก Superconduct เป็น Stellar Conduct และสร้าง Polestar Field",
     },
     {
-      header: "การรุกรานของ Rerir",
+      header: "Stellar Swirl",
       message:
-        "Rerir หนึ่งในห้ามหาบาปแห่ง Khaenri'ah เป็นผู้อยู่เบื้องหลังการโจมตีของ Wild Hunt เขามีเป้าหมายในการรวบรวมชิ้นส่วนของดวงจันทร์เพื่อฟื้นฟูร่างกายที่แตกสลายของตนเอง ",
+        "Stellar Swirl เกิดจาก Anemo + Cryo เมื่อมีตัวเปิดใช้ปฏิกิริยาในทีม โดยจะสร้าง Stellar Vortex ที่ระเบิดเป็นความเสียหาย Cryo หลังเวลาหนึ่ง",
     },
     {
-      header: "เมืองสีทองที่ล่มสลาย Hyperborea",
+      header: "Odette ตัวช่วยปฏิกิริยาใหม่",
       message:
-        "Hyperborea ตั้งอยู่ทางตอนเหนือสุดของ Nod-Krai เมืองนี้ล่มสลายลงหลังโดน Celestial Nail ปักใส่ ปัจจุบันกลายเป็นซากปรักหักพังที่เต็มไปด้วยความลับของภาพสะท้อนแห่งสวรรค์ ",
+        "Odette เป็นตัวละคร Cryo ดาบ 5 ดาวที่เปิดใช้ Stellar Conduct และ Stellar Swirl พร้อมสร้างความเสียหาย Stellar Glimmer จากนอกสนาม",
     },
     {
-      header: "นวัตกรรมจาก Clink-Clank Krumkake",
+      header: "รับ Alyosha ฟรีจากเนื้อเรื่อง",
       message:
-        "ร้านงานฝีมือ Krumkake เป็นศูนย์กลางของการประดิษฐ์ใน Nod-Krai มีการผสมผสานเทคโนโลยีเฟืองจาก Fontaine และพลังงานคูวากิเพื่อสร้างอุปกรณ์สำรวจที่ไม่มีใครเหมือน ",
+        "Alyosha เป็นตัวละคร Electro หอก 4 ดาวที่รับได้จาก Archon Quest Chapter VII: Act I เขาช่วยฮีลและสร้างความเสียหาย Electro ต่อเนื่องได้",
     },
     {
-      header: "ความเชื่อของลูกหลานจันทราน้ำค้างแข็ง",
+      header: "ดาบ 5 ดาวฟรีสำหรับ Traveler",
       message:
-        "ลูกหลานจันทราน้ำค้างแข็งได้เคารพศรัทธาต่อ 'เทพจันทรา' และได้ละทิ้งอารยธรรมทองคำยุคเก่า",
-    },
-    // {
-    //   "header": "สายใยครอบครัวในดินแดน Elysium",
-    //   "message": "Nod-Krai ได้รับฉายาว่า Elysium เนื่องจากเป็นที่รวมตัวของคนนอกกฎหมายและนักผจญภัยจากทั่ว Teyvat ธีมหลักของตัวละครที่นี่จึงมักเป็นเรื่องของ 'ครอบครัวที่เลือกเอง' (Found Family) "
-    // },
-    {
-      header: "นกไนติงเกลของ Solovei",
-      message:
-        "ตราสัญลักษณ์ของผู้เฝ้าประภาคารคือ นกไนติงเกลคาบไส้ตะเกียงที่ลุกไหม้ ซึ่งมาจากสัญลักษณ์ประจำตระกูลของ Solovei ผู้ก่อตั้งองค์กรและ Starshyna คนแรก ",
+        "Exaiphanes Blade รับได้จาก Archon Quest Everwinter Without Mercy และในเวอร์ชัน 7.0 สามารถขัดเกลาถึง R3 ผ่าน Statue of The Seven ใน Snezhnaya",
     },
     {
-      header: "จันทราทั้ง 3",
+      header: "อาร์ติแฟกต์จาก Inverted Glacier",
       message:
-        "ในอดีตของ Teyvat เคยมีดวงจันทร์ทั้ง 3 ได้แก่ จันทราน้ำค้างแข็ง จันทราสีรุ้ง และจันทรานิรันดร์",
+        "Domain Inverted Glacier ใน Everfrozen Earth มีเซ็ต Scarlet Proof และ Heart of the Furnace ซึ่งออกแบบมาสำหรับทีม Stellar Glimmer",
     },
     {
-      header: "Genshin impact",
+      header: "อาวุธคราฟต์ใหม่ครบห้าประเภท",
       message:
-        "Action RPG แบบ Open World สไตล์อนิเมะ ที่โดดเด่นด้วยระบบการต่อสู้โดยใช้พลังธาตุและการสำรวจโลกกว้างที่อิสระ",
+        "เวอร์ชัน 7.0 เพิ่มสูตรอาวุธคราฟต์ 4 ดาวของ Snezhnaya สำหรับ Sword, Claymore, Polearm, Catalyst และ Bow โดยเน้นทีมปฏิกิริยา Stellar Glimmer",
+    },
+    {
+      header: "แวะสมาคมตกปลา Snezhnaya",
+      message:
+        "Snezhnaya มี Fishing Association และจุดตกปลาใหม่ อย่าลืมสำรวจแหล่งน้ำเพื่อจับปลาและนำไปแลกรางวัลประจำภูมิภาค",
     },
   ];
 
