@@ -3,6 +3,7 @@ import {
   ArrowLeftRight,
   BadgeDollarSign,
   BitcoinIcon,
+  Blocks,
   BookUser,
   Columns3CogIcon,
   Compass,
@@ -160,6 +161,12 @@ export default async function AdminLayout({
                 <Suspense>
                   <TierlistList types={tlTypes} />
                 </Suspense>
+                <SidebarMenuItem>
+                  <SidebarLink href="/admin/tlc/">
+                    <Blocks />
+                    Custom TL
+                  </SidebarLink>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

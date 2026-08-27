@@ -105,8 +105,8 @@ export default async function TlVersionEditPage({
   }
 
   return (
-    <ModalBase title={`Create ${type.name} Tierlist`}>
-      <FormProvider id={`tl-${typeId}-create`} onSubmit={submit} values={ver}>
+    <ModalBase title={`Edit ${type.name} ${ver.name} Tierlist`}>
+      <FormProvider id={`tl-${typeId}-${verId}`} onSubmit={submit} values={ver}>
         <FormInput name="prefix">
           <input defaultValue={typeId} className="hidden" />
         </FormInput>

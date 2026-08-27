@@ -84,8 +84,8 @@ export default async function GuideEditPage({
   }
 
   return (
-    <ModalBase title="Add Guide">
-      <FormProvider id="guide-create" onSubmit={submit} values={guide}>
+    <ModalBase title={`Edit Guide ${guide.name}`}>
+      <FormProvider id={`guide-${id}`} onSubmit={submit} values={guide}>
         <FormRow>
           <FormInput name="name" label="Name">
             <Input placeholder="[6.3] Flins Guide" autoFocus />

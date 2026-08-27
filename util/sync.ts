@@ -118,7 +118,7 @@ async function main() {
         e.json(),
       ),
     ]);
-  await db.transaction(async (tx) => {
+  return await db.transaction(async (tx) => {
     // console.log("Deleting existing versions...");
     // await tx.delete(versions);
     console.log("Creating new versions...");
@@ -264,7 +264,7 @@ async function toFile(res: Response) {
 
 const customImageRegex = /^custom\/([a-z0-9_.-]+)(?::([a-z]+\/[a-z]+))/im;
 
-main();
+if (import.meta.main) main();
 
 export interface AvatarApiResponse {
   response: number;
@@ -303,3 +303,5 @@ export interface ChangelogVersion {
   };
   version: string;
 }
+
+export const syncAmber = main;
