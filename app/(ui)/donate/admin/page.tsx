@@ -1,4 +1,5 @@
-import { desc, getTableColumns, sql, sum } from "drizzle-orm";
+import { endOfMonth, startOfMonth } from "date-fns";
+import { between, desc, getTableColumns, sql, sum } from "drizzle-orm";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { adminCheck } from "@/lib/auth";
@@ -10,6 +11,7 @@ export default async function () {
   if (!(await adminCheck()))
     redirect(`/login?next=${encodeURIComponent("/donate/admin")}`);
 
+  const now = new Date();
   const [data, [stats]] = await Promise.all([
     db
       .select({
@@ -32,6 +34,7 @@ export default async function () {
         `,
       })
       .from(donations)
+      .where(between(donations.created, startOfMonth(now), endOfMonth(now)))
       .limit(1),
   ]);
   return <DonateAdminPage data={data} stats={stats} />;

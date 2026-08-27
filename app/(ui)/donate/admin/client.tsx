@@ -263,7 +263,7 @@ function TopRow({
         href="/donate/admin/calendar"
       >
         <WalletIcon className="absolute top-1/3 left-1/3 size-6/8 opacity-20" />
-        <span>รวมทั้งหมด</span>
+        <span>รวมเดือนนี้</span>
         <span className="text-3xl font-bold">{stats.total}฿</span>
       </Link>
     </div>
@@ -291,7 +291,7 @@ export function DonateAdminPage({
     <div className="mx-auto flex w-full max-w-[max(1280px,90%)] flex-col">
       <span className="flex items-center gap-1 pt-1 pb-2 text-3xl font-semibold">
         <BitcoinIcon size={32} />
-        โดเนททั้งหมด
+        โดเนทเดือนนี้
       </span>
       <TopRow row={data[0]} ref={topRowRef} stats={stats} />
       <DataTable
