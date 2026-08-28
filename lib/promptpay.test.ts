@@ -26,6 +26,33 @@ function withCRC(payload: string): string {
 }
 
 describe("serializeTLV", () => {
+  test("sorts tags numerically without mutating the input", () => {
+    const objects: DataObject[] = [
+      { type: "primitive", tag: 58, value: "TH" },
+      { type: "primitive", tag: 0, value: "01" },
+      { type: "primitive", tag: 53, value: "764" },
+    ];
+    const snapshot = structuredClone(objects);
+
+    expect(serializeTLV(objects)).toBe("00020153037645802TH");
+    expect(objects).toEqual(snapshot);
+  });
+
+  test("sorts tags inside templates", () => {
+    expect(
+      serializeTLV([
+        {
+          type: "template",
+          tag: 29,
+          value: [
+            { type: "primitive", tag: 3, value: "wallet" },
+            { type: "primitive", tag: 0, value: "aid" },
+          ],
+        },
+      ]),
+    ).toBe("29170003aid0306wallet");
+  });
+
   test("serializes primitive data objects", () => {
     expect(
       serializeTLV([
@@ -128,32 +155,35 @@ describe("parseTLV", () => {
     ]);
   });
 
-  test.each(["0", "000", "0001x00"])(
-    "rejects an incomplete header in %p",
-    (payload) => {
-      expect(() => parseTLV(payload)).toThrow(
-        /Malformed TLV payload: incomplete headers at index/,
-      );
-    },
-  );
+  test.each([
+    "0",
+    "000",
+    "0001x00",
+  ])("rejects an incomplete header in %p", (payload) => {
+    expect(() => parseTLV(payload)).toThrow(
+      /Malformed TLV payload: incomplete headers at index/,
+    );
+  });
 
-  test.each(["AA00", "0A00", " 100"])(
-    "rejects invalid tags in %p",
-    (payload) => {
-      expect(() => parseTLV(payload)).toThrow(
-        /Malformed TLV payload: invalid tag/,
-      );
-    },
-  );
+  test.each([
+    "AA00",
+    "0A00",
+    " 100",
+  ])("rejects invalid tags in %p", (payload) => {
+    expect(() => parseTLV(payload)).toThrow(
+      /Malformed TLV payload: invalid tag/,
+    );
+  });
 
-  test.each(["00AA", "000A", "00 1"])(
-    "rejects invalid lengths in %p",
-    (payload) => {
-      expect(() => parseTLV(payload)).toThrow(
-        /Malformed TLV payload: invalid length/,
-      );
-    },
-  );
+  test.each([
+    "00AA",
+    "000A",
+    "00 1",
+  ])("rejects invalid lengths in %p", (payload) => {
+    expect(() => parseTLV(payload)).toThrow(
+      /Malformed TLV payload: invalid length/,
+    );
+  });
 
   test("rejects a value shorter than its declared length", () => {
     expect(() => parseTLV("0005abc")).toThrow(
@@ -321,12 +351,11 @@ describe("decodeEMVCo", () => {
         { type: "primitive", tag: 58, value: "THA" },
       ],
     },
-  ] satisfies { name: string; objects: DataObject[] }[])(
-    "rejects $name",
-    ({ objects }) => {
-      expect(() => decodeEMVCo(objects)).toThrow();
-    },
-  );
+  ] satisfies { name: string; objects: DataObject[] }[])("rejects $name", ({
+    objects,
+  }) => {
+    expect(() => decodeEMVCo(objects)).toThrow();
+  });
 });
 
 describe("encodeEMVCo", () => {
@@ -674,19 +703,20 @@ describe("encodePromptPay", () => {
     { type: "mobile", tag: 1, value: "0066812345678" },
     { type: "nationalId", tag: 2, value: "1234567890123" },
     { type: "ewallet", tag: 3, value: "123456789012345" },
-  ] as const)(
-    "encodes a canonical $type identifier",
-    ({ type, tag, value }) => {
-      expect(encodePromptPay({ type, value })).toEqual([
-        {
-          type: "primitive",
-          tag: 0,
-          value: "A000000677010111",
-        },
-        { type: "primitive", tag, value },
-      ]);
-    },
-  );
+  ] as const)("encodes a canonical $type identifier", ({
+    type,
+    tag,
+    value,
+  }) => {
+    expect(encodePromptPay({ type, value })).toEqual([
+      {
+        type: "primitive",
+        tag: 0,
+        value: "A000000677010111",
+      },
+      { type: "primitive", tag, value },
+    ]);
+  });
 
   test("rejects noncanonical identifier values", () => {
     expect(() =>
@@ -770,7 +800,7 @@ describe("generatePromptPayPayload", () => {
         identifier: { type: "mobile" as const, value: "0801234567" },
       },
       expected:
-        "00020101021129370016A000000677010111011300668012345675802TH530376463046197",
+        "00020101021129370016A0000006770101110113006680123456753037645802TH6304BE2B",
     },
     {
       name: "formatted international mobile number",
@@ -778,7 +808,7 @@ describe("generatePromptPayPayload", () => {
         identifier: { type: "mobile" as const, value: "+66-89-123-4567" },
       },
       expected:
-        "00020101021129370016A000000677010111011300668912345675802TH5303764630429C1",
+        "00020101021129370016A0000006770101110113006689123456753037645802TH6304F67D",
     },
     {
       name: "national ID",
@@ -789,7 +819,7 @@ describe("generatePromptPayPayload", () => {
         },
       },
       expected:
-        "00020101021129370016A000000677010111021311111111111115802TH530376463047B5A",
+        "00020101021129370016A0000006770101110213111111111111153037645802TH6304A4E6",
     },
     {
       name: "tax ID",
@@ -800,7 +830,7 @@ describe("generatePromptPayPayload", () => {
         },
       },
       expected:
-        "00020101021129370016A000000677010111021301234567890125802TH530376463040CBD",
+        "00020101021129370016A0000006770101110213012345678901253037645802TH6304D301",
     },
     {
       name: "e-wallet ID",
@@ -811,7 +841,7 @@ describe("generatePromptPayPayload", () => {
         },
       },
       expected:
-        "00020101021129390016A00000067701011103150123456789012345802TH530376463049781",
+        "00020101021129390016A000000677010111031501234567890123453037645802TH6304483D",
     },
     {
       name: "dynamic amount",
@@ -820,9 +850,9 @@ describe("generatePromptPayPayload", () => {
         amount: 4.22,
       },
       expected:
-        "00020101021229370016A000000677010111011300660000000005802TH530376454044.226304E469",
+        "00020101021229370016A00000067701011101130066000000000530376454044.225802TH63049A72",
     },
-  ])("matches the published $name vector", ({ options, expected }) => {
+  ])("matches the sorted $name vector", ({ options, expected }) => {
     expect(generatePromptPayPayload(options)).toBe(expected);
   });
 
@@ -855,17 +885,21 @@ describe("generatePromptPayPayload", () => {
     expect(parsed.emvco.merchantCategoryCode).toBe("0000");
   });
 
-  test.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY, "", "1.234"])(
-    "rejects invalid amount %p",
-    (amount) => {
-      expect(() =>
-        generatePromptPayPayload({
-          identifier: { type: "mobile", value: "0801234567" },
-          amount,
-        }),
-      ).toThrow();
-    },
-  );
+  test.each([
+    0,
+    -1,
+    Number.NaN,
+    Number.POSITIVE_INFINITY,
+    "",
+    "1.234",
+  ])("rejects invalid amount %p", (amount) => {
+    expect(() =>
+      generatePromptPayPayload({
+        identifier: { type: "mobile", value: "0801234567" },
+        amount,
+      }),
+    ).toThrow();
+  });
 
   test("rejects invalid merchant category codes", () => {
     expect(() =>

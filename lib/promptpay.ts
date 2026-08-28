@@ -60,7 +60,8 @@ export type ParsedPromptPayPayload = {
 
 // #region TLV
 function serializeTLV(objects: DataObject[]): string {
-  return objects
+  return [...objects]
+    .sort((left, right) => left.tag - right.tag)
     .map((object, index) => {
       if (!Number.isInteger(object.tag) || object.tag < 0 || object.tag > 99)
         throw new Error(`Tag ${index} must be 00-99`);
@@ -421,10 +422,9 @@ function generatePromptPayPayload(options: GeneratePromptPayOptions): string {
       value: options.merchantCategoryCode,
     });
 
-  // This ordering matches established Thai banking implementations and fixtures.
   objects.push(
-    { type: "primitive", tag: 58, value: "TH" },
     { type: "primitive", tag: 53, value: "764" },
+    { type: "primitive", tag: 58, value: "TH" },
   );
   if (amount !== undefined)
     objects.push({ type: "primitive", tag: 54, value: amount });
