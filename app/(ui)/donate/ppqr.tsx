@@ -19,7 +19,7 @@ export function DynamicPPQR() {
 
   useEffect(() => {
     const amount = form.values.amount as string;
-    if (!amount) {
+    if (!amount || Number.isNaN(Number(amount))) {
       setCurrent("");
       setQrcode("");
       setChanged(false);
