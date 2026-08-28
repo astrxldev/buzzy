@@ -5,8 +5,12 @@ import {
   decodeEMVCo,
   decodePromptPay,
   encodeEMVCo,
+  encodePromptPay,
   formatCRC,
+  generatePromptPayPayload,
+  normalizePromptPayIdentifier,
   parseEMVCo,
+  parsePromptPayPayload,
   parseTLV,
   serializeTLV,
   verifyCRC,
@@ -14,7 +18,7 @@ import {
 
 const encoder = new TextEncoder();
 const example =
-  "00020101021153037645802TH29370016A000000677010111021317299008080556304DC1A";
+  "00020101021129370016A000000677010111021311111111111115802TH530376463047B5A";
 
 function withCRC(payload: string): string {
   const body = `${payload}6304`;
@@ -44,13 +48,13 @@ describe("serializeTLV", () => {
         tag: 29,
         value: [
           { type: "primitive", tag: 0, value: "A000000677010111" },
-          { type: "primitive", tag: 2, value: "1729900808055" },
+          { type: "primitive", tag: 2, value: "1111111111111" },
         ],
       },
     ];
 
     expect(serializeTLV(objects)).toBe(
-      "29370016A00000067701011102131729900808055",
+      "29370016A00000067701011102131111111111111",
     );
   });
 
@@ -182,16 +186,16 @@ describe("parseEMVCo", () => {
     expect(parseEMVCo(example.slice(0, -8))).toEqual([
       { type: "primitive", tag: 0, value: "01" },
       { type: "primitive", tag: 1, value: "11" },
-      { type: "primitive", tag: 53, value: "764" },
-      { type: "primitive", tag: 58, value: "TH" },
       {
         type: "template",
         tag: 29,
         value: [
           { type: "primitive", tag: 0, value: "A000000677010111" },
-          { type: "primitive", tag: 2, value: "1729900808055" },
+          { type: "primitive", tag: 2, value: "1111111111111" },
         ],
       },
+      { type: "primitive", tag: 58, value: "TH" },
+      { type: "primitive", tag: 53, value: "764" },
     ]);
   });
 
@@ -217,12 +221,11 @@ describe("decodeEMVCo", () => {
           tag: 29,
           value: [
             { type: "primitive", tag: 0, value: "A000000677010111" },
-            { type: "primitive", tag: 2, value: "1729900808055" },
+            { type: "primitive", tag: 2, value: "1111111111111" },
           ],
         },
       ],
       transactionCurrency: "764",
-      transactionAmount: undefined,
       countryCode: "TH",
     });
   });
@@ -239,6 +242,21 @@ describe("decodeEMVCo", () => {
     });
   });
 
+  test("decodes an optional merchant category code", () => {
+    expect(
+      decodeEMVCo([
+        { type: "primitive", tag: 0, value: "01" },
+        { type: "primitive", tag: 52, value: "0000" },
+        { type: "primitive", tag: 58, value: "TH" },
+      ]),
+    ).toEqual({
+      payloadFormatIndicator: "01",
+      paymentNetworkSpecific: [],
+      merchantCategoryCode: "0000",
+      countryCode: "TH",
+    });
+  });
+
   test("allows all optional fields to be absent", () => {
     expect(
       decodeEMVCo([
@@ -249,26 +267,21 @@ describe("decodeEMVCo", () => {
       payloadFormatIndicator: "01",
       countryCode: "TH",
       paymentNetworkSpecific: [],
-      pointOfInitiationMethod: undefined,
-      transactionAmount: undefined,
-      transactionCurrency: undefined,
     });
   });
 
-  test("ignores unknown tags", () => {
+  test("preserves unknown tags", () => {
     expect(
       decodeEMVCo([
         { type: "primitive", tag: 0, value: "01" },
         { type: "primitive", tag: 58, value: "TH" },
-        { type: "primitive", tag: 99, value: "ignored" },
+        { type: "primitive", tag: 59, value: "ignored" },
       ]),
     ).toEqual({
       payloadFormatIndicator: "01",
       countryCode: "TH",
       paymentNetworkSpecific: [],
-      pointOfInitiationMethod: undefined,
-      transactionAmount: undefined,
-      transactionCurrency: undefined,
+      additionalData: [{ type: "primitive", tag: 59, value: "ignored" }],
     });
   });
 
@@ -408,7 +421,7 @@ describe("encodeEMVCo", () => {
           tag: 29,
           value: [
             { type: "primitive", tag: 0, value: "A000000677010111" },
-            { type: "primitive", tag: 2, value: "1729900808055" },
+            { type: "primitive", tag: 2, value: "1111111111111" },
           ],
         },
       ],
@@ -456,6 +469,17 @@ describe("encodeEMVCo", () => {
     encodeEMVCo(data);
 
     expect(data).toEqual(snapshot);
+  });
+
+  test("retains additional data through decoding and encoding", () => {
+    const objects: DataObject[] = [
+      { type: "primitive", tag: 0, value: "01" },
+      { type: "primitive", tag: 58, value: "TH" },
+      { type: "primitive", tag: 59, value: "MERCHANT" },
+      { type: "primitive", tag: 60, value: "BANGKOK" },
+    ];
+
+    expect(encodeEMVCo(decodeEMVCo(objects))).toEqual(objects);
   });
 
   test.each([
@@ -530,7 +554,7 @@ describe("decodePromptPay", () => {
     { tag: 1, type: "mobile", value: "0066812345678" },
     { tag: 2, type: "nationalId", value: "1234567890123" },
     { tag: 3, type: "ewallet", value: "123456789012345" },
-    { tag: 4, type: "bankAccount", value: "123-4-56789-0" },
+    { tag: 4, type: "bankAccount", value: "1234567890" },
   ] as const)("decodes a $type identifier", ({ tag, type, value }) => {
     expect(decodePromptPay([aid, { type: "primitive", tag, value }])).toEqual({
       aid: "A000000677010111",
@@ -539,7 +563,7 @@ describe("decodePromptPay", () => {
   });
 
   test("decodes merchant account information parsed from an EMVCo payload", () => {
-    const objects = parseEMVCo("29370016A00000067701011102131729900808055");
+    const objects = parseEMVCo("29370016A00000067701011102131111111111111");
     const merchantAccount = objects[0];
 
     expect(merchantAccount?.type).toBe("template");
@@ -547,21 +571,18 @@ describe("decodePromptPay", () => {
 
     expect(decodePromptPay(merchantAccount.value)).toEqual({
       aid: "A000000677010111",
-      identifier: { type: "nationalId", value: "1729900808055" },
+      identifier: { type: "nationalId", value: "1111111111111" },
     });
   });
 
-  test("uses the first recognized identifier", () => {
-    expect(
+  test("rejects multiple recognized identifiers", () => {
+    expect(() =>
       decodePromptPay([
         aid,
-        { type: "primitive", tag: 4, value: "first-account" },
+        { type: "primitive", tag: 4, value: "1234567890" },
         { type: "primitive", tag: 2, value: "1234567890123" },
       ]),
-    ).toEqual({
-      aid: "A000000677010111",
-      identifier: { type: "bankAccount", value: "first-account" },
-    });
+    ).toThrow("Expected exactly one PromptPay identifier.");
   });
 
   test("ignores unknown tags before a recognized identifier", () => {
@@ -617,11 +638,11 @@ describe("decodePromptPay", () => {
 
   test("rejects input without a recognized identifier", () => {
     expect(() => decodePromptPay([aid])).toThrow(
-      "No valid PromptPay identifier found.",
+      "Expected exactly one PromptPay identifier.",
     );
     expect(() =>
       decodePromptPay([aid, { type: "primitive", tag: 5, value: "unknown" }]),
-    ).toThrow("No valid PromptPay identifier found.");
+    ).toThrow("Expected exactly one PromptPay identifier.");
   });
 
   test("rejects a missing or incorrect AID", () => {
@@ -647,6 +668,291 @@ describe("decodePromptPay", () => {
         { type: "primitive", tag: 1, value: "0066812345678" },
       ]),
     ).toThrow();
+  });
+});
+
+describe("encodePromptPay", () => {
+  test.each([
+    { type: "mobile", tag: 1, value: "0066812345678" },
+    { type: "nationalId", tag: 2, value: "1234567890123" },
+    { type: "ewallet", tag: 3, value: "123456789012345" },
+  ] as const)("encodes a canonical $type identifier", ({
+    type,
+    tag,
+    value,
+  }) => {
+    expect(encodePromptPay({ type, value })).toEqual([
+      {
+        type: "primitive",
+        tag: 0,
+        value: "A000000677010111",
+      },
+      { type: "primitive", tag, value },
+    ]);
+  });
+
+  test("rejects noncanonical identifier values", () => {
+    expect(() =>
+      encodePromptPay({ type: "mobile", value: "0812345678" }),
+    ).toThrow();
+    expect(() =>
+      encodePromptPay({ type: "nationalId", value: "123-456" }),
+    ).toThrow();
+    expect(() =>
+      encodePromptPay({ type: "ewallet", value: "A".repeat(15) }),
+    ).toThrow();
+  });
+
+  test("does not encode the reserved bank account identifier", () => {
+    expect(() =>
+      encodePromptPay({ type: "bankAccount", value: "1234567890" } as never),
+    ).toThrow("reserved for future use");
+  });
+});
+
+describe("normalizePromptPayIdentifier", () => {
+  test.each([
+    ["0801234567", "0066801234567"],
+    ["080-123-4567", "0066801234567"],
+    ["+66-89-123-4567", "0066891234567"],
+    ["66 89 123 4567", "0066891234567"],
+    ["0066812345678", "0066812345678"],
+  ])("normalizes mobile %s", (value, expected) => {
+    expect(normalizePromptPayIdentifier({ type: "mobile", value })).toEqual({
+      type: "mobile",
+      value: expected,
+    });
+  });
+
+  test("normalizes formatted national IDs", () => {
+    expect(
+      normalizePromptPayIdentifier({
+        type: "nationalId",
+        value: "1-2345-67890-12-3",
+      }),
+    ).toEqual({ type: "nationalId", value: "1234567890123" });
+  });
+
+  test("normalizes formatted e-wallet IDs", () => {
+    expect(
+      normalizePromptPayIdentifier({
+        type: "ewallet",
+        value: "012 345 678 901 234",
+      }),
+    ).toEqual({ type: "ewallet", value: "012345678901234" });
+  });
+
+  test.each([
+    { type: "mobile", value: "08123abc", name: "mobile with letters" },
+    { type: "mobile", value: "081234567", name: "short mobile" },
+    {
+      type: "nationalId",
+      value: "123456789012A",
+      name: "national ID with letters",
+    },
+    {
+      type: "nationalId",
+      value: "123456789012",
+      name: "short national ID",
+    },
+    {
+      type: "ewallet",
+      value: "12345678901234",
+      name: "short e-wallet ID",
+    },
+  ] as const)("rejects a $name", ({ type, value }) => {
+    expect(() => normalizePromptPayIdentifier({ type, value })).toThrow();
+  });
+});
+
+describe("generatePromptPayPayload", () => {
+  test.each([
+    {
+      name: "local mobile number",
+      options: {
+        identifier: { type: "mobile" as const, value: "0801234567" },
+      },
+      expected:
+        "00020101021129370016A000000677010111011300668012345675802TH530376463046197",
+    },
+    {
+      name: "formatted international mobile number",
+      options: {
+        identifier: { type: "mobile" as const, value: "+66-89-123-4567" },
+      },
+      expected:
+        "00020101021129370016A000000677010111011300668912345675802TH5303764630429C1",
+    },
+    {
+      name: "national ID",
+      options: {
+        identifier: {
+          type: "nationalId" as const,
+          value: "1-1111-11111-11-1",
+        },
+      },
+      expected:
+        "00020101021129370016A000000677010111021311111111111115802TH530376463047B5A",
+    },
+    {
+      name: "tax ID",
+      options: {
+        identifier: {
+          type: "nationalId" as const,
+          value: "0123456789012",
+        },
+      },
+      expected:
+        "00020101021129370016A000000677010111021301234567890125802TH530376463040CBD",
+    },
+    {
+      name: "e-wallet ID",
+      options: {
+        identifier: {
+          type: "ewallet" as const,
+          value: "012345678901234",
+        },
+      },
+      expected:
+        "00020101021129390016A00000067701011103150123456789012345802TH530376463049781",
+    },
+    {
+      name: "dynamic amount",
+      options: {
+        identifier: { type: "mobile" as const, value: "000-000-0000" },
+        amount: 4.22,
+      },
+      expected:
+        "00020101021229370016A000000677010111011300660000000005802TH530376454044.226304E469",
+    },
+  ])("matches the published $name vector", ({ options, expected }) => {
+    expect(generatePromptPayPayload(options)).toBe(expected);
+  });
+
+  test.each([
+    ["4", "4.00"],
+    ["4.2", "4.20"],
+    ["4.22", "4.22"],
+    [4, "4.00"],
+    [4.2, "4.20"],
+  ] as const)("formats amount %p as %s", (amount, expected) => {
+    const parsed = parsePromptPayPayload(
+      generatePromptPayPayload({
+        identifier: { type: "mobile", value: "0801234567" },
+        amount,
+      }),
+    );
+    expect(parsed.emvco.transactionAmount).toBe(expected);
+    expect(parsed.emvco.pointOfInitiationMethod).toBe("12");
+  });
+
+  test("emits an optional merchant category code", () => {
+    const parsed = parsePromptPayPayload(
+      generatePromptPayPayload({
+        identifier: { type: "mobile", value: "0801234567" },
+        merchantCategoryCode: "0000",
+      }),
+    );
+    expect(parsed.emvco.merchantCategoryCode).toBe("0000");
+  });
+
+  test.each([
+    0,
+    -1,
+    Number.NaN,
+    Number.POSITIVE_INFINITY,
+    "",
+    "1.234",
+  ])("rejects invalid amount %p", (amount) => {
+    expect(() =>
+      generatePromptPayPayload({
+        identifier: { type: "mobile", value: "0801234567" },
+        amount,
+      }),
+    ).toThrow();
+  });
+
+  test("rejects invalid merchant category codes", () => {
+    expect(() =>
+      generatePromptPayPayload({
+        identifier: { type: "mobile", value: "0801234567" },
+        merchantCategoryCode: "123",
+      }),
+    ).toThrow("must be 4 digits");
+  });
+});
+
+describe("parsePromptPayPayload", () => {
+  test("returns the raw, EMVCo, and PromptPay representations", () => {
+    const payload = generatePromptPayPayload({
+      identifier: { type: "mobile", value: "0801234567" },
+      amount: "19.90",
+    });
+    const parsed = parsePromptPayPayload(payload);
+
+    expect(parsed.payload).toBe(payload);
+    expect(parsed.dataObjects.at(-1)).toEqual({
+      type: "primitive",
+      tag: 63,
+      value: payload.slice(-4),
+    });
+    expect(parsed.emvco).toMatchObject({
+      payloadFormatIndicator: "01",
+      pointOfInitiationMethod: "12",
+      transactionCurrency: "764",
+      transactionAmount: "19.90",
+      countryCode: "TH",
+    });
+    expect(parsed.promptPay).toEqual({
+      aid: "A000000677010111",
+      identifier: { type: "mobile", value: "0066801234567" },
+    });
+  });
+
+  test("preserves unmodeled EMVCo data", () => {
+    const generated = generatePromptPayPayload({
+      identifier: { type: "nationalId", value: "1234567890123" },
+    });
+    const payload = withCRC(`${generated.slice(0, -8)}5904TEST`);
+
+    expect(parsePromptPayPayload(payload).emvco.additionalData).toEqual([
+      { type: "primitive", tag: 59, value: "TEST" },
+    ]);
+  });
+
+  test("rejects a corrupted checksum", () => {
+    const payload = generatePromptPayPayload({
+      identifier: { type: "mobile", value: "0801234567" },
+    });
+    expect(() => parsePromptPayPayload(`${payload.slice(0, -1)}0`)).toThrow(
+      "Invalid PromptPay payload CRC",
+    );
+  });
+
+  test("rejects a payload without a PromptPay template", () => {
+    expect(() =>
+      parsePromptPayPayload(withCRC("0002010102115802TH5303764")),
+    ).toThrow("exactly one PromptPay merchant account template");
+  });
+
+  test("rejects a non-THB currency", () => {
+    const generated = generatePromptPayPayload({
+      identifier: { type: "mobile", value: "0801234567" },
+    });
+    const body = generated.slice(0, -8).replace("5303764", "5303840");
+    expect(() => parsePromptPayPayload(withCRC(body))).toThrow(
+      "currency must be THB",
+    );
+  });
+
+  test("rejects a non-Thai domestic country code", () => {
+    const generated = generatePromptPayPayload({
+      identifier: { type: "mobile", value: "0801234567" },
+    });
+    const body = generated.slice(0, -8).replace("5802TH", "5802US");
+    expect(() => parsePromptPayPayload(withCRC(body))).toThrow(
+      "country code must be TH",
+    );
   });
 });
 
