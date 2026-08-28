@@ -81,6 +81,7 @@
     "react-dom": "19.2.6",
     "react-hook-form": "^7.68.0",
     "react-hook-text-overflow": "^1.0.1",
+    "react-qr-code": "^2.2.0",
     "react-resizable-panels": "^3.0.6",
     "react-use": "^17.6.0",
     "recharts": "2.15.4",

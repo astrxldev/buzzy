@@ -372,14 +372,16 @@ function normalizePromptPayIdentifier(
 }
 
 function formatAmount(amount: number | string): string {
-  const formatted =
-    typeof amount === "number"
-      ? Number.isFinite(amount)
-        ? amount.toFixed(2)
-        : ""
-      : /^\d+(?:\.\d{1,2})?$/.test(amount)
-        ? `${amount.split(".")[0]}.${(amount.split(".")[1] ?? "").padEnd(2, "0")}`
-        : "";
+  let formatted = "";
+  if (typeof amount === "number") {
+    if (Number.isFinite(amount)) formatted = amount.toFixed(2);
+  } else {
+    const value = amount.trim();
+    if (/^\d+(?:\.\d{1,2})?$/.test(value)) {
+      const [integer, fraction = ""] = value.split(".");
+      formatted = `${integer}.${fraction.padEnd(2, "0")}`;
+    }
+  }
 
   if (!/^\d+\.\d{2}$/.test(formatted) || Number(formatted) <= 0)
     throw new Error(

@@ -3,7 +3,6 @@ import { CircleX, QrCodeIcon, SendIcon } from "lucide-react";
 import type { Metadata } from "next";
 import z from "zod";
 import { th } from "zod/v4/locales";
-import PromptpayImage from "#/assets/promptpay.jpg";
 import TruemoneyIcon from "#/assets/tmn.webp";
 import DonateLogo from "#/logos/donate.webp";
 import Cropper from "@/components/cropper";
@@ -37,6 +36,7 @@ import {
 } from "../rubgram/admin/@modal/manual/client";
 import { DownloadButton } from "../rubgram/client";
 import Link from "next/link";
+import { DynamicPPQR } from "./ppqr";
 
 const { TMN_DEST_PHONE_NUM, SASTIFY_API_PRIVKEY } = process.env as Record<
   string,
@@ -323,6 +323,15 @@ export default async function () {
               {
                 label: (
                   <span className="flex items-center gap-1">
+                    <QrCodeIcon className="size-6" />
+                    PromptPay
+                  </span>
+                ),
+                value: "pp",
+              },
+              {
+                label: (
+                  <span className="flex items-center gap-1">
                     <Image
                       src={TruemoneyIcon}
                       alt="Truemoney"
@@ -332,15 +341,6 @@ export default async function () {
                   </span>
                 ),
                 value: "tmn",
-              },
-              {
-                label: (
-                  <span className="flex items-center gap-1">
-                    <QrCodeIcon className="size-6" />
-                    PromptPay
-                  </span>
-                ),
-                value: "pp",
               },
             ]}
           >
@@ -360,11 +360,7 @@ export default async function () {
               {artifactConfig.donatePromptpay ? (
                 <>
                   <div className="flex w-full gap-2 pb-2">
-                    <Image
-                      src={PromptpayImage}
-                      alt="Promptpay QR Code"
-                      className="max-w-32 shrink-0 rounded"
-                    />
+                    <DynamicPPQR />
                     <div className="relative flex shrink-0 flex-col">
                       <span className="text-sm font-bold">บัญชีรับโดเนท</span>
                       <span className="text-sm text-muted-foreground">
