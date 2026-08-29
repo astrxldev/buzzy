@@ -13,10 +13,15 @@ export async function GET(
     db.select().from(cards).where(eq(cards.submission, subId)),
   ]);
   if (image?.image) return new Response(new Uint8Array(image.image));
+  if (!sub) return new Response(`Unknown submission: ${sub}`, { status: 404 });
+  if (!sub.char)
+    return new Response(`This submission isn't character-specific.`, {
+      status: 422,
+    });
   const [char] = await db
     .select()
     .from(characters)
-    .where(eq(characters.name, sub.char ?? "THISISNULLANDNOTSUPPOSEDTOMATCH"));
+    .where(eq(characters.name, sub.char));
   if (!char)
     return new Response(`Unknown character: ${sub.char}`, { status: 500 });
   const card = await fetch(
