@@ -287,7 +287,7 @@ async function cacheCards() {
   } else schedule(120, cacheCards);
 }
 
-cron("0 0 */14 * *", async function syncAmber() {
+cron("0 1 * * *", async function syncAmber() {
   const { log, error } = logger("syncAmber");
   log("Syncing...");
   const token = await issueInternalToken();
