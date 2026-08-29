@@ -366,6 +366,21 @@ export const donations = schDonate.table("donations", {
   method: paymentMethod().notNull().default("pp"),
 });
 
+export type TTrackingKey = string & { __brand: "tracking_key" };
+export type TAccessKey = string & { __brand: "access_key" };
+export type TUploadKey = string & { __brand: "upload_key" };
+
+export const slipSync = schDonate.table("sync", {
+  trackingKey: text().primaryKey().$defaultFn(uuidv7).$type<TTrackingKey>(),
+  accessKey: text().notNull().$defaultFn(uuidv7).$type<TAccessKey>(),
+  uploadKey: text().notNull().$defaultFn(uuidv7).$type<TUploadKey>(),
+
+  data: bytea(),
+  name: text(),
+  type: text(),
+  size: text(),
+});
+
 //#endregion
 
 //#region Better Auth

@@ -12,8 +12,12 @@ export function ActionButton({
   action,
   children,
   onClick,
+  text,
   ...props
-}: ComponentProps<typeof Button> & { action: () => MaybePromise<void> }) {
+}: ComponentProps<typeof Button> & {
+  action: () => MaybePromise<void>;
+  text?: string;
+}) {
   const [state, setState] = useState<0 | 1 | 2>(0);
 
   useEffect(() => {
@@ -38,7 +42,7 @@ export function ActionButton({
         }
       }}
     >
-      {state === 0 ? children : state === 1 ? <Spinner /> : <Check />}
+      {state === 0 ? children : state === 1 ? <Spinner /> : <Check />} {text}
     </Button>
   );
 }

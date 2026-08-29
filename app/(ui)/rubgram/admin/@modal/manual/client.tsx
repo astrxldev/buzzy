@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/a11y/noStaticElementInteractions: yes maam */
 "use client";
 
-import { FileSearch2, RefreshCw, X } from "lucide-react";
+import { FileSearch2, RefreshCw, TabletSmartphone, X } from "lucide-react";
 import { type ComponentProps, useEffect, useRef, useState } from "react";
 import { b2sClient } from "@/app/(ui)/admin/cdn/table";
 import { VirtualizedComboBox } from "@/components/combobox";
@@ -26,6 +26,12 @@ import {
 } from "@/components/ui/multi-select";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
+import { ActionButton } from "@/components/action-button";
+import { retrieveMobileUpload, startMobileUpload } from "./api";
+import { sse } from "@/lib/db/sse-endpoints";
+import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import QRCode from "react-qr-code";
+import { Status, StatusIndicator } from "@/components/ui/status";
 
 export function CurrencyInput(props: ComponentProps<typeof Input>) {
   return (
@@ -98,6 +104,11 @@ export function SlipUpload({
 }) {
   const ref = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState<File | undefined | null>(externalValue);
+  const [muUploadKey, setMuUploadKey] = useState<string>();
+  const [muState, setMuState] = useState<"waiting" | "connected" | "completed">(
+    "waiting",
+  );
+  const [muReject, setMuReject] = useState<(reason?: any) => void>(() => {});
   const isSelected = !!value?.name;
 
   useEffect(() => {
@@ -114,8 +125,66 @@ export function SlipUpload({
   function choose() {
     ref.current?.click();
   }
+
+  async function mobileUpload() {
+    // 1. create sync entry
+    const { trackingKey, accessKey, uploadKey } = await startMobileUpload();
+
+    // 2. watch for slip_sync.complete for that tracking ID
+    let completedResolve: () => void;
+    const completedPromise = new Promise<void>(
+      (r, j) => ((completedResolve = r), setMuReject(() => j)),
+    );
+    const ev = sse.slip_sync.subMany({
+      complete(tid) {
+        if (trackingKey !== tid) return;
+        setMuState("completed");
+        completedResolve();
+      },
+      connected(tid) {
+        console.log(tid, trackingKey);
+        if (trackingKey !== tid) return;
+        setMuState("connected");
+      },
+    });
+
+    // 3. show qr/share dialog
+    setMuUploadKey(uploadKey);
+    // window.open(`http://localhost:3000/donate/slip/${uploadKey}`);
+
+    try {
+      // 4. user open link on mobile
+      // 5. user upload image
+      // 6. image updates the sync entry and trigger slip_sync.complete
+      await completedPromise;
+
+      // 7. pc client fetch image and delete the sync entry
+      const fd = await retrieveMobileUpload(accessKey);
+      const f = fd.get("file") as File;
+      const file = new File([f], fd.get("name") as string, {
+        type: f.type,
+        lastModified: f.lastModified,
+      });
+
+      // 8. pc client stop watch
+      ev.clean();
+
+      // 9. close dialog and set slip input?
+      setMuUploadKey(undefined);
+      console.log(file);
+      setValue(file);
+      onValueChange?.(file);
+    } catch (e) {
+      console.error(e);
+      setMuUploadKey(undefined);
+      ev.clean();
+
+      throw e;
+    }
+  }
+
   return (
-    <>
+    <div className="flex flex-col">
       <Button
         onClick={isSelected ? undefined : () => ref.current?.click()}
         className={cn(
@@ -149,6 +218,17 @@ export function SlipUpload({
           <FileSearch2 />
         )}
       </Button>
+      <div className="-mt-1 hidden justify-end md:flex">
+        <ActionButton
+          action={mobileUpload}
+          variant="link"
+          className="text-primary-foreground"
+          type="button"
+          text="อัพโหลดสลิปจากมือถือ"
+        >
+          <TabletSmartphone />
+        </ActionButton>
+      </div>
       <input
         ref={ref}
         type="file"
@@ -160,7 +240,53 @@ export function SlipUpload({
           onValueChange?.(file);
         }}
       />
-    </>
+      <Dialog
+        open={!!muUploadKey}
+        onOpenChange={(state) => state || muReject?.("user abort")}
+      >
+        <DialogContent>
+          <DialogHeader className="font-semibold">
+            อัพโหลดสลิปจากมือถือ
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-5 py-10">
+            <div className="rounded-xl bg-white p-4">
+              <QRCode
+                value={`https://buzz.sudloh.com/donate/slip/${muUploadKey}`}
+                fgColor="#09090b"
+                size={200}
+              />
+            </div>
+            <span className="max-w-2/3 text-center whitespace-pre-wrap">
+              สแกนด้วยโทรศัพท์เพื่อเลือกสลิปจาก Gallery และอัพโหลดโดยตรงมาที่นี่
+            </span>
+            <span className="flex items-center justify-between rounded-full border bg-card p-1 pr-3">
+              {muState === "waiting" ? (
+                <>
+                  <Status status="degraded" className="bg-transparent">
+                    <StatusIndicator />
+                  </Status>
+                  กำลังรอการเชื่อมต่อ
+                </>
+              ) : muState === "connected" ? (
+                <>
+                  <Status status="maintenance" className="bg-transparent">
+                    <StatusIndicator />
+                  </Status>
+                  เชื่อมต่อแล้ว กำลังรออัพโหลดรูป
+                </>
+              ) : (
+                <>
+                  <Status status="online" className="bg-transparent">
+                    <StatusIndicator />
+                  </Status>
+                  กำลังดาวน์โหลดเข้าเครื่องนี
+                </>
+              )}
+            </span>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
 

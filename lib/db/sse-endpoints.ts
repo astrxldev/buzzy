@@ -1,7 +1,7 @@
 import z from "zod/v4";
 import type { YoutubeLiveInfo } from "@/app/api/live/route";
 import { sseEndpoint, sseEndpointMap } from "./redis";
-import type { auditLog, tierlistStates } from "./schema";
+import type { auditLog, tierlistStates, TTrackingKey } from "./schema";
 
 export const sse = sseEndpointMap({
   // Artifact Admin Listener
@@ -53,6 +53,10 @@ export const sse = sseEndpointMap({
   // Admin Live Log
   log: {
     update: z.custom<typeof auditLog.$inferSelect>(),
+  },
+  slip_sync: {
+    complete: z.custom<TTrackingKey>(),
+    connected: z.custom<TTrackingKey>()
   },
 });
 export const adminSseList: (keyof typeof sse)[] = ["log"];
