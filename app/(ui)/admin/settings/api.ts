@@ -1,14 +1,12 @@
 "use server";
 
-import { exec } from "node:child_process";
-import { env } from "node:process";
-import { promisify } from "node:util";
 import { revalidatePath } from "next/cache";
 import { actionLog } from "@/lib/api";
 import { db } from "@/lib/db";
 import { settings } from "@/lib/db/schema";
 import { adminCheck } from "@/lib/auth";
 import { sse } from "@/lib/db/sse-endpoints";
+import { syncAmber as syncAmberRaw } from "@/util/sync";
 
 export async function getSettongs() {
   if (!(await adminCheck())) throw "Unauthorized";
@@ -32,11 +30,11 @@ export async function toggleEnka(state: boolean) {
 
 export async function syncAmber() {
   if (!(await adminCheck())) throw "Unauthorized";
-  const res = await promisify(exec)("bun util/sync 2>&1", {
-    env: { ...env, NO_AUTH_CHECK: "1" },
+  await syncAmberRaw();
+  await actionLog("Triggered an Amber sync", {
+    result: "OK(log is wip, check `kubectl logs -fn buzz deployments/app`)",
   });
-  await actionLog("Triggered an Amber sync", { result: res.stdout });
-  return res.stdout;
+  return "OK(log is wip, check `kubectl logs -fn buzz deployments/app`)";
 }
 
 export async function forceRefresh(prefix: string | null = null) {
