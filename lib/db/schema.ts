@@ -374,6 +374,7 @@ export const slipSync = schDonate.table("sync", {
   trackingKey: text().primaryKey().$defaultFn(uuidv7).$type<TTrackingKey>(),
   accessKey: text().notNull().$defaultFn(uuidv7).$type<TAccessKey>(),
   uploadKey: text().notNull().$defaultFn(uuidv7).$type<TUploadKey>(),
+  created: timestamp("created_at").defaultNow().notNull(),
 
   data: bytea(),
   name: text(),

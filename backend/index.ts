@@ -12,6 +12,7 @@ import {
   endgameSubmissions,
   endgameTypes,
   settings,
+  slipSync,
   submissions,
   tierlistColumns,
   tierlistTiers,
@@ -58,6 +59,20 @@ function logger(group: string) {
     },
   };
   return t;
+}
+
+async function checkMobileSyncExpiration() {
+  const { log, schedule } = logger("mobileSync");
+
+  const count = await db
+    .delete(slipSync)
+    .where(lt(slipSync.created, sql`NOW() - INTERVAL '1 hour'`))
+    .returning({ id: slipSync.trackingKey });
+  const removed = count.length;
+
+  if (removed) log("Purged", removed, "sessions");
+
+  schedule([], checkMobileSyncExpiration);
 }
 
 async function checkRubgramExpiration() {
@@ -326,6 +341,7 @@ const redisSubscribers: Record<
 };
 
 checkRubgramExpiration();
+checkMobileSyncExpiration();
 seedDatabase();
 cacheCards();
 console.log("Tasks assigned");
