@@ -127,6 +127,8 @@ export function SlipUpload({
   }
 
   async function mobileUpload() {
+    setMuState("waiting");
+
     // 1. create sync entry
     const { trackingKey, accessKey, uploadKey } = await startMobileUpload();
 
