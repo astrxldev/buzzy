@@ -22,7 +22,7 @@ jobs:
 
       - name: Configure kubectl
         run: |
-          kubectl config set-cluster buzz --server=https://100.75.220.33:6443 --insecure-skip-tls-verify=true
+          kubectl config set-cluster buzz --server=https://astrxl-la3.neko-piranha.ts.net:6443 --insecure-skip-tls-verify=true
           kubectl config set-credentials ci-deployer --token=${{ secrets.KUBE_TOKEN }}
           kubectl config set-context buzz --cluster=buzz --user=ci-deployer --namespace=buzz
           kubectl config use-context buzz
@@ -57,7 +57,7 @@ jobs:
 
       - name: Configure kubectl
         run: |
-          kubectl config set-cluster buzz --server=https://100.75.220.33:6443 --insecure-skip-tls-verify=true
+          kubectl config set-cluster buzz --server=https://astrxl-la3.neko-piranha.ts.net:6443 --insecure-skip-tls-verify=true
           kubectl config set-credentials ci-deployer --token=${{ secrets.KUBE_TOKEN }}
           kubectl config set-context buzz --cluster=buzz --user=ci-deployer --namespace=buzz
           kubectl config use-context buzz
@@ -98,7 +98,7 @@ jobs:
 
       - name: Configure kubectl
         run: |
-          kubectl config set-cluster buzz --server=https://100.75.220.33:6443 --insecure-skip-tls-verify=true
+          kubectl config set-cluster buzz --server=https://astrxl-la3.neko-piranha.ts.net:6443 --insecure-skip-tls-verify=true
           kubectl config set-credentials ci-deployer --token=${{ secrets.KUBE_TOKEN }}
           kubectl config set-context buzz --cluster=buzz --user=ci-deployer --namespace=buzz
           kubectl config use-context buzz
