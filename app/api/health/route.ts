@@ -1,8 +1,9 @@
+import { GoogleGenAI } from "@google/genai";
+import { env } from "bun";
 import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { redis as redisShared } from "@/lib/db/redis";
-import { GoogleGenAI } from "@google/genai";
-import { env } from "bun";
+
 const { DISCORD_BOT_TOKEN, GEMINI_TTS_API_KEY } = env as Record<string, string>;
 
 const redis = redisShared!;
@@ -23,14 +24,16 @@ export async function GET() {
             red
               ? (await redis.exists(`health:${k}`))
                 ? (await redis.get(`health:${k}`)) === "ok"
-                : await v().then(async (r: any) => {
-                    const v = r instanceof Response ? r.ok : !!r;
-                    if (v) await redis.setex(`health:${k}`, 900, "ok");
-                    return v;
-                  })
-              : await v().then((r: any) =>
-                  r instanceof Response ? r.ok : !!r,
-                ),
+                : await v()
+                    .then(async (r) => {
+                      const v = r instanceof Response ? r.ok : !!r;
+                      if (v) await redis.setex(`health:${k}`, 900, "ok");
+                      return v;
+                    })
+                    .catch(() => false)
+              : await v()
+                  .then((r) => (r instanceof Response ? r.ok : !!r))
+                  .catch(() => false),
           ] as const,
       ),
     ),
