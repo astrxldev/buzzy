@@ -1,9 +1,11 @@
 "use server";
 
+import { eq } from "drizzle-orm";
+import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import type { TAccessKey } from "@/lib/db/schema";
 import { slipSync } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { retrieveMobileUploadService } from "./service";
 
 export async function startMobileUpload() {
   return await db
@@ -14,18 +16,13 @@ export async function startMobileUpload() {
 }
 
 export async function retrieveMobileUpload(accessKey: TAccessKey) {
-  const object = await db
-    .delete(slipSync)
-    .where(eq(slipSync.accessKey, accessKey))
-    .returning()
-    .then((r) => r.pop()!);
-  const fd = new FormData();
-  fd.set(
-    "file",
-    new File([Buffer.from(object.data!)], object.name!, {
-      type: object.type!,
-    }),
-  );
-  fd.set("name", object.name!)
-  return fd;
+  return retrieveMobileUploadService(accessKey, {
+    adminCheck,
+    consume: async (key) =>
+      db
+        .delete(slipSync)
+        .where(eq(slipSync.accessKey, key as TAccessKey))
+        .returning()
+        .then((rows) => rows.pop()),
+  });
 }

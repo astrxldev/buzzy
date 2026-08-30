@@ -77,7 +77,8 @@ Seeding is idempotent — it skips if an admin account already exists.
 | `bun format`    | Run Biome formatter                                         |
 | `bun dr <args>` | Run drizzle-kit commands                                    |
 | `bun logs`      | Tail logs from all containers (`docker compose logs -fn50`) |
-| `bun test`      | Run Playwright tests (outdated — unreliable)                |
+| `bun test`      | Run the non-UI Bun test suite                               |
+| `bun run test:coverage` | Run Bun tests with enforced coverage              |
 
 ## Common Maintenance Tasks
 
@@ -164,6 +165,6 @@ Before doing any UI/interaction work, you **must** set up BrowserMCP for automat
 
 ### Important
 
-- **Do not** run Playwright tests — they are heavily outdated and unreliable.
+- The automated suite is intentionally non-UI and uses `bun:test`.
 - Always use BrowserMCP for visual/interaction verification instead.
 - The dev server must already be running for BrowserMCP to connect.

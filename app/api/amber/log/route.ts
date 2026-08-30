@@ -1,14 +1,7 @@
 import { getAmberVh } from "@/lib/api";
+import { createAmberProxyHandler } from "@/lib/server-handlers";
 
-export async function GET() {
-  return new Response(
-    await fetch(
-      `https://gi.yatta.moe/api/v2/static/changelog?vh=${await getAmberVh()}`,
-    ).then((e) => e.text()),
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    },
-  );
-}
+export const GET = createAmberProxyHandler("static/changelog", {
+  getVersionHash: getAmberVh,
+  fetchText: (url) => fetch(url).then((response) => response.text()),
+});

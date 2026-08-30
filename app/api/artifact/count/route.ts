@@ -1,6 +1,5 @@
 import { db } from "@/lib/db";
 import { submissions } from "@/lib/db/schema";
+import { createCountHandler } from "@/lib/server-handlers";
 
-export async function GET() {
-  return Response.json(await db.$count(submissions));
-}
+export const GET = createCountHandler(() => db.$count(submissions));

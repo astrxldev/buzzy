@@ -1,24 +1,12 @@
 import { adminCheck } from "@/lib/auth";
 import { adminSseList, sse, tlSse } from "@/lib/db/sse-endpoints";
+import { createSseHandler } from "./handler";
 
-function isValidKey<T extends { [x: string]: unknown }>(
-  map: T,
-  key: string | number | symbol,
-): key is keyof T {
-  return Object.hasOwn(map, key);
-}
-
-const tlRegex = /^tl\.([a-z0-9.-_]+)$/;
-
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ topic: string }> },
-) {
-  const { topic } = await params;
-  if (tlRegex.test(topic)) return tlSse(topic.match(tlRegex)![1]).stream();
-  if (!isValidKey(sse, topic))
-    return new Response("Invalid SSE Endpoint", { status: 404 });
-  if (adminSseList.includes(topic) && !(await adminCheck()))
-    return new Response("Unauthorized", { status: 401 });
-  return sse[topic].stream();
-}
+export const GET = createSseHandler({
+  endpoints: sse as unknown as Parameters<
+    typeof createSseHandler
+  >[0]["endpoints"],
+  adminTopics: adminSseList,
+  adminCheck,
+  tierListEndpoint: tlSse,
+});

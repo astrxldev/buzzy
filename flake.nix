@@ -1,5 +1,5 @@
 {
-  description = "Bun + Playwright dev shell";
+  description = "Bun dev shell";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs";
@@ -17,20 +17,10 @@
       system:
       let
         pkgs = import nixpkgs { inherit system; };
-        browsers =
-          (builtins.fromJSON (builtins.readFile "${pkgs.playwright-driver}/browsers.json")).browsers;
-        chromium-rev = (builtins.head (builtins.filter (x: x.name == "chromium") browsers)).revision;
       in
       {
         devShells.default = pkgs.mkShell {
-          packages = with pkgs; [
-            bun
-            playwright-driver.browsers
-          ];
-
-          shellHook = ''
-            export PLAYWRIGHT_LAUNCH_OPTIONS_EXECUTABLE_PATH="${pkgs.playwright-driver.browsers}/chromium-${chromium-rev}/chrome-linux64/chrome";
-          '';
+          packages = with pkgs; [ bun ];
         };
       }
     );

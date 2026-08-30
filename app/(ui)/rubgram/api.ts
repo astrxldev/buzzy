@@ -2,7 +2,6 @@
 
 import {
   and,
-  count as sqlCount,
   desc,
   eq,
   gt,
@@ -10,6 +9,7 @@ import {
   lt,
   not,
   sql,
+  count as sqlCount,
 } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
@@ -24,29 +24,42 @@ import {
   endgameSlips,
   endgameSubmissions,
   endgameTypes,
-  type Note,
   settings,
 } from "@/lib/db/schema";
 import { sse } from "@/lib/db/sse-endpoints";
 import { checkSlip } from "@/lib/payment";
 import { getPostHogClient } from "@/lib/posthog-server";
+import {
+  addSubmissionNote,
+  calculatePrice,
+  cancelSubmission,
+  compactExpiredSubmissions,
+  deleteSubmissionNote,
+  isDuplicateSlipError,
+  paySubmission,
+  type RubgramActor,
+  registerSubmission,
+  requireAdmin,
+  requireOwner,
+  runAdminOperation,
+} from "./service";
 
-const { DISCORD_WEBHOOK_URL, DISCORD_CLIENT_ID, BASE_URL } =
-  process.env as Record<string, string>;
+const { DISCORD_WEBHOOK_URL } = process.env as Record<string, string>;
 
 export async function wipe() {
-  if (!(await adminCheck())) throw "Unauthorized";
-  await db.update(endgameSubmissions).set({ deleted: true });
-  revalidatePath("/rubgram/admin");
-  revalidatePath("/rubgram");
+  return runAdminOperation(getAdminActor(), async () => {
+    await db.update(endgameSubmissions).set({ deleted: true });
+    revalidatePath("/rubgram/admin");
+    revalidatePath("/rubgram");
 
-  sse.rubgram.pub("update", { type: "wipe" });
+    sse.rubgram.pub("update", { type: "wipe" });
 
-  await actionLog(`Deleted rubgram submissions`);
+    await actionLog(`Deleted rubgram submissions`);
+  });
 }
 
 export async function random() {
-  if (!(await adminCheck())) throw "Unauthorized";
+  await requireAdmin(getAdminActor());
   const [sub] = await db
     .select()
     .from(endgameSubmissions)
@@ -58,7 +71,7 @@ export async function random() {
 }
 
 export async function toggleCheck(submissionId: string) {
-  if (!(await adminCheck())) throw "Unauthorized";
+  await requireAdmin(getAdminActor());
   await db
     .update(endgameSubmissions)
     .set({
@@ -74,7 +87,7 @@ export async function toggleCheck(submissionId: string) {
 }
 
 export async function toggleLock() {
-  if (!(await adminCheck())) throw "Unauthorized";
+  await requireAdmin(getAdminActor());
   const existing = await db
     .update(endgameSettings)
     .set({
@@ -94,7 +107,7 @@ export async function toggleLock() {
 }
 
 export async function setLimit(limit: number) {
-  if (!(await adminCheck())) throw "Unauthorized";
+  await requireAdmin(getAdminActor());
 
   if (
     (
@@ -118,7 +131,7 @@ export async function setLimit(limit: number) {
 }
 
 export async function setFree(free: number) {
-  if (!(await adminCheck())) throw "Unauthorized";
+  await requireAdmin(getAdminActor());
 
   if (
     (
@@ -140,7 +153,7 @@ export async function setFree(free: number) {
 }
 
 export async function toggleMonth(month: string) {
-  if (!(await adminCheck())) throw "Unauthorized";
+  await requireAdmin(getAdminActor());
   const [s] = await db
     .select({ monthly: endgameSettings.monthly })
     .from(endgameSettings)
@@ -193,6 +206,7 @@ export async function getEndgameConfig() {
 }
 
 export async function getUserSubmissions(uid: string) {
+  await requireOwner(await getRubgramActor(), uid);
   const types = await db.select().from(endgameTypes);
   const typeNames = Object.fromEntries(types.map((t) => [t.id, t.display]));
 
@@ -224,54 +238,57 @@ export async function getUserSubmissions(uid: string) {
 }
 
 export async function submitEndgame(formData: FormData) {
-  const { full, locked, limit, types, free } = await getEndgameConfig();
+  const session = await getDiscordSession();
   const name = formData.get("name") as string;
   const server = formData.get("server") as "as" | "eu" | "us" | "tw";
   const service = formData.getAll("service") as string[];
-  const user = formData.get("user") as string;
-  if (!name || !server || !service.length || !user)
-    return "กรุณากรอกข้อมูลให้ครบถ้วน";
-
-  // ไม่ควรเกิดขึ้นแน่ๆ แต่กันไว้ก่อน
-  if (!["as", "eu", "us", "tw"].includes(server)) return "เซิร์ฟไม่ถูกต้อง";
-  if (service.some((s) => !types.map((t) => t.id).includes(s)))
-    return "บริการไม่ถูกต้อง";
-
-  if (name.length > 32) return "ชื่อยาวเกินไป ต้องไม่เกิน 32 ตัวอักษร";
-  if (locked) return "ปิดรับลงทะเบียนชั่วคราว เนื่องจากมีผู้ลงจำนวนมาก";
-  if (full) return `คิวลงทะเบียนเต็มแล้ว (${limit} ครั้ง)`;
-  await removeExpiredSubmissions();
-  const [existing] = await db
-    .select({ queue: endgameSubmissions.queue, id: endgameSubmissions.id })
-    .from(endgameSubmissions)
-    .where(
-      and(
-        eq(endgameSubmissions.user, user),
-        not(endgameSubmissions.deleted),
-        not(endgameSubmissions.checked),
-        not(endgameSubmissions.paid),
-      ),
-    )
-    .limit(1);
-  if (existing) return existing;
-  const [queue] = await db
-    .insert(endgameSubmissions)
-    .values({
-      user,
-      name,
-      server,
-      service,
-      price: await calcPrice(service),
-    })
-    .returning({ queue: endgameSubmissions.queue, id: endgameSubmissions.id });
-  if (free > 0)
-    await db.update(endgameSettings).set({
-      free: sql`${endgameSettings.free} - 1`,
-    });
+  const user = session?.uid;
+  const queue = await registerSubmission(
+    { name, server, service, user },
+    {
+      getConfig: getEndgameConfig,
+      removeExpired: removeExpiredSubmissions,
+      findDuplicate: async (userId) => {
+        const [existing] = await db
+          .select({
+            queue: endgameSubmissions.queue,
+            id: endgameSubmissions.id,
+          })
+          .from(endgameSubmissions)
+          .where(
+            and(
+              eq(endgameSubmissions.user, userId),
+              not(endgameSubmissions.deleted),
+              not(endgameSubmissions.checked),
+              not(endgameSubmissions.paid),
+            ),
+          )
+          .limit(1);
+        return existing;
+      },
+      insert: async (values) => {
+        const [inserted] = await db
+          .insert(endgameSubmissions)
+          .values(values)
+          .returning({
+            queue: endgameSubmissions.queue,
+            id: endgameSubmissions.id,
+          });
+        return inserted;
+      },
+      consumeFreeSlot: async () => {
+        await db
+          .update(endgameSettings)
+          .set({ free: sql`${endgameSettings.free} - 1` })
+          .where(gt(endgameSettings.free, 0));
+      },
+    },
+  );
+  if (typeof queue === "string") return queue;
   revalidatePath("/rubgram/admin");
   sse.rubgram.pub("update", { type: "submit", sub: queue.id });
   getPostHogClient().capture({
-    distinctId: user,
+    distinctId: user!,
     event: "rubgram_registration_completed",
     properties: { queue_position: queue.queue, server, services: service },
   });
@@ -286,73 +303,80 @@ export async function submitEndgamePayment(formData: FormData) {
   const arrayBuffer = await slip.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  const queue = await db.transaction(async (tx) => {
-    const [s] = await tx
-      .select()
-      .from(endgameSubmissions)
-      .where(
-        and(eq(endgameSubmissions.id, sid), not(endgameSubmissions.deleted)),
-      )
-      .limit(1);
-    const [a] = await tx
-      .select()
-      .from(endgameExpired)
-      .where(eq(endgameExpired.id, sid))
-      .limit(1);
-    if (!s) {
-      if (a)
-        await tx.insert(endgameSubmissions).values({
-          ...a,
-          price: await calcPrice(a.service),
-        });
-      else return "คุณยังไม่ได้ลงทะเบียน";
-    }
-
-    // const processed = {
-    //   success: true,
-    //   data: { transRef: "test-abc", amount: 12345 },
-    // } as const;
-    const processed = await checkSlip(buffer, slip.type, (s || a).price);
-
-    if (!processed.success) return `${processed.code}: ${processed.message}`;
-
-    const [{ id: slipId }] = await tx
-      .insert(endgameSlips)
-      .values({
-        slip: buffer,
-        ref: processed.data.transRef,
-        amount: processed.data.amount?.toString(),
-        data: processed,
-      })
-      .returning({ id: endgameSlips.id })
-      .catch((e) => {
-        console.log(e);
-        return [{ id: "conflict" }];
-      });
-
-    if (slipId === "conflict") return "สลิปนี้ถูกใช้ไปแล้ว";
-
-    return await tx
-      .update(endgameSubmissions)
-      .set({
-        slip: slipId,
-      })
-      .returning({ queue: endgameSubmissions.queue, id: endgameSubmissions.id })
-      .where(eq(endgameSubmissions.id, sid));
-  });
+  const queue = await paySubmission(
+    { id: sid, slip: buffer, type: slip.type },
+    await getRubgramActor(),
+    {
+      calculatePrice: calcPrice,
+      checkSlip,
+      isDuplicateSlipError,
+      transaction: (run) =>
+        db.transaction(async (tx) =>
+          run({
+            findSubmission: async (id) => {
+              const [submission] = await tx
+                .select()
+                .from(endgameSubmissions)
+                .where(
+                  and(
+                    eq(endgameSubmissions.id, id),
+                    not(endgameSubmissions.deleted),
+                  ),
+                )
+                .limit(1);
+              return submission;
+            },
+            findExpired: async (id) => {
+              const [expired] = await tx
+                .select()
+                .from(endgameExpired)
+                .where(eq(endgameExpired.id, id))
+                .limit(1);
+              return expired;
+            },
+            restoreExpired: async (expired, price) => {
+              await tx.insert(endgameSubmissions).values({ ...expired, price });
+            },
+            insertSlip: async (input) => {
+              const [{ id }] = await tx
+                .insert(endgameSlips)
+                .values({
+                  slip: input.slip,
+                  ref: input.ref,
+                  amount: String(input.amount ?? 0),
+                  data: input.data as SlipokResponse,
+                })
+                .returning({ id: endgameSlips.id });
+              return id;
+            },
+            markPaid: async (submissionId, slipId) => {
+              const [paid] = await tx
+                .update(endgameSubmissions)
+                .set({ slip: slipId })
+                .returning({
+                  queue: endgameSubmissions.queue,
+                  id: endgameSubmissions.id,
+                })
+                .where(eq(endgameSubmissions.id, submissionId));
+              return paid;
+            },
+          }),
+        ),
+    },
+  );
   revalidatePath("/rubgram/admin");
-  if (Array.isArray(queue)) {
-    sse.rubgram.pub("update", { type: "paid", sub: queue[0].id });
+  if (typeof queue !== "string") {
+    sse.rubgram.pub("update", { type: "paid", sub: queue.id });
     getPostHogClient().capture({
       distinctId: sid,
       event: "rubgram_payment_completed",
       properties: {
-        submission_id: queue[0].id,
-        queue_position: queue[0].queue,
+        submission_id: queue.id,
+        queue_position: queue.queue,
       },
     });
   }
-  return Array.isArray(queue) ? queue[0] : queue;
+  return queue;
 }
 
 // discord auth
@@ -367,80 +391,87 @@ export async function getDiscordSession() {
     .then((v) => v[0]);
 }
 
-export async function loginDiscord() {
-  redirect(
-    `https://discord.com/oauth2/authorize?client_id=${encodeURIComponent(DISCORD_CLIENT_ID)}&response_type=code&redirect_uri=${encodeURIComponent(`${BASE_URL}/rubgram/callback`)}&scope=identify+guilds.join+guilds`,
-  );
-}
-
-export async function calcPrice(service: string[]) {
-  const { free, types, allDiscount } = await getEndgameConfig();
-  return free > 0
-    ? 0
-    : service.reduce(
-        (p, s) => p + (types.find((t) => t.id === s)?.price || 0),
-        0,
-      ) - (types.every((s) => service.includes(s.id)) ? allDiscount : 0);
-}
-
-export async function removeExpiredSubmissions() {
-  // First, get count of items to be removed
-  const expiredCond = and(
-    not(endgameSubmissions.paid),
-    lt(endgameSubmissions.expires, new Date()),
-  );
-  const toRemove = await db
-    .select({ count: sql<number>`COUNT(*)` })
-    .from(endgameSubmissions)
-    .where(expiredCond);
-
-  // Delete expired submissions and update queue numbers in one transaction
-  await db.transaction(async (tx) => {
-    // Store the queue numbers before deletion
-    const expiredQueues = await tx
-      .select()
-      .from(endgameSubmissions)
-      .where(expiredCond)
-      .orderBy(desc(endgameSubmissions.queue));
-
-    // Delete expired submissions
-    if (expiredQueues.length)
-      await tx.insert(endgameExpired).values(expiredQueues);
-    await tx.delete(endgameSubmissions).where(expiredCond);
-
-    // Update queue numbers for remaining submissions
-    for (const { queue } of expiredQueues) {
-      await tx
-        .update(endgameSubmissions)
-        .set({
-          queue: sql`${endgameSubmissions.queue} - 1`,
-        })
-        .where(gt(endgameSubmissions.queue, queue));
-    }
-
-    // Reset the serial sequence to the max queue number
-    const maxQueue = await tx
-      .select({ max: sql<number>`MAX(${endgameSubmissions.queue})` })
-      .from(endgameSubmissions);
-
-    const nextSerial = (maxQueue[0]?.max || 0) + 1;
-
-    // Update the sequence - adjust schema name if needed
-    await tx.execute(
-      sql`SELECT setval('endgame.submissions_queue_seq', ${nextSerial}, false)`,
-    );
-  });
-
+async function getRubgramActor(): Promise<RubgramActor> {
+  const session = await getDiscordSession();
   return {
-    removed: Number(toRemove[0]?.count || 0),
+    userId: session?.uid,
+    isAdmin: async () => Boolean(await adminCheck()),
   };
 }
 
+function getAdminActor(): RubgramActor {
+  return { isAdmin: async () => Boolean(await adminCheck()) };
+}
+
+export async function calcPrice(service: string[]) {
+  return calculatePrice(service, await getEndgameConfig());
+}
+
+export async function removeExpiredSubmissions() {
+  return db.transaction(async (tx) =>
+    compactExpiredSubmissions({
+      findExpired: async (now) =>
+        tx
+          .select()
+          .from(endgameSubmissions)
+          .where(
+            and(
+              not(endgameSubmissions.paid),
+              lt(endgameSubmissions.expires, now),
+            ),
+          )
+          .orderBy(desc(endgameSubmissions.queue)),
+      archive: async (submissions) => {
+        if (submissions.length)
+          await tx.insert(endgameExpired).values(submissions);
+      },
+      remove: async (ids) => {
+        if (ids.length)
+          await tx
+            .delete(endgameSubmissions)
+            .where(inArray(endgameSubmissions.id, ids));
+      },
+      shiftAfter: async (queue) => {
+        await tx
+          .update(endgameSubmissions)
+          .set({ queue: sql`${endgameSubmissions.queue} - 1` })
+          .where(gt(endgameSubmissions.queue, queue));
+      },
+      getMaxQueue: async () => {
+        const [result] = await tx
+          .select({ max: sql<number>`MAX(${endgameSubmissions.queue})` })
+          .from(endgameSubmissions);
+        return result?.max ?? null;
+      },
+      setNextQueue: async (next) => {
+        await tx.execute(
+          sql`SELECT setval('endgame.submissions_queue_seq', ${next}, false)`,
+        );
+      },
+    }),
+  );
+}
+
 export async function cancel(sid: string) {
-  await db
-    .update(endgameSubmissions)
-    .set({ deleted: true })
-    .where(eq(endgameSubmissions.id, sid));
+  const cancelled = await cancelSubmission(sid, await getRubgramActor(), {
+    findSubmission: async (id) => {
+      const [submission] = await db
+        .select({ user: endgameSubmissions.user })
+        .from(endgameSubmissions)
+        .where(
+          and(eq(endgameSubmissions.id, id), not(endgameSubmissions.deleted)),
+        )
+        .limit(1);
+      return submission;
+    },
+    cancel: async (id) => {
+      await db
+        .update(endgameSubmissions)
+        .set({ deleted: true })
+        .where(eq(endgameSubmissions.id, id));
+    },
+  });
+  if (!cancelled) return;
 
   sse.rubgram.pub("update", { type: "cancel" });
 
@@ -448,38 +479,39 @@ export async function cancel(sid: string) {
 }
 
 export async function bulkDelete(ids: string[]) {
-  if (!(await adminCheck())) throw "Unauthorized";
-  await db
-    .update(endgameSubmissions)
-    .set({ deleted: true })
-    .where(inArray(endgameSubmissions.id, ids));
+  return runAdminOperation(getAdminActor(), async () => {
+    await db
+      .update(endgameSubmissions)
+      .set({ deleted: true })
+      .where(inArray(endgameSubmissions.id, ids));
 
-  revalidatePath("/rubgram/admin");
+    revalidatePath("/rubgram/admin");
 
-  sse.rubgram.pub("update", { type: "wipe" });
+    sse.rubgram.pub("update", { type: "wipe" });
 
-  await actionLog(`Bulk deleted ${ids.length} rubgram submissions`);
+    await actionLog(`Bulk deleted ${ids.length} rubgram submissions`);
+  });
 }
 
 export async function addNote(sid: string, text: string) {
-  if (!(await adminCheck())) throw "Unauthorized";
-
-  const note: Note = {
-    id: Bun.randomUUIDv7(),
-    text,
-    createdAt: new Date().toISOString(),
-  };
-
-  const [sub] = await db
-    .select({ notes: endgameSubmissions.notes })
-    .from(endgameSubmissions)
-    .where(eq(endgameSubmissions.id, sid))
-    .limit(1);
-
-  await db
-    .update(endgameSubmissions)
-    .set({ notes: [...(sub?.notes || []), note] })
-    .where(eq(endgameSubmissions.id, sid));
+  const note = await addSubmissionNote(sid, text, getAdminActor(), {
+    getNotes: async (id) => {
+      const [submission] = await db
+        .select({ notes: endgameSubmissions.notes })
+        .from(endgameSubmissions)
+        .where(eq(endgameSubmissions.id, id))
+        .limit(1);
+      return submission?.notes ?? [];
+    },
+    saveNotes: async (id, notes) => {
+      await db
+        .update(endgameSubmissions)
+        .set({ notes })
+        .where(eq(endgameSubmissions.id, id));
+    },
+    createId: Bun.randomUUIDv7,
+    now: () => new Date(),
+  });
 
   revalidatePath(`/rubgram/admin/${sid}`);
 
@@ -487,24 +519,28 @@ export async function addNote(sid: string, text: string) {
 }
 
 export async function deleteNote(sid: string, noteId: string) {
-  if (!(await adminCheck())) throw "Unauthorized";
-
-  const [sub] = await db
-    .select({ notes: endgameSubmissions.notes })
-    .from(endgameSubmissions)
-    .where(eq(endgameSubmissions.id, sid))
-    .limit(1);
-
-  await db
-    .update(endgameSubmissions)
-    .set({ notes: (sub?.notes || []).filter((n) => n.id !== noteId) })
-    .where(eq(endgameSubmissions.id, sid));
+  await deleteSubmissionNote(sid, noteId, getAdminActor(), {
+    getNotes: async (id) => {
+      const [submission] = await db
+        .select({ notes: endgameSubmissions.notes })
+        .from(endgameSubmissions)
+        .where(eq(endgameSubmissions.id, id))
+        .limit(1);
+      return submission?.notes ?? [];
+    },
+    saveNotes: async (id, notes) => {
+      await db
+        .update(endgameSubmissions)
+        .set({ notes })
+        .where(eq(endgameSubmissions.id, id));
+    },
+  });
 
   revalidatePath(`/rubgram/admin/${sid}`);
 }
 
 export async function discordCall(id: string) {
-  if (!(await adminCheck())) throw "Unauthorized";
+  await requireAdmin(getAdminActor());
 
   return await fetch(DISCORD_WEBHOOK_URL, {
     method: "POST",
@@ -522,7 +558,7 @@ export async function discordCall(id: string) {
 }
 
 export async function debugUploadSlip(sid: string, image: File) {
-  if (!(await adminCheck())) throw "Unauthorized";
+  await requireAdmin(getAdminActor());
 
   const arrayBuffer = await image.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);

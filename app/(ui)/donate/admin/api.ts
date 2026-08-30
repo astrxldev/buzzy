@@ -7,85 +7,81 @@ import { donations, settings } from "@/lib/db/schema";
 import { sse } from "@/lib/db/sse-endpoints";
 import { getPostHogClient } from "@/lib/posthog-server";
 import { fileToDataUrl } from "@/lib/utils";
+import {
+  getDonationImage,
+  publishTestPopup,
+  reloadDonationWidget,
+  resendDonationPopup,
+  resetDonationGoal,
+} from "./service";
+
+function commonDependencies() {
+  return {
+    isAdmin: adminCheck,
+    capture: (
+      event: Parameters<ReturnType<typeof getPostHogClient>["capture"]>[0],
+    ) => getPostHogClient().capture(event),
+    publish: (event: "update" | "ping" | "refresh", data: unknown) => {
+      if (event === "update") return sse.donate.pub(event, data as null);
+      if (event === "refresh") return sse.donate.pub(event, data as null);
+      return sse.donate.pub(
+        event,
+        data as Parameters<typeof sse.donate.pub<"ping">>[1],
+      );
+    },
+  };
+}
 
 export async function resetGoal() {
-  if (!(await adminCheck())) throw new Error("Unauthorized");
-
-  getPostHogClient().capture({
-    distinctId: "admin",
-    event: "donation_admin_goal_reset",
+  return resetDonationGoal({
+    ...commonDependencies(),
+    now: () => new Date(),
+    async resetGoal(at) {
+      await db
+        .insert(settings)
+        .values({ donateGoalStarting: at })
+        .onConflictDoUpdate({
+          target: settings.id,
+          set: { donateGoalStarting: at },
+        });
+    },
   });
-
-  await db
-    .insert(settings)
-    .values({ donateGoalStarting: new Date() })
-    .onConflictDoUpdate({
-      target: settings.id,
-      set: { donateGoalStarting: new Date() },
-    });
-
-  sse.donate.pub("update", null);
 }
 
 export async function testPopup() {
-  if (!(await adminCheck())) throw new Error("Unauthorized");
-
-  getPostHogClient().capture({
-    distinctId: "admin",
-    event: "donation_admin_test_popup",
-  });
-
-  sse.donate.pub("ping", {
-    id: "test",
-    name: "Mr. Buzz",
-    message: "นี่คือข้อความทดสอบโดเนท",
-    amount: 67,
-  });
+  return publishTestPopup(commonDependencies());
 }
 
 export async function reloadWidget() {
-  if (!(await adminCheck())) throw new Error("Unauthorized");
-
-  getPostHogClient().capture({
-    distinctId: "admin",
-    event: "donation_admin_widget_reload",
-  });
-
-  sse.donate.pub("refresh", null);
+  return reloadDonationWidget(commonDependencies());
 }
 
 export async function resendPopup(id: string) {
-  if (!(await adminCheck())) throw new Error("Unauthorized");
-  const [sub] = await db
-    .update(donations)
-    .set({ sent: false })
-    .where(eq(donations.id, id))
-    .returning();
-  if (!sub) throw new Error("not found");
-
-  getPostHogClient().capture({
-    distinctId: "admin",
-    event: "donation_admin_resend",
-    properties: { id },
-  });
-
-  sse.donate.pub("ping", {
-    ...sub,
-    message: sub.message ?? "",
-    image: sub.image
-      ? await fileToDataUrl(new File([Buffer.from(sub.image)], "abc.jpeg"))
-      : undefined,
+  return resendDonationPopup(id, {
+    ...commonDependencies(),
+    async resetSent(donationId) {
+      const [donation] = await db
+        .update(donations)
+        .set({ sent: false })
+        .where(eq(donations.id, donationId))
+        .returning();
+      return donation;
+    },
+    imageToDataUrl: (image) =>
+      fileToDataUrl(new File([Buffer.from(image)], "abc.jpeg")),
   });
 }
 
 export async function getImage(id: string) {
-  if (!(await adminCheck())) throw new Error("Unauthorized");
-  const [sub] = await db
-    .select({ image: donations.image })
-    .from(donations)
-    .where(eq(donations.id, id));
-  if (!sub) throw new Error("not found");
-  if (!sub.image) throw new Error("no image");
-
-  return new Blob([Buffer.from(sub.image)], { type: "image/jpeg" });
+  const image = await getDonationImage(id, {
+    isAdmin: adminCheck,
+    async findImage(donationId) {
+      const [donation] = await db
+        .select({ image: donations.image })
+        .from(donations)
+        .where(eq(donations.id, donationId));
+      return donation?.image;
+    },
+  });
+  return new Blob([Buffer.from(image)], { type: "image/jpeg" });
 }

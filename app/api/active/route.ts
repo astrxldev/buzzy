@@ -1,27 +1,15 @@
 import { sse } from "@/lib/db/sse-endpoints";
+import { createActiveHandler } from "./handler";
 
 const version = Bun.file(".version");
 
-export async function GET(req: Request) {
-  if (process.env.ENVIRONMENT === "development")
-    return sse.active.stream({
-      motd: {
-        data: "DEV",
-        event: "version",
-      },
-      signal: req.signal,
-    });
-  if (!(await version.exists())) await version.write(crypto.randomUUID());
-  let ver = await version.text();
-  if (!ver) {
-    ver = crypto.randomUUID();
-    await version.write(crypto.randomUUID());
-  }
-  return sse.active.stream({
-    motd: {
-      data: ver,
-      event: "version",
-    },
-    signal: req.signal,
-  });
-}
+export const GET = createActiveHandler({
+  file: version,
+  randomUUID: crypto.randomUUID,
+  isDevelopment: () => process.env.ENVIRONMENT === "development",
+  stream: (options) => {
+    const response = sse.active.stream(options);
+    if (!response) throw new Error("SSE is unavailable");
+    return response;
+  },
+});

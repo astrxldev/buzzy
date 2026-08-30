@@ -34,23 +34,22 @@ export default function () {
   }
 
   async function ping(data: DonateData) {
+    const credential = new URLSearchParams(location.search).get("key");
     setCurrent(data);
     const { name, amount, message } = data;
-    markRunning(data.id);
+    await markRunning(data.id, credential);
     console.log("Requesting TTS");
     const tts = new Audio(
       `/api/tts?message=${encodeURIComponent(`"${name} โดเนทมา ${amount} บาท.. ${message}"`)}&key=${new URLSearchParams(location.search).get("key")}`,
     );
     tts.load();
     console.log("Waiting for response");
-    const ttsAvailable = await new Promise(
-      (r) => (
-        (tts.onloadeddata = () => r(true)),
-        (tts.onerror = () => r(false)),
-        // longest and most complex text takes at most a minute and a half to generate
-        setTimeout(() => r(false), 120000)
-      ),
-    );
+    const ttsAvailable = await new Promise((resolve) => {
+      tts.onloadeddata = () => resolve(true);
+      tts.onerror = () => resolve(false);
+      // longest and most complex text takes at most a minute and a half to generate
+      setTimeout(() => resolve(false), 120000);
+    });
     if (!ttsAvailable)
       posthog.capture("donation_widget_tts_failed", { amount: data.amount });
     console.log("Transitioning in");
@@ -71,7 +70,7 @@ export default function () {
     tts.play();
     if (ttsAvailable) await new Promise((r) => (tts.onended = r));
     console.log("Done");
-    markDone(data.id);
+    await markDone(data.id, credential);
     posthog.capture("donation_widget_animation_end", {
       amount: data.amount,
       tts_available: ttsAvailable,
@@ -85,6 +84,8 @@ export default function () {
 
   const { name, amount, message, image } = current ?? {};
 
+  // The subscription is recreated when failure state changes; enqueue uses refs for its queue.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: enqueue intentionally follows the active subscription
   useEffect(() => {
     const pendingHeartbeat: Record<number, (v?: unknown) => void> = {};
     const { clean } = sse.donate.subMany({
@@ -96,12 +97,13 @@ export default function () {
 
     const interval = setInterval(async () => {
       const tag = Math.floor(Math.random() * 1000);
-      const promise = new Promise(
-        (r, j) => ((pendingHeartbeat[tag] = r), setTimeout(j, 30000)),
-      );
+      const promise = new Promise((resolve, reject) => {
+        pendingHeartbeat[tag] = resolve;
+        setTimeout(reject, 30000);
+      });
       try {
         const res = await fetch(
-          `/api/donate/hb?tag=${tag}${failed > 6 ? "&resume=true" : ""}`,
+          `/api/donate/hb?tag=${tag}${failed > 6 ? "&resume=true" : ""}&key=${encodeURIComponent(new URLSearchParams(location.search).get("key") ?? "")}`,
           {
             method: "PATCH",
             signal: AbortSignal.timeout(15000),
@@ -208,6 +210,8 @@ export default function () {
           </div>
         )}
       </AnimatePresence>
+      {/* Sound effect has no spoken content to caption. */}
+      {/* biome-ignore lint/a11y/useMediaCaption: non-speech notification sound */}
       <audio src="/assets/donate-sfx.wav" ref={sfx} preload="auto" />
       <VersionCheck headless />
     </>

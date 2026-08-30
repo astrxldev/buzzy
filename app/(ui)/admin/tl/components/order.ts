@@ -24,11 +24,43 @@ export function midpointOrder(prev?: number, next?: number) {
   return middle;
 }
 
-export function normalizedOrders(ids: string[]) {
+export function normalizedOrders(ids: readonly string[]) {
   return ids.map((id, index) => ({
     id,
     order: (index + 1) * ORDER_STEP,
   }));
+}
+
+export type OrderItem = { id: string; order: number };
+
+export function plannedOrderUpdates(
+  items: OrderItem[],
+  ids: readonly string[],
+  activeId: string,
+  staleMessage: string,
+) {
+  const currentIds = items.map(({ id }) => id);
+  const uniqueIds = new Set(ids);
+  if (
+    ids.length === 0 ||
+    uniqueIds.size !== ids.length ||
+    currentIds.length !== ids.length ||
+    currentIds.some((id) => !uniqueIds.has(id))
+  ) {
+    throw new Error(staleMessage);
+  }
+
+  const index = ids.indexOf(activeId);
+  if (index === -1) throw new Error("Moved item is missing.");
+
+  const byId = new Map(items.map((item) => [item.id, item]));
+  const previous = index > 0 ? byId.get(ids[index - 1]) : undefined;
+  const next = index < ids.length - 1 ? byId.get(ids[index + 1]) : undefined;
+  const nextOrder = midpointOrder(previous?.order, next?.order);
+
+  return nextOrder == null
+    ? normalizedOrders(ids)
+    : [{ id: activeId, order: nextOrder }];
 }
 
 function arrayMove<T>(arr: T[], oldIndex: number, newIndex: number) {

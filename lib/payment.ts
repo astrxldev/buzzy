@@ -1,19 +1,25 @@
 import type { SlipokResponse } from "@/app/(ui)/rubgram/api";
 
-const { SLIPOK_API_URL, SLIPOK_API_KEY } = process.env as Record<
-  string,
-  string
->;
+type CheckSlipDependencies = {
+  fetch?: typeof fetch;
+  apiUrl?: string;
+  apiKey?: string;
+};
 
 export async function checkSlip(
   buffer: Buffer<ArrayBuffer>,
   type: string,
   amount: number,
+  dependencies: CheckSlipDependencies = {},
 ): Promise<SlipokResponse> {
-  const response = await fetch(SLIPOK_API_URL, {
+  const apiUrl = dependencies.apiUrl ?? process.env.SLIPOK_API_URL;
+  if (!apiUrl) throw new Error("SLIPOK_API_URL is not configured");
+
+  const response = await (dependencies.fetch ?? fetch)(apiUrl, {
     method: "POST",
     headers: {
-      "x-authorization": SLIPOK_API_KEY,
+      "x-authorization":
+        dependencies.apiKey ?? process.env.SLIPOK_API_KEY ?? "",
     },
     body: (() => {
       const formData = new FormData();

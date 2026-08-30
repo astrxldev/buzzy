@@ -1,13 +1,22 @@
 "use server";
 
 import { fetch, randomUUIDv7 } from "bun";
-import { and, eq, inArray, isNotNull, lt, not, or, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, lt, not, sql } from "drizzle-orm";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import z from "zod";
+import {
+  type CdnReference,
+  cdnifyService,
+  checkCdnRefsService,
+  deleteCdnService,
+  getAmberVhService,
+  setArtifactLimitService,
+  setTierlistPlacementsService,
+  setTierlistStateService,
+  submitArtifactService,
+} from "./api-services";
 import { adminCheck } from "./auth";
-import { uidRegex } from "./const";
 import { db } from "./db";
 import { redis } from "./db/redis";
 import { cdnReferences } from "./db/references";
@@ -39,105 +48,76 @@ export async function getArtifactConfig() {
   return { locked: false, limit: -1, enka: false, ...art, ...glob };
 }
 
-const ArtifactSubmission = (editToken?: string) =>
-  z.object(
-    {
-      name: z.string().max(64, "ชื่อยาวเกินไป ต้องไม่เกิน 64 ตัวอักษร"),
-      uid: z
-        .string()
-        .regex(uidRegex, "UID ไม่ถูกต้อง ต้องเป็นเลข 9 หรือ 10 หลัก เท่านั้น")
-        .refine(
-          (uid) =>
-            db
-              .select()
-              .from(submissions)
-              .where(
-                and(
-                  eq(submissions.uid, uid),
-                  editToken
-                    ? not(eq(submissions.editToken, editToken))
-                    : undefined,
-                ),
-              )
-              .limit(1)
-              .then((r) => !r.length),
-          "คุณลงทะเบียนไปแล้ว",
-        ),
-      character: z.string().refine(
-        (char) =>
-          db
-            .select()
-            .from(characters)
-            .where(eq(characters.name, char))
-            .limit(1)
-            .then((r) => !!r.length),
-        "ไม่พบตัวละครที่เลือก",
-      ),
-      comment: z
-        .string()
-        .max(1024, "ข้อความเพิ่มเติมยาวเกินไป ต้องไม่เกิน 1024 ตัวอักษร"),
-    },
-    "กรุณากรอกข้อมูลให้ครบถ้วน",
-  );
-
 export async function submitArtifact(
   formData: FormData,
   edit?: { sub: string; token: string },
 ) {
-  const config = await getArtifactConfig();
-  if (config.locked) return "ปิดรับลงทะเบียนชั่วคราว เนื่องจากมีผู้ลงจำนวนมาก";
-  const count = await db
-    .select({ a: sql`NULL` })
-    .from(submissions)
-    .where(isNotNull(submissions.queue))
-    .then((e) => e.length);
-  if (config.limit !== -1 && count >= config.limit)
-    return `คิวลงทะเบียนเต็มแล้ว (${config.limit} ครั้ง)`;
-  const { success, data, error } = await ArtifactSubmission(
-    edit?.token,
-  ).safeParseAsync(Object.fromEntries(formData.entries()));
-  if (!success) return z.prettifyError(error);
-  if (edit) {
-    const [existing] = await db
-      .delete(submissions)
-      .where(
-        and(
-          eq(submissions.id, edit.sub),
-          eq(submissions.editToken, edit.token),
-          lt(submissions.edits, 5),
-          not(submissions.checked),
-        ),
-      )
-      .returning();
-
-    if (!existing) return "คิวนี้แก้ไม่ได้แล้ว";
-
-    const [queue] = await db
-      .insert(submissions)
-      .values({
-        ...data,
-        char: data.character,
-        queue: existing.queue,
-        edits: existing.edits + 1,
-        editToken: randomUUIDv7(),
-      })
-      .returning({ queue: submissions.queue, id: submissions.id });
-    // clear card cache
-    await db.delete(cards).where(eq(cards.submission, queue.id));
-    revalidatePath("/artifact/admin");
-    sse.artifact.pub("update", { type: "submit" });
-    return queue;
-  }
-  const [queue] = await db
-    .insert(submissions)
-    .values({
-      ...data,
-      char: data.character,
-    })
-    .returning({ queue: submissions.queue, id: submissions.id });
-  revalidatePath("/artifact/admin");
-  sse.artifact.pub("update", { type: "submit" });
-  return queue;
+  return submitArtifactService(Object.fromEntries(formData.entries()), edit, {
+    getConfig: getArtifactConfig,
+    countQueued: () =>
+      db
+        .select({ a: sql`NULL` })
+        .from(submissions)
+        .where(isNotNull(submissions.queue))
+        .then((rows) => rows.length),
+    uidExists: (uid, excludeEditToken) =>
+      db
+        .select()
+        .from(submissions)
+        .where(
+          and(
+            eq(submissions.uid, uid),
+            excludeEditToken
+              ? not(eq(submissions.editToken, excludeEditToken))
+              : undefined,
+          ),
+        )
+        .limit(1)
+        .then((rows) => !!rows.length),
+    characterExists: (character) =>
+      db
+        .select()
+        .from(characters)
+        .where(eq(characters.name, character))
+        .limit(1)
+        .then((rows) => !!rows.length),
+    insert: async (data) => {
+      const { character, ...submission } = data;
+      const [queue] = await db
+        .insert(submissions)
+        .values({ ...submission, char: character })
+        .returning({ queue: submissions.queue, id: submissions.id });
+      return queue;
+    },
+    replace: (edit, data, editToken) =>
+      db.transaction(async (tx) => {
+        const { character, ...submission } = data;
+        const [queue] = await tx
+          .update(submissions)
+          .set({
+            ...submission,
+            char: character,
+            edits: sql`${submissions.edits} + 1`,
+            editToken,
+          })
+          .where(
+            and(
+              eq(submissions.id, edit.sub),
+              eq(submissions.editToken, edit.token),
+              lt(submissions.edits, 5),
+              not(submissions.checked),
+            ),
+          )
+          .returning({ queue: submissions.queue, id: submissions.id });
+        if (queue) await tx.delete(cards).where(eq(cards.submission, queue.id));
+        return queue;
+      }),
+    createEditToken: randomUUIDv7,
+    afterSubmit: () => {
+      revalidatePath("/artifact/admin");
+      sse.artifact.pub("update", { type: "submit" });
+    },
+  });
 }
 
 export async function getCardStatus(submissionId: string) {
@@ -205,26 +185,25 @@ export async function toggleLock() {
 }
 
 export async function setLimit(limit: number) {
-  if (!(await adminCheck())) throw "Unauthorized";
-
-  if (
-    (
-      await db
+  return setArtifactLimitService(limit, {
+    adminCheck,
+    persist: async (value) => {
+      const updated = await db
         .update(artifactSettings)
-        .set({
-          limit,
-        })
-        .returning({ id: artifactSettings.id })
-    ).length === 0
-  )
-    await db.insert(artifactSettings).values({ limit });
-  revalidatePath("/artifact/admin");
-  revalidatePath("/artifact");
-
-  sse.artifact.pub("update", { type: "setLimit" });
-  await actionLog(
-    `Set artifact submit limit to ${limit < 0 ? "unlimited" : limit}`,
-  );
+        .set({ limit: value })
+        .returning({ id: artifactSettings.id });
+      if (!updated.length)
+        await db.insert(artifactSettings).values({ limit: value });
+    },
+    afterSet: async (value) => {
+      revalidatePath("/artifact/admin");
+      revalidatePath("/artifact");
+      sse.artifact.pub("update", { type: "setLimit" });
+      await actionLog(
+        `Set artifact submit limit to ${value < 0 ? "unlimited" : value}`,
+      );
+    },
+  });
 }
 
 export async function wipe() {
@@ -261,85 +240,89 @@ export async function revalidateCard(sub: string) {
 export async function tlState(
   data: Partial<typeof tierlistStates.$inferInsert>,
 ) {
-  if (!(await adminCheck())) throw "Unauthorized";
-  const [existing] = await db
-    .select()
-    .from(tierlistStates)
-    .where(
-      or(
-        eq(tierlistStates.uuid, `${data.uuid}`),
-        and(
-          eq(tierlistStates.ref, `${data.ref}`),
-          eq(tierlistStates.list, `${data.list}`),
-        ),
-      ),
-    );
-  if (existing)
-    await db
-      .update(tierlistStates)
-      .set(data)
-      .where(eq(tierlistStates.uuid, existing.uuid));
-  else
-    await db
-      .insert(tierlistStates)
-      .values(data as typeof tierlistStates.$inferInsert);
-  const list = data.list || existing?.list;
-  const states = await db
-    .select()
-    .from(tierlistStates)
-    .where(eq(tierlistStates.list, list));
-
-  revalidatePath(`/api/tl/${list}/states`);
-
-  await actionLog(`Updated a state in tierlist ${list}`, data);
-  tlSse(list).pub("update_states", states);
+  return setTierlistStateService(data, {
+    adminCheck,
+    find: async (identifier) => {
+      const [existing] = await db
+        .select()
+        .from(tierlistStates)
+        .where(
+          "uuid" in identifier
+            ? eq(tierlistStates.uuid, identifier.uuid)
+            : and(
+                eq(tierlistStates.ref, identifier.ref),
+                eq(tierlistStates.list, identifier.list),
+              ),
+        );
+      return existing;
+    },
+    update: async (uuid, state) => {
+      await db
+        .update(tierlistStates)
+        .set(state)
+        .where(eq(tierlistStates.uuid, uuid));
+    },
+    insert: async (state) => {
+      await db.insert(tierlistStates).values(state);
+    },
+    getStates: (list) =>
+      db.select().from(tierlistStates).where(eq(tierlistStates.list, list)),
+    afterSet: async (list, states, state) => {
+      revalidatePath(`/api/tl/${list}/states`);
+      await actionLog(`Updated a state in tierlist ${list}`, state);
+      tlSse(list).pub("update_states", states);
+    },
+  });
 }
 
 export async function tlPlacements(
   list: string,
   placements: Record<string, string[]>,
 ) {
-  if (!(await adminCheck())) throw "Unauthorized";
-
-  const { untiered: _, ...placementObj } = placements;
-
-  await db
-    .update(tierlistVersions)
-    .set({
-      placements: placementObj,
-    })
-    .where(eq(tierlistVersions.id, list));
-
-  revalidatePath(`/api/tl/${list}`);
-
-  await actionLog(`Updated a placement in tierlist ${list}`);
-  tlSse(list).pub("update_placements", placements);
+  return setTierlistPlacementsService(list, placements, {
+    adminCheck,
+    persist: async (version, value) => {
+      await db
+        .update(tierlistVersions)
+        .set({ placements: value })
+        .where(eq(tierlistVersions.id, version));
+    },
+    afterSet: async (version, value) => {
+      revalidatePath(`/api/tl/${version}`);
+      await actionLog(`Updated a placement in tierlist ${version}`);
+      tlSse(version).pub("update_placements", value);
+    },
+  });
 }
 
 export async function cdnDelete(ids: string[], force = false) {
-  let deleted = 0;
-
-  if (force) await db.delete(cdn).where(inArray(cdn.id, ids));
-  else
-    return await db.transaction(async (tx) => {
-      for (const id of ids) {
-        const refs = await checkCdnRefs(id, tx);
-        if (refs.length) {
-          revalidatePath("/cdn/admin");
-          if (deleted)
-            await actionLog(
-              `Deleted ${deleted}/${ids.length}(Incomplete) files`,
-              ids.slice(0, deleted),
-            );
-          return { id, refs };
-        }
-        await tx.delete(cdn).where(eq(cdn.id, id));
-        deleted++;
-      }
+  type CdnTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+  return deleteCdnService<CdnTransaction>(ids, force, {
+    adminCheck,
+    transaction: (callback) => db.transaction(callback),
+    findRefs: (id, tx) =>
+      tx
+        .select()
+        .from(cdnReferences)
+        .where(eq(cdnReferences.cdn, id))
+        .then((rows) => rows as unknown as CdnReference[]),
+    deleteOne: async (id, tx) => {
+      await tx.delete(cdn).where(eq(cdn.id, id));
+    },
+    deleteMany: async (values) => {
+      if (values.length) await db.delete(cdn).where(inArray(cdn.id, values));
+    },
+    afterDelete: async (deleted, values, incomplete) => {
       revalidatePath("/cdn/admin");
-
-      await actionLog(`Deleted ${deleted} files`, ids);
-    });
+      if (deleted || !incomplete)
+        await actionLog(
+          incomplete
+            ? `Deleted ${deleted}/${values.length}(Incomplete) files`
+            : `Deleted ${deleted} files`,
+          incomplete ? values.slice(0, deleted) : values,
+        );
+    },
+  });
 }
 
 export async function checkCdnRefs(
@@ -347,13 +330,13 @@ export async function checkCdnRefs(
   // biome-ignore lint/suspicious/noExplicitAny: type parameters
   tx: PgDatabase<any, any, any> = db,
 ): Promise<string[]> {
-  return typeof id === "string"
-    ? tx
-        .select()
-        .from(cdnReferences)
-        .where(eq(cdnReferences.cdn, id))
-        .then((r) => r.map((ref) => `${id}=>${ref.table}#${ref.id}`))
-    : Promise.all(id.map((v) => checkCdnRefs(v, tx))).then((a) => a.flat());
+  return checkCdnRefsService(id, (value) =>
+    tx
+      .select()
+      .from(cdnReferences)
+      .where(eq(cdnReferences.cdn, value))
+      .then((rows) => rows as unknown as CdnReference[]),
+  );
 }
 
 export async function cdnify(
@@ -363,22 +346,23 @@ export async function cdnify(
 ) {
   const { tx = db, name = data instanceof File ? (data as File).name : null } =
     config;
-  const [{ id }] = await tx
-    .insert(cdn)
-    .values({
-      name: name,
-      data: Buffer.from(await data.arrayBuffer()),
-      size: `${data.size}`,
-      type: data.type,
-    })
-    .returning({ id: cdn.id });
-
-  await actionLog(`File uploaded: ${name || `[${id}]`} (${b2s(data.size)})`);
-
-  try {
-    revalidatePath("/admin/cdn");
-  } catch {}
-  return id;
+  return cdnifyService(data, name, {
+    insert: async (value) => {
+      const [{ id }] = await tx
+        .insert(cdn)
+        .values(value)
+        .returning({ id: cdn.id });
+      return id;
+    },
+    afterUpload: async (id, uploadName, size) => {
+      await actionLog(
+        `File uploaded: ${uploadName || `[${id}]`} (${b2s(size)})`,
+      );
+      try {
+        revalidatePath("/admin/cdn");
+      } catch {}
+    },
+  });
 }
 
 export async function actionLog(text: string, details?: unknown) {
@@ -409,24 +393,14 @@ export async function actionLog(text: string, details?: unknown) {
 }
 
 export async function getAmberVh() {
-  try {
-    const cached = await redis?.get("amber:vh");
-    if (cached) return cached;
-  } catch {}
-
-  const Schema = z.object({
-    response: z.number().positive(),
-    data: z.object({
-      vh: z.string().max(10),
-    }),
+  return getAmberVhService({
+    getCached: async () => redis?.get("amber:vh"),
+    fetchVersion: () =>
+      fetch("https://gi.yatta.moe/api/v2/static/version").then((response) =>
+        response.json(),
+      ),
+    setCached: async (vh) => {
+      await redis?.setex("amber:vh", 86400, vh);
+    },
   });
-  const {
-    data: { vh },
-  } = Schema.parse(
-    await fetch("https://gi.yatta.moe/api/v2/static/version").then((e) =>
-      e.json(),
-    ),
-  );
-  queueMicrotask(() => redis?.setex("amber:vh", 86400, vh));
-  return vh;
 }

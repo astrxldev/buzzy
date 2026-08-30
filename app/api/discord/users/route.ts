@@ -1,5 +1,4 @@
 import { getDiscordUsers } from "./api";
+import { createDiscordUsersHandler } from "./handler";
 
-export async function GET() {
-  return Response.json(await getDiscordUsers());
-}
+export const GET = createDiscordUsersHandler(getDiscordUsers);

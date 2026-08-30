@@ -1,126 +1,49 @@
+import { sql } from "drizzle-orm";
 import { youtubeCache } from "@/lib/adaptive-cache";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { redis } from "@/lib/db/redis";
-import { env } from "bun";
-import { sql } from "drizzle-orm";
-import type { NextRequest } from "next/server";
+import { createDebugHandler } from "./handler";
 
-async function probe(name: string, fn: () => Promise<unknown>) {
-  const started = performance.now();
+const timeoutMs = 5_000;
 
-  try {
-    const result = await fn();
-
-    return {
-      name,
-      ok: true,
-      latencyMs: performance.now() - started,
-      result,
-    };
-  } catch (error) {
-    return {
-      name,
-      ok: false,
-      latencyMs: performance.now() - started,
-      error:
-        error instanceof Error
-          ? {
-              name: error.name,
-              message: error.message,
-              stack: error.stack,
-              cause: error.cause,
-            }
-          : error,
-    };
-  }
-}
-
-export async function GET(request: NextRequest) {
-  try {
-    if (!(await adminCheck())) {
-      return new Response("Unauthorized", { status: 401 });
-    }
-  } catch {
-    // idiomatic fallback
-    // even though this is extremely risky, we need it
-    console.error("/api/debug AUTH CHECK ERROR");
-    // use REDIS_URL which only I can memorize as the password,
-    // or IF THAT fails too, use a static string, which shouldn't ever happen
-    if (
-      request.nextUrl.searchParams.get("pass") !==
-      (env.REDIS_URL || "absolute_solver")
-    )
-      return new Response("Unauthorized (Fallback)", { status: 401 });
-  }
-
-  const probes = await Promise.all([
-    probe("redis", async () => {
-      const started = performance.now();
-      const result = await withTimeout(redis!.ping(), 5000);
-
-      return {
-        result,
-        latencyMs: performance.now() - started,
-      };
-    }),
-
-    probe("postgres", async () => {
-      const started = performance.now();
-      const result = await withTimeout(db.execute(sql`SELECT 1`), 5000);
-
-      return {
-        result,
-        latencyMs: performance.now() - started,
-      };
-    }),
-  ]);
-
-  return Response.json({
-    timestamp: new Date().toISOString(),
-
-    runtime: safe({
-      bun: Bun.version,
-      node: process.version,
-      platform: process.platform,
-      arch: process.arch,
-      pid: process.pid,
-      uptime: process.uptime(),
-      cwd: process.cwd(),
-    }),
-
-    memory: process.memoryUsage(),
-
-    eventLoop: {
-      now: performance.now(),
+export const GET = createDebugHandler({
+  adminCheck,
+  runtime: () => ({
+    bun: Bun.version,
+    node: process.version,
+    platform: process.platform,
+    arch: process.arch,
+    uptime: process.uptime(),
+  }),
+  memoryUsage: () => process.memoryUsage(),
+  probes: [
+    {
+      name: "redis",
+      run: () => withTimeout(redis!.ping(), timeoutMs),
     },
-
-    request: {
-      url: request.url,
-      headers: safe(Object.fromEntries(request.headers)),
+    {
+      name: "postgres",
+      run: () => withTimeout(db.execute(sql`SELECT 1`), timeoutMs),
     },
-
-    ytCache: await probe("youtubeCache", async () => youtubeCache.debugStats()),
-
-    env,
-
-    probes,
-  });
-}
+    {
+      name: "youtubeCache",
+      run: () => withTimeout(youtubeCache.debugStats(), timeoutMs),
+    },
+  ],
+});
 
 async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error(`Timeout after ${ms}ms`)), ms),
-    ),
-  ]);
-}
+  let timeout: ReturnType<typeof setTimeout>;
 
-function safe(value: unknown) {
   try {
-    return JSON.parse(JSON.stringify(value));
-  } catch {
-    return String(value);
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timeout = setTimeout(() => reject(new Error("Probe timed out")), ms);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timeout!);
   }
 }

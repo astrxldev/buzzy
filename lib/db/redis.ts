@@ -1,5 +1,6 @@
 import ReconnectingEventSource from "reconnecting-eventsource";
 import type z from "zod";
+import { registerAbortCleanup } from "@/lib/abort";
 
 export const redis = typeof Bun !== "undefined" ? Bun.redis : null;
 
@@ -76,17 +77,22 @@ export class PubSubManager {
       write(p);
       resetTimer();
     };
+    let removeAbortListener = () => {};
+    let closed = false;
     const close = () => {
+      if (closed) return;
+      closed = true;
       console.log(` DSC ${topic}`);
 
       sub.unsubscribe(`${this.prefix}${topic}`, handler);
-      clearInterval(heartbeatTimeout);
+      clearTimeout(heartbeatTimeout);
       clearTimeout(timeout);
+      removeAbortListener();
     };
 
     resetTimer();
     sub.subscribe(`${this.prefix}${topic}`, handler);
-    signal?.addEventListener("abort", close, { once: true });
+    removeAbortListener = registerAbortCleanup(signal, close);
 
     if (Array.isArray(motd)) motd.map((m) => write(m));
     else if (motd) write(motd);

@@ -1,23 +1,12 @@
 import { getSessionCookie } from "better-auth/cookies";
 import { type NextRequest, NextResponse } from "next/server";
+import { createProxyHandler } from "@/lib/server-handlers";
 
-export async function proxy(request: NextRequest) {
-  const sessionCookie = getSessionCookie(request);
-
-  // THIS IS NOT SECURE!
-  // This is the recommended approach to optimistically redirect users
-  // We recommend handling auth checks in each page/route
-  if (!sessionCookie) {
-    const url = new URL("/login", request.url);
-    url.searchParams.set(
-      "next",
-      request.nextUrl.pathname + request.nextUrl.search,
-    );
-    return NextResponse.redirect(url);
-  }
-
-  return NextResponse.next();
-}
+export const proxy = createProxyHandler<NextRequest>({
+  getSessionCookie,
+  redirect: NextResponse.redirect,
+  next: NextResponse.next,
+});
 
 export const config = {
   matcher: [

@@ -7,16 +7,23 @@ import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { guides } from "@/lib/db/schema";
 import { forceRefresh } from "../settings/api";
+import { hideGuideService } from "./service";
 
 export async function hideGuide(id: string) {
-  if (!(await adminCheck())) redirect("/login");
-  await db
-    .update(guides)
-    .set({
-      hidden: not(guides.hidden),
-    })
-    .where(eq(guides.id, id));
-
-  forceRefresh("/guide");
-  revalidatePath("/admin/guide");
+  return hideGuideService(id, {
+    adminCheck: async () => {
+      if (!(await adminCheck())) redirect("/login");
+      return true;
+    },
+    toggle: async (guideId) => {
+      await db
+        .update(guides)
+        .set({ hidden: not(guides.hidden) })
+        .where(eq(guides.id, guideId));
+    },
+    afterToggle: async () => {
+      await forceRefresh("/guide");
+      revalidatePath("/admin/guide");
+    },
+  });
 }

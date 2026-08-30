@@ -5,72 +5,31 @@ import Snowflake, { GatewayIntents } from "@sfjs/snowflake";
 import { forbidden } from "next/navigation";
 import { adminCheck } from "@/lib/auth";
 import { redis } from "@/lib/db/redis";
+import {
+  createDiscordMemberAddHandler,
+  createDiscordUsersService,
+  type DiscordUser,
+} from "./service";
 
 const bot = new Snowflake({
   token: env.DISCORD_BOT_TOKEN || "",
   intents: [GatewayIntents.GUILDS, GatewayIntents.GUILD_MEMBERS],
 });
 
-type User = {
-  nick: string | null;
-  user: {
-    global_name: string | null;
-    username: string;
-    id: string;
-  };
+const cache = {
+  getCached: () => redis!.get("userlist"),
+  setCached: (value: string) => redis!.set("userlist", value),
 };
 
-bot.on("guildMemberAdd", async (member: User) => {
-  const cached: { username: string; uid: string; display: string }[] =
-    JSON.parse((await redis!.get("userlist")) ?? "[]");
-  if (cached.some((m) => m.uid === member.user.id))
-    cached.push({
-      username: member.user.username,
-      display: member.nick ?? member.user.global_name ?? member.user.username,
-      uid: member.user.id,
-    });
-  redis!.set("userlist", JSON.stringify(cached));
-});
+bot.on("guildMemberAdd", createDiscordMemberAddHandler(cache));
 
-export async function getDiscordUsers() {
-  if (!(await adminCheck())) forbidden();
-  const members: { username: string; uid: string; display: string }[] = [];
-  let after = "0";
-
-  const cached = await redis!.get("userlist");
-  if (cached)
-    return JSON.parse(cached) as {
-      username: string;
-      uid: string;
-      display: string;
-    }[];
-
-  while (true) {
-    // fetch up to 1000 members after the last user id
-    const batch: User[] = await bot.guilds[env.DISCORD_GUILD_ID!].members({
+export const getDiscordUsers = createDiscordUsersService({
+  adminCheck,
+  forbidden,
+  ...cache,
+  getMembers: (after) =>
+    bot.guilds[env.DISCORD_GUILD_ID!].members({
       limit: 1000,
       after,
-    });
-
-    console.log(batch);
-    if (!batch.length) break;
-
-    members.push(
-      ...batch.map((e) => ({
-        username: e.user.username,
-        display: e.nick ?? e.user.global_name ?? e.user.username,
-        uid: e.user.id,
-      })),
-    );
-
-    // discord pagination cursor
-    after = batch[batch.length - 1].user.id;
-
-    // stop if this was the final page
-    if (batch.length < 1000) break;
-  }
-
-  redis!.set("userlist", JSON.stringify(members));
-
-  return members;
-}
+    }) as Promise<DiscordUser[]>,
+});

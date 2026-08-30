@@ -18,6 +18,15 @@ import {
   tierlistTiers,
   user,
 } from "@/lib/db/schema";
+import {
+  adminExists,
+  decideCardFailure,
+  decideRubgramWebhook,
+  getScheduleDelay,
+  isDatabaseSeeded,
+  parseSubscriberMessage,
+  shouldRunDatabaseSeed,
+} from "./logic";
 import { rubgramWebhookTemplate } from "./webhook";
 
 function logger(group: string) {
@@ -32,17 +41,8 @@ function logger(group: string) {
       console.error(prefix, ...args);
     },
     schedule(target: Date[] | number, callback: () => Promise<void> | void) {
-      let timeout: number;
       const now = Date.now();
-      // conv sec to milli
-      if (typeof target === "number") timeout = target * 1000;
-      // find nearest date, poll 60s if no date
-      else
-        timeout = target.length
-          ? target
-              .map((d) => d.getTime() - now)
-              .reduce((a, b) => Math.min(a, b), 3600000)
-          : 60000;
+      const timeout = getScheduleDelay(target, now);
       if (typeof target === "number" || target.length)
         console.log(
           prefix,
@@ -91,11 +91,11 @@ async function checkRubgramExpiration() {
 }
 
 async function seedDatabase() {
-  if (process.env.ENVIRONMENT !== "development") return;
+  if (!shouldRunDatabaseSeed(process.env.ENVIRONMENT)) return;
   const { log, error } = logger("seeding");
   try {
     const res = await db.select().from(artifactSettings);
-    if (res.length) return;
+    if (isDatabaseSeeded(res)) return;
   } catch {
     // schema isn't there yet
     error("Schema is not applied or not updated, skipping database seeding");
@@ -106,7 +106,8 @@ async function seedDatabase() {
     .select({ id: user.id })
     .from(user)
     .where(eq(user.email, "admin@dgnr.us"));
-  if (existing) log("Admin account already exist, skipping creation");
+  if (adminExists(existing))
+    log("Admin account already exist, skipping creation");
   else if (env.INITIAL_ADMIN_PWD) {
     const u = await auth.api.signUpEmail({
       body: {
@@ -252,17 +253,12 @@ async function cacheCards() {
   );
   if (!res.ok) {
     log(`Wasn't okay, queueing for retry.`);
-    let text = await res.text();
-    error(text.includes("502") ? "502" : text);
-    if (text === "The showcase for this UID is private")
-      text = "ผู้เล่นนี้ไม่มีโชว์เคส มองไม่เห็นตัวละครใดๆ";
-    else if (text === "Character not found in showcase")
-      text = "ตัวละครที่ผู้เล่นเลือก ไม่ได้อยู่ในโชว์เคส";
-    else if (text === "Invalid UID Provided")
-      text = "ผู้เล่นนี้ไม่มีอยู่จริง โดนแบนไปแล้วรีเปล่า";
-    else if (text.length > 2000 || res.status === 502)
-      text = "ไม่สามารถสร้างการ์ดได้ กำลังพยายามลองใหม่";
-    text = text.split("\n")[0];
+    const responseText = await res.text();
+    error(responseText.includes("502") ? "502" : responseText);
+    const { error: text, stopRetrying } = decideCardFailure(
+      responseText,
+      res.status,
+    );
     await db
       .insert(cards)
       .values({
@@ -273,10 +269,7 @@ async function cacheCards() {
       .onConflictDoUpdate({
         target: cards.submission,
         set: {
-          tries:
-            res.status === 400 || text === "ผู้เล่นนี้ไม่มีโชว์เคส มองไม่เห็นตัวละครใดๆ"
-              ? 21
-              : sql<number>`${cards.tries} + 1`,
+          tries: stopRetrying ? 21 : sql<number>`${cards.tries} + 1`,
           error: sql<string>`case when ${gt(cards.tries, 15)}
             then ${text.replace(" กำลังพยายามลองใหม่", "")}
             else ${text}
@@ -306,12 +299,13 @@ const redisSubscribers: Record<
   string,
   (payload: { data: unknown; event?: string }) => void
 > = {
-  "sse:rubgram": async ({ data, event }) => {
-    type RubgramEvent = { type: "submit" | "paid" | "cancel"; sub: string };
-    if (event !== "update") return;
-    const { type, sub } = data as RubgramEvent;
-    if (!(type === "submit" || type === "paid")) return;
-    if (!process.env.WEBHOOK_RUBGRAM_SUBMIT) return;
+  "sse:rubgram": async (message) => {
+    const event = decideRubgramWebhook(
+      message,
+      process.env.WEBHOOK_RUBGRAM_SUBMIT,
+    );
+    if (!event) return;
+    const { type, sub } = event;
     const body = rubgramWebhookTemplate(
       type,
       await db
@@ -346,7 +340,14 @@ seedDatabase();
 cacheCards();
 console.log("Tasks assigned");
 for (const [name, handler] of Object.entries(redisSubscribers))
-  redis.subscribe(name, (p) => handler(JSON.parse(p)));
+  redis.subscribe(name, (payload) => {
+    const message = parseSubscriberMessage(payload);
+    if (!message) {
+      console.error(`[redis:${name}] Ignoring malformed payload`);
+      return;
+    }
+    handler(message);
+  });
 
 process
   .addListener("uncaughtException", console.error)

@@ -1,10 +1,12 @@
 import { and, asc, not, sql } from "drizzle-orm";
 import type { NextRequest } from "next/server";
+import { requireWidgetCredential } from "@/app/(ui)/donate/service";
 import { db } from "@/lib/db";
 import { donations } from "@/lib/db/schema";
 import { sse } from "@/lib/db/sse-endpoints";
 import { getPostHogClient } from "@/lib/posthog-server";
 import { fileToDataUrl } from "@/lib/utils";
+import { createDonateHeartbeatHandler } from "./handler";
 
 async function runResume() {
   const [havent] = await db
@@ -35,18 +37,14 @@ async function runResume() {
   return result;
 }
 
-export async function PATCH(req: NextRequest) {
-  const tag = Number(req.nextUrl.searchParams.get("tag") ?? "abc");
-  const resume = req.nextUrl.searchParams.get("resume") === "true";
-  if (Number.isNaN(tag))
-    return Response.json({ error: "Invalid Tag" }, { status: 400 });
+const handler = createDonateHeartbeatHandler({
+  authorize: (credential) =>
+    requireWidgetCredential(credential, process.env.DONATE_WIDGET_KEY),
+  resumeDonation: runResume,
+  publishHeartbeat: (tag) => sse.donate.pub("heartbeat", tag),
+  queue: queueMicrotask,
+});
 
-  if (!resume) queueMicrotask(runResume);
-
-  sse.donate.pub("heartbeat", tag);
-  if (resume) {
-    const res = await runResume();
-    if (res) return Response.json(res, { status: 302 });
-  }
-  return Response.json({ success: true });
+export function PATCH(req: NextRequest) {
+  return handler(req);
 }

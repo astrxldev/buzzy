@@ -44,8 +44,8 @@ import {
   type getDiscordSession,
   type getEndgameConfig,
   type getUserSubmissions,
-  loginDiscord,
 } from "./api";
+import { loginDiscord } from "./discord-login";
 import { RulesDialog } from "./rules";
 
 export function WelcomeScreening({

@@ -1,45 +1,15 @@
+import { GoogleGenAI } from "@google/genai";
+import { env } from "bun";
 import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { redis as redisShared } from "@/lib/db/redis";
-import { GoogleGenAI } from "@google/genai";
-import { env } from "bun";
+import { createHealthHandler } from "./handler";
+
 const { DISCORD_BOT_TOKEN, GEMINI_TTS_API_KEY } = env as Record<string, string>;
 
 const redis = redisShared!;
 
 export const revalidate = 60;
-
-export async function GET() {
-  const red = await redis
-    .ping()
-    .then(() => true)
-    .catch(() => false);
-  const res = Object.fromEntries(
-    await Promise.all(
-      Object.entries(checks).map(
-        async ([k, v]) =>
-          [
-            k,
-            red
-              ? (await redis.exists(`health:${k}`))
-                ? (await redis.get(`health:${k}`)) === "ok"
-                : await v().then(async (r: any) => {
-                    const v = r instanceof Response ? r.ok : !!r;
-                    if (v) await redis.setex(`health:${k}`, 900, "ok");
-                    return v;
-                  })
-              : await v().then((r: any) =>
-                  r instanceof Response ? r.ok : !!r,
-                ),
-          ] as const,
-      ),
-    ),
-  );
-  return Response.json(
-    { red, ...res },
-    { status: res.database && red ? 200 : 201 },
-  );
-}
 
 const checks = {
   async database() {
@@ -76,8 +46,10 @@ const checks = {
     });
   },
   async tts() {
+    const apiKey = GEMINI_TTS_API_KEY?.split(",").find(Boolean);
+    if (!apiKey) return false;
     const client = new GoogleGenAI({
-      apiKey: GEMINI_TTS_API_KEY.split(",").pop(),
+      apiKey,
     });
     return client.models
       .list()
@@ -98,3 +70,5 @@ const checks = {
     });
   },
 } satisfies Record<string, () => Promise<Response | boolean>>;
+
+export const GET = createHealthHandler({ redis, checks });

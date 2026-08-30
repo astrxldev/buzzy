@@ -25,7 +25,31 @@ export type TierlistResolvedConfig = {
 
 type DbLike = Pick<typeof db, "select" | "update">;
 
-function normalizeSnapshot(
+type TierlistVersion = typeof tierlistVersions.$inferSelect;
+
+export type TierlistStore = {
+  findVersion(
+    typeId: string,
+    versionId: string,
+  ): Promise<TierlistVersion | null>;
+  listVersions(typeId: string): Promise<TierlistVersion[]>;
+  getType(typeId: string): Promise<typeof tierlistTypes.$inferSelect | null>;
+  listCharacterVersions(): Promise<
+    Pick<typeof versions.$inferSelect, "id" | "from">[]
+  >;
+  listCharacters(
+    versionIds: string[],
+  ): Promise<(typeof characters.$inferSelect)[]>;
+  listTiers(): Promise<(typeof tierlistTiers.$inferSelect)[]>;
+  listColumns(): Promise<(typeof tierlistColumns.$inferSelect)[]>;
+  listBadges(typeId: string): Promise<(typeof tierlistBadges.$inferSelect)[]>;
+  saveSnapshot(
+    versionId: string,
+    config: TierlistResolvedConfig,
+  ): Promise<void>;
+};
+
+export function normalizeTierlistSnapshot(
   config: TierlistResolvedConfig,
 ): TierlistResolvedConfig {
   return {
@@ -37,16 +61,21 @@ function normalizeSnapshot(
   };
 }
 
-async function resolveCharacterVersions(tx: DbLike, rootVersionId: string) {
-  const vers = await tx
-    .select({ id: versions.id, from: versions.from })
-    .from(versions);
+export function resolveCharacterVersionIds(
+  versionList: Pick<typeof versions.$inferSelect, "id" | "from">[],
+  rootVersionId: string,
+) {
   const ids: string[] = [];
+  const visited = new Set<string>();
   let cur: string | null = rootVersionId;
 
   while (cur) {
+    if (visited.has(cur)) {
+      throw new Error(`Character version ancestry cycle detected at ${cur}`);
+    }
+    visited.add(cur);
     ids.push(cur);
-    const found = vers.find((version) => version.id === cur);
+    const found = versionList.find((version) => version.id === cur);
     cur = found?.from ?? null;
   }
 
@@ -54,35 +83,22 @@ async function resolveCharacterVersions(tx: DbLike, rootVersionId: string) {
 }
 
 async function buildLiveTierlistConfig(
-  tx: DbLike,
-  version: typeof tierlistVersions.$inferSelect,
+  store: TierlistStore,
+  version: TierlistVersion,
 ) {
-  const [typeInfo] = await tx
-    .select()
-    .from(tierlistTypes)
-    .where(eq(tierlistTypes.id, version.type));
+  const typeInfo = await store.getType(version.type);
   if (!typeInfo) return null;
 
-  const ids = await resolveCharacterVersions(tx, version.from);
-  const chars =
-    ids.length > 0
-      ? await tx
-          .select()
-          .from(characters)
-          .where(inArray(characters.version, ids))
-          .orderBy(characters.order)
-      : ([] as (typeof characters.$inferSelect)[]);
+  const ids = resolveCharacterVersionIds(
+    await store.listCharacterVersions(),
+    version.from,
+  );
+  const chars = ids.length > 0 ? await store.listCharacters(ids) : [];
 
   const [tiers, columns, badgesList] = await Promise.all([
-    tx.select().from(tierlistTiers).orderBy(tierlistTiers.order),
-    tx.select().from(tierlistColumns).orderBy(tierlistColumns.order),
-    tx
-      .select()
-      .from(tierlistBadges)
-      .orderBy(tierlistBadges.order, tierlistBadges.id)
-      .where(
-        or(isNull(tierlistBadges.type), eq(tierlistBadges.type, version.type)),
-      ),
+    store.listTiers(),
+    store.listColumns(),
+    store.listBadges(version.type),
   ]);
 
   const badges = badgesList.map((badge) => ({
@@ -92,7 +108,7 @@ async function buildLiveTierlistConfig(
       .map((tier) => tier.id),
   }));
 
-  return normalizeSnapshot({
+  return normalizeTierlistSnapshot({
     type: typeInfo,
     version,
     tiers,
@@ -102,11 +118,14 @@ async function buildLiveTierlistConfig(
   });
 }
 
-function shouldSnapshot(config: TierlistResolvedConfig) {
-  const deprecatedAt = parseDate(config.version.deprecates);
+export function shouldSnapshotTierlist(
+  config: TierlistResolvedConfig,
+  now = Date.now(),
+) {
+  const deprecatedAt = parseTierlistDate(config.version.deprecates);
   const olderThanMonth =
     Number.isFinite(deprecatedAt) &&
-    deprecatedAt <= Date.now() - 30 * 24 * 60 * 60 * 1000;
+    deprecatedAt <= now - 30 * 24 * 60 * 60 * 1000;
 
   const placed = new Set(
     Object.values(config.version.placements)
@@ -120,7 +139,7 @@ function shouldSnapshot(config: TierlistResolvedConfig) {
   return olderThanMonth || allTiered;
 }
 
-function parseDate(value: string) {
+export function parseTierlistDate(value: string) {
   const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
   if (!match) return Number.NaN;
 
@@ -139,62 +158,124 @@ function parseDate(value: string) {
 }
 
 async function maybeSnapshotVersion(
-  tx: DbLike,
-  version: typeof tierlistVersions.$inferSelect,
+  store: TierlistStore,
+  version: TierlistVersion,
   config: TierlistResolvedConfig,
 ) {
-  if (version.snapshot || !shouldSnapshot(config)) return config;
+  if (version.snapshot || !shouldSnapshotTierlist(config)) return config;
 
-  await tx
-    .update(tierlistVersions)
-    .set({ snapshot: config })
-    .where(eq(tierlistVersions.id, version.id));
+  await store.saveSnapshot(version.id, config);
 
   return config;
 }
 
-export async function getTierlistConfig(typeId: string, versionId: string) {
-  return db.transaction(async (tx) => {
-    const [version] = await tx
-      .select()
-      .from(tierlistVersions)
-      .where(
-        and(
-          eq(tierlistVersions.type, typeId),
-          eq(tierlistVersions.id, versionId),
-        ),
-      );
-    if (!version) return null;
-
-    if (version.snapshot) {
-      return normalizeSnapshot(version.snapshot as TierlistResolvedConfig);
-    }
-
-    const config = await buildLiveTierlistConfig(tx, version);
-    if (!config) return null;
-
-    return maybeSnapshotVersion(tx, version, config);
-  });
-}
-
-export async function syncTierlistSnapshots(typeId: string) {
-  return db.transaction(async (tx) => {
-    const versionList = await tx
-      .select()
-      .from(tierlistVersions)
-      .where(eq(tierlistVersions.type, typeId))
-      .orderBy(tierlistVersions.order, tierlistVersions.id);
-
-    for (const version of versionList) {
-      if (version.snapshot) continue;
-
-      const config = await buildLiveTierlistConfig(tx, version);
-      if (!config || !shouldSnapshot(config)) continue;
-
+function createTierlistStore(tx: DbLike): TierlistStore {
+  return {
+    async findVersion(typeId, versionId) {
+      const [version] = await tx
+        .select()
+        .from(tierlistVersions)
+        .where(
+          and(
+            eq(tierlistVersions.type, typeId),
+            eq(tierlistVersions.id, versionId),
+          ),
+        );
+      return version ?? null;
+    },
+    async listVersions(typeId) {
+      return tx
+        .select()
+        .from(tierlistVersions)
+        .where(eq(tierlistVersions.type, typeId))
+        .orderBy(tierlistVersions.order, tierlistVersions.id);
+    },
+    async getType(typeId) {
+      const [typeInfo] = await tx
+        .select()
+        .from(tierlistTypes)
+        .where(eq(tierlistTypes.id, typeId));
+      return typeInfo ?? null;
+    },
+    async listCharacterVersions() {
+      return tx.select({ id: versions.id, from: versions.from }).from(versions);
+    },
+    async listCharacters(versionIds) {
+      if (versionIds.length === 0) return [];
+      return tx
+        .select()
+        .from(characters)
+        .where(inArray(characters.version, versionIds))
+        .orderBy(characters.order);
+    },
+    async listTiers() {
+      return tx.select().from(tierlistTiers).orderBy(tierlistTiers.order);
+    },
+    async listColumns() {
+      return tx.select().from(tierlistColumns).orderBy(tierlistColumns.order);
+    },
+    async listBadges(typeId) {
+      return tx
+        .select()
+        .from(tierlistBadges)
+        .orderBy(tierlistBadges.order, tierlistBadges.id)
+        .where(
+          or(isNull(tierlistBadges.type), eq(tierlistBadges.type, typeId)),
+        );
+    },
+    async saveSnapshot(versionId, config) {
       await tx
         .update(tierlistVersions)
         .set({ snapshot: config })
-        .where(eq(tierlistVersions.id, version.id));
-    }
+        .where(eq(tierlistVersions.id, versionId));
+    },
+  };
+}
+
+export async function getTierlistConfigFromStore(
+  store: TierlistStore,
+  typeId: string,
+  versionId: string,
+) {
+  const version = await store.findVersion(typeId, versionId);
+  if (!version) return null;
+
+  if (version.snapshot) {
+    return normalizeTierlistSnapshot(
+      version.snapshot as TierlistResolvedConfig,
+    );
+  }
+
+  const config = await buildLiveTierlistConfig(store, version);
+  if (!config) return null;
+
+  return maybeSnapshotVersion(store, version, config);
+}
+
+export async function getTierlistConfig(typeId: string, versionId: string) {
+  return db.transaction((tx) =>
+    getTierlistConfigFromStore(createTierlistStore(tx), typeId, versionId),
+  );
+}
+
+export async function syncTierlistSnapshotsFromStore(
+  store: TierlistStore,
+  typeId: string,
+) {
+  const versionList = await store.listVersions(typeId);
+
+  for (const version of versionList) {
+    if (version.snapshot) continue;
+
+    const config = await buildLiveTierlistConfig(store, version);
+    if (!config || !shouldSnapshotTierlist(config)) continue;
+
+    await store.saveSnapshot(version.id, config);
+  }
+}
+
+export async function syncTierlistSnapshots(typeId: string) {
+  return db.transaction((tx) => {
+    return syncTierlistSnapshotsFromStore(createTierlistStore(tx), typeId);
   });
 }

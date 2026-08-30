@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { uuidv7 } from "uuidv7";
 import { db } from "$/db"; // your drizzle instance
 import * as schema from "$/db/schema";
+import { checkAdmin } from "./auth-check";
 import { redis } from "./db/redis";
 
 export const auth = betterAuth({
@@ -31,28 +32,24 @@ export const auth = betterAuth({
 export async function adminCheck() {
   "use server";
 
-  if (env.NO_AUTH_CHECK)
-    return {
+  let requestHeaders: Awaited<ReturnType<typeof headers>> | undefined;
+  const getHeaders = async () => (requestHeaders ??= await headers());
+
+  return checkAdmin({
+    noAuthCheck: env.NO_AUTH_CHECK,
+    bypassUser: {
       email: "bypass@localhost",
       name: "me@dgnr.us",
-    } satisfies Partial<typeof auth.$Infer.Session.user>;
-
-  const head = await headers();
-
-  const internalAuth = head.get("X-Internal-Auth");
-  if (internalAuth && (await redis!.get(`internalToken:${internalAuth}`)))
-    return {
+    },
+    internalUser: {
       email: "internal@localhost",
       name: "me@dgnr.us",
-    } satisfies Partial<typeof auth.$Infer.Session.user>;
-
-  const session = await auth.api.getSession({
-    headers: head,
+    },
+    getInternalAuth: async () => (await getHeaders()).get("X-Internal-Auth"),
+    getInternalToken: (token) => redis!.get(`internalToken:${token}`),
+    getSession: async () =>
+      auth.api.getSession({ headers: await getHeaders() }),
   });
-
-  // console.log(session);
-
-  return session?.user.role === "admin" ? session.user : null;
 }
 
 export async function issueInternalToken() {

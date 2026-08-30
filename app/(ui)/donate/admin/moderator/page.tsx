@@ -1,16 +1,16 @@
-import { adminCheck } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { DonateWatcher } from "../client";
-import { db } from "@/lib/db";
-import { donations } from "@/lib/db/schema";
 import { desc } from "drizzle-orm";
 import { Gavel, ImageOff, RefreshCw } from "lucide-react";
-import { fileToDataUrl } from "@/lib/utils";
+import { redirect } from "next/navigation";
+import { markDone } from "@/app/widget/donate/api";
+import { ActionButton } from "@/components/action-button";
 import Image from "@/components/image";
 import { Spinner } from "@/components/ui/spinner";
-import { ActionButton } from "@/components/action-button";
+import { adminCheck } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { donations } from "@/lib/db/schema";
+import { fileToDataUrl } from "@/lib/utils";
 import { reloadWidget } from "../api";
-import { markDone } from "@/app/widget/donate/api";
+import { DonateWatcher } from "../client";
 import { ClientTracker, PIP, VolumeChanger } from "./client";
 
 export default async function DonateModeratorPage() {
@@ -26,8 +26,9 @@ export default async function DonateModeratorPage() {
 
   async function reject() {
     "use server";
-    markDone(sub.id);
-    reloadWidget();
+    if (!(await adminCheck())) throw new Error("Unauthorized");
+    await markDone(sub.id, process.env.DONATE_WIDGET_KEY ?? null);
+    await reloadWidget();
   }
 
   return (
@@ -37,9 +38,11 @@ export default async function DonateModeratorPage() {
         {sub.image ? (
           <div className="relative flex aspect-square w-full max-w-100 items-center justify-center overflow-hidden rounded-lg border bg-black/50">
             <Image
-              src={await fileToDataUrl(
-                new File([Buffer.from(sub.image)], "abc.jpeg"),
-              )}
+              src={
+                await fileToDataUrl(
+                  new File([Buffer.from(sub.image)], "abc.jpeg"),
+                )
+              }
               alt="donation image"
               fill
               className="z-10"
