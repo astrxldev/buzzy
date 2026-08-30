@@ -26,6 +26,6 @@ export async function retrieveMobileUpload(accessKey: TAccessKey) {
       type: object.type!,
     }),
   );
-  fd.set("name", object.name!)
+  fd.set("name", object.name!);
   return fd;
 }

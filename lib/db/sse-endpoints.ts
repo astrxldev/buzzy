@@ -56,7 +56,7 @@ export const sse = sseEndpointMap({
   },
   slip_sync: {
     complete: z.custom<TTrackingKey>(),
-    connected: z.custom<TTrackingKey>()
+    connected: z.custom<TTrackingKey>(),
   },
 });
 export const adminSseList: (keyof typeof sse)[] = ["log"];
