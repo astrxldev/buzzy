@@ -1,3 +1,3 @@
-export default async function () {
+export async function GET() {
   return Response.redirect("https://guide.sudloh.com/");
 }
