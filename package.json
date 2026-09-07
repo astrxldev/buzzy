@@ -56,7 +56,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@sfjs/snowflake": "^0.1.5",
     "@tanstack/react-table": "^8.21.3",
-    "@tanstack/react-virtual": "^3.14.2",
+    "@tanstack/react-virtual": "^3.14.10",
     "@types/bun": "^1.3.14",
     "auto-text-size": "^0.2.3",
     "babel-plugin-react-compiler": "^1.0.0",
