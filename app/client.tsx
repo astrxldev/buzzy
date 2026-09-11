@@ -79,6 +79,11 @@ export function VersionCheck({ headless = false }: { headless?: boolean }) {
           window.location.hash = "#update";
           queueMicrotask(() => window.location.reload());
         },
+        announcement({ message, prefix, severity }) {
+          if (headless) return;
+          if (prefix && !window.location.pathname.startsWith(prefix)) return;
+          return toast[severity](message, { duration: Infinity });
+        },
       },
       {
         endpoint: "/api/active",

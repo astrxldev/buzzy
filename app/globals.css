@@ -236,3 +236,12 @@ img {
     opacity: 1;
   }
 }
+
+[contenteditable="true"]:empty::before {
+  content: attr(data-placeholder);
+  color: #a0a0a0;
+  pointer-events: none;
+}
+[contenteditable="true"]:focus {
+  outline: none;
+}

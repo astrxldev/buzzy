@@ -69,7 +69,7 @@
 
 ### Resource Limits
 
-- **app**: 2 replicas, limits 1 CPU / 1 Gi memory, requests 500m / 512 Mi. Liveness probe on `/api/health` (60s interval). Readiness probe same.
+- **app**: 2 replicas, limits 1 CPU / 1 Gi memory, requests 500m / 512 Mi. Liveness probe on `/api/health` (60s interval, 30s timeout). Readiness probe uses a 15s timeout.
 - **backend**: 1 replica, limits 1 CPU / 512 Mi memory, requests 250m / 256 Mi. No probes (no HTTP endpoint).
 - **db-migrate Job**: limits 1 CPU / 512 Mi, requests 250m / 256 Mi.
 

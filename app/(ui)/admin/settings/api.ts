@@ -7,6 +7,7 @@ import { settings } from "@/lib/db/schema";
 import { adminCheck } from "@/lib/auth";
 import { sse } from "@/lib/db/sse-endpoints";
 import { syncAmber as syncAmberRaw } from "@/util/sync";
+import type { ToastType } from "@/components/fake-toast";
 
 export async function getSettongs() {
   if (!(await adminCheck())) throw "Unauthorized";
@@ -55,4 +56,20 @@ export async function toggleDonatePaymentMethod(
     .onConflictDoUpdate({ target: settings.id, set: { [method]: state } });
 
   await actionLog("Changed a settings", { [method]: state });
+}
+
+export async function broadcastMessage(
+  prefix: string,
+  value: string,
+  type: ToastType,
+) {
+  "use server";
+
+  sse.active.pub("announcement", {
+    severity: type,
+    message: value,
+    prefix,
+  });
+
+  await actionLog("Broadcasted message", { prefix, value, type });
 }

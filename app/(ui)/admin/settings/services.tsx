@@ -2,7 +2,9 @@
 
 import { Bomb, FolderSync } from "lucide-react";
 import { useState } from "react";
+import { ActionButton } from "@/components/action-button";
 import { CdnChooser } from "@/components/chooser";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { shared } from "@/lib/comms";
 import {
@@ -11,9 +13,8 @@ import {
   toggleDonatePaymentMethod,
   toggleEnka,
 } from "./api";
+import { Broadcaster } from "./broadcaster";
 import { Section } from "./page";
-import { ActionButton } from "@/components/action-button";
-import { Input } from "@/components/ui/input";
 
 export function SettingsServicesSection({
   enka: enkaInitial,
@@ -108,6 +109,7 @@ export function SettingsServicesSection({
         {syncResult && (
           <pre className="h-full rounded border bg-muted p-2">{syncResult}</pre>
         )}
+        <Broadcaster />
       </div>
     </Section>
   );
