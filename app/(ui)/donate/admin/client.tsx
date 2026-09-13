@@ -48,6 +48,30 @@ function colorFor(date: Date) {
   return lePalette[seed % lePalette.length];
 }
 
+function ArtifactCheckbox({
+  checked,
+  submissionId,
+}: {
+  checked: boolean;
+  submissionId: string;
+}) {
+  const [value, setValue] = useState(checked);
+
+  useEffect(() => {
+    setValue(checked);
+  }, [checked]);
+
+  return (
+    <Checkbox
+      checked={value}
+      onCheckedChange={async (checked) => {
+        setValue(checked === true);
+        await toggleCheck(submissionId);
+      }}
+    />
+  );
+}
+
 const columns: ColumnDef<
   typeof donations.$inferSelect & {
     checked: boolean | null;
@@ -78,9 +102,9 @@ const columns: ColumnDef<
       const { artifactSubmissionId, checked } = row.row.original;
       if (checked === null || !artifactSubmissionId) return;
       return (
-        <Checkbox
+        <ArtifactCheckbox
           checked={checked}
-          onCheckedChange={() => toggleCheck(artifactSubmissionId)}
+          submissionId={artifactSubmissionId}
         />
       );
     },
