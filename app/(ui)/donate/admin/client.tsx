@@ -35,6 +35,8 @@ import { lePalette } from "../../rubgram/admin/[id]/client";
 import { th } from "date-fns/locale";
 import TruemoneyIcon from "#/assets/tmn.webp";
 import Image from "@/components/image";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toggleCheck } from "@/lib/api";
 
 // directly adapted for date instead of UUID
 function colorFor(date: Date) {
@@ -46,7 +48,12 @@ function colorFor(date: Date) {
   return lePalette[seed % lePalette.length];
 }
 
-const columns: ColumnDef<typeof donations.$inferSelect>[] = [
+const columns: ColumnDef<
+  typeof donations.$inferSelect & {
+    checked: boolean | null;
+    artifactSubmissionId: string | null;
+  }
+>[] = [
   {
     accessorKey: "created",
     header: "",
@@ -63,6 +70,21 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
     meta: { className: "w-1 p-0 relative" },
   },
   { accessorKey: "name", header: "ชื่อ", meta: { className: "w-50 truncate" } },
+  {
+    accessorKey: "art_check",
+    header: "",
+    meta: { className: "w-6 truncate" },
+    cell(row) {
+      const { artifactSubmissionId, checked } = row.row.original;
+      if (checked === null || !artifactSubmissionId) return;
+      return (
+        <Checkbox
+          checked={checked}
+          onCheckedChange={() => toggleCheck(artifactSubmissionId)}
+        />
+      );
+    },
+  },
   {
     accessorFn: (row) => `${row.amount}฿`,
     header: "จำนวน",
@@ -274,7 +296,10 @@ export function DonateAdminPage({
   data,
   stats,
 }: {
-  data: (typeof donations.$inferSelect)[];
+  data: (typeof donations.$inferSelect & {
+    checked: boolean | null;
+    artifactSubmissionId: string | null;
+  })[];
   stats: {
     total: number;
     today: number;
