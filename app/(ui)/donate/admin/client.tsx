@@ -17,7 +17,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { type ComponentProps, useEffect, useRef, useState } from "react";
-import { useEllipsisVisible } from "react-hook-text-overflow";
 import { DataTable } from "@/components/tantable";
 import { SimpleTooltip } from "@/components/tooltip";
 import { Button } from "@/components/ui/button";
@@ -117,11 +116,22 @@ const columns: ColumnDef<
   {
     accessorKey: "message",
     cell(props) {
-      const [overflow, ref] = useEllipsisVisible();
-      return overflow ? (
-        <HoverCard openDelay={150} closeDelay={0}>
+      const [open, setOpen] = useState(false);
+      return (
+        <HoverCard
+          openDelay={150}
+          closeDelay={200}
+          open={open}
+          onOpenChange={(o) => o || setOpen(false)}
+        >
           <HoverCardTrigger>
-            <div ref={ref} className="truncate">
+            <div
+              className="truncate"
+              onContextMenu={(ev) => {
+                ev.preventDefault();
+                setOpen(true);
+              }}
+            >
               {props.row.original.message}
             </div>
           </HoverCardTrigger>
@@ -133,10 +143,6 @@ const columns: ColumnDef<
             </div>
           </HoverCardContent>
         </HoverCard>
-      ) : (
-        <div ref={ref} className="truncate">
-          {props.row.original.message}
-        </div>
       );
     },
     header: "ข้อความ",
