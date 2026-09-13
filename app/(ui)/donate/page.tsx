@@ -117,6 +117,14 @@ export default async function () {
     const ph = getPostHogClient();
     const distinctId = crypto.randomUUID();
 
+    if ($.message && $.artifact === "false") {
+      // @ts-expect-error
+      $.artifact = "true";
+      const match = $.message.match(/\b(?:[0-35-9]|18)\d{8}\b/);
+      // @ts-expect-error
+      if (match) $.uid = match[0];
+    }
+
     return await db.transaction(async (tx): Promise<FormSubmitResult> => {
       if ($.type === "pp") {
         const arrayBuffer = await $.slip.arrayBuffer();
