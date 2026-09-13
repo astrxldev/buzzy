@@ -40,6 +40,7 @@ import {
 import { ArtifactFormWrapper } from "./form";
 import { LiveButton } from "./live";
 import { RulesDialog } from "./rules";
+import { ActionButton } from "@/components/action-button";
 
 export const metadata: Metadata = {
   title: "เสือกไอดีชาวบ้าน",
@@ -257,9 +258,10 @@ export default async function ArtifactFormPage({
               {count} / {config.limit < 0 ? "∞" : config.limit} คิว
             </Kbd>
             <SimpleTooltip text="ส่งเลยจัฟลูกพี่">
-              <Button
+              <ActionButton
                 type="submit"
                 form="mainform"
+                action="provider"
                 disabled={
                   (!!q ||
                     config.locked ||
@@ -268,7 +270,7 @@ export default async function ArtifactFormPage({
                 }
               >
                 {editing ? <PencilIcon /> : <SendHorizonal />}
-              </Button>
+              </ActionButton>
             </SimpleTooltip>
           </div>
         </CardFooter>

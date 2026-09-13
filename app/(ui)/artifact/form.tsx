@@ -61,8 +61,7 @@ export function ArtifactFormWrapper({
         } catch {}
         router.refresh();
       })
-      .catch((e) => toast.error(`${e.message || e}`))
-      .finally(callback.current);
+      .catch((e) => toast.error(`${e.message || e}`));
   }
   return (
     <ActionSubmitContext.Provider value={context}>
@@ -70,7 +69,9 @@ export function ArtifactFormWrapper({
         {...props}
         onSubmit={(e) => {
           e.preventDefault();
-          submit(new FormData(e.target as HTMLFormElement));
+          submit(new FormData(e.target as HTMLFormElement)).finally(
+            callback.current,
+          );
         }}
       />
     </ActionSubmitContext.Provider>

@@ -32,12 +32,12 @@ export function ActionButton({
       disabled={state > 0}
       {...props}
       onClick={async (ev) => {
-        onClick?.(ev);
         setState(1);
+        if (action === "provider")
+          await new Promise<void>(ctx.listenForComplete);
+        onClick?.(ev);
         try {
-          if (action === "provider")
-            await new Promise<void>(ctx.listenForComplete);
-          else await action();
+          if (action !== "provider") await action();
           setState(2);
         } catch (e) {
           toast.error("An error occured!");
