@@ -153,12 +153,13 @@ export default async function ArtifactFormPage({
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <ArtifactFormWrapper
-            id="mainform"
-            edit={q ? { token: q.editToken, sub: q.id } : undefined}
-            enka={config.enka}
-          >
+        <ArtifactFormWrapper
+          id="mainform"
+          edit={q ? { token: q.editToken, sub: q.id } : undefined}
+          enka={config.enka}
+          className="contents"
+        >
+          <CardContent>
             <div className="flex flex-col gap-3">
               <div className="grid gap-2">
                 <Label htmlFor="name">ชื่อ*</Label>
@@ -222,58 +223,58 @@ export default async function ArtifactFormPage({
                 />
               </div>
             </div>
-          </ArtifactFormWrapper>
-        </CardContent>
-        <CardFooter className="flex justify-between gap-2">
-          <div className="flex gap-2">
-            <SimpleTooltip text="โดเนทลัดคิว ขั้นต่ำ 10 บาท">
-              <Link href="/donate" target="_blank" rel="noreferrer">
-                <Button variant="outline" type="button">
-                  <CircleDollarSign />
-                </Button>
-              </Link>
-            </SimpleTooltip>
-            <Tooltip>
-              <RulesDialog>
-                <TooltipTrigger asChild>
-                  <Button variant="destructive" type="button">
-                    <BookAlert />
+          </CardContent>
+          <CardFooter className="flex justify-between gap-2">
+            <div className="flex gap-2">
+              <SimpleTooltip text="โดเนทลัดคิว ขั้นต่ำ 10 บาท">
+                <Link href="/donate" target="_blank" rel="noreferrer">
+                  <Button variant="outline" type="button">
+                    <CircleDollarSign />
                   </Button>
-                </TooltipTrigger>
-              </RulesDialog>
-              <TooltipContent>อ่านกฏการลงคิว</TooltipContent>
-            </Tooltip>
-            {editing ? (
-              <Button variant="destructive" asChild>
-                <Link href="?">ยกเลิก</Link>
-              </Button>
-            ) : (
-              <Suspense>
-                <LiveButton />
-              </Suspense>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <Kbd>
-              {count} / {config.limit < 0 ? "∞" : config.limit} คิว
-            </Kbd>
-            <SimpleTooltip text="ส่งเลยจัฟลูกพี่">
-              <ActionButton
-                type="submit"
-                form="mainform"
-                action="provider"
-                disabled={
-                  (!!q ||
-                    config.locked ||
-                    (config.limit >= 0 && count >= config.limit)) &&
-                  !editing
-                }
-              >
-                {editing ? <PencilIcon /> : <SendHorizonal />}
-              </ActionButton>
-            </SimpleTooltip>
-          </div>
-        </CardFooter>
+                </Link>
+              </SimpleTooltip>
+              <Tooltip>
+                <RulesDialog>
+                  <TooltipTrigger asChild>
+                    <Button variant="destructive" type="button">
+                      <BookAlert />
+                    </Button>
+                  </TooltipTrigger>
+                </RulesDialog>
+                <TooltipContent>อ่านกฏการลงคิว</TooltipContent>
+              </Tooltip>
+              {editing ? (
+                <Button variant="destructive" asChild>
+                  <Link href="?">ยกเลิก</Link>
+                </Button>
+              ) : (
+                <Suspense>
+                  <LiveButton />
+                </Suspense>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Kbd>
+                {count} / {config.limit < 0 ? "∞" : config.limit} คิว
+              </Kbd>
+              <SimpleTooltip text="ส่งเลยจัฟลูกพี่">
+                <ActionButton
+                  type="submit"
+                  form="mainform"
+                  action="provider"
+                  disabled={
+                    (!!q ||
+                      config.locked ||
+                      (config.limit >= 0 && count >= config.limit)) &&
+                    !editing
+                  }
+                >
+                  {editing ? <PencilIcon /> : <SendHorizonal />}
+                </ActionButton>
+              </SimpleTooltip>
+            </div>
+          </CardFooter>
+        </ArtifactFormWrapper>
       </Card>
       {sid && !q && <ClearCookie />}
       <WarningDialog />

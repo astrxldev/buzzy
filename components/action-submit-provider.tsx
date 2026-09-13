@@ -8,6 +8,7 @@ export type ActionSubmitContextData = {
 
 export const ActionSubmitContext = createContext<ActionSubmitContextData>({
   listenForComplete: (r) => {
+    console.warn("submit context not caught");
     r();
   },
 });
