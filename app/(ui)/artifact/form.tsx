@@ -2,10 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { checkEnkaStatus, submitArtifact } from "@/lib/api";
 import { shared } from "@/lib/comms";
+import type { ActionSubmitContextData } from "@/components/action-submit-provider";
+import { ActionSubmitContext } from "@/components/action-submit-provider";
 
 export function ArtifactFormWrapper({
   edit,
@@ -20,6 +22,12 @@ export function ArtifactFormWrapper({
   const [, setWarningUid] = shared.state("warning.uid");
   const [warningSrc, setWarningSrc] = shared.state("warning.src");
   const [dataHold, setDataHold] = useState<FormData>();
+  const callback = useRef<() => void>(() => {});
+  const context: ActionSubmitContextData = {
+    listenForComplete(complete) {
+      callback.current = complete;
+    },
+  };
 
   // Disable warning for 60 seconds
   shared.signal(
@@ -53,15 +61,18 @@ export function ArtifactFormWrapper({
         } catch {}
         router.refresh();
       })
-      .catch((e) => toast.error(`${e.message || e}`));
+      .catch((e) => toast.error(`${e.message || e}`))
+      .finally(callback.current);
   }
   return (
-    <form
-      {...props}
-      onSubmit={(e) => {
-        e.preventDefault();
-        submit(new FormData(e.target as HTMLFormElement));
-      }}
-    />
+    <ActionSubmitContext.Provider value={context}>
+      <form
+        {...props}
+        onSubmit={(e) => {
+          e.preventDefault();
+          submit(new FormData(e.target as HTMLFormElement));
+        }}
+      />
+    </ActionSubmitContext.Provider>
   );
 }
