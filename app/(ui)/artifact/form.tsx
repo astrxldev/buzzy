@@ -42,7 +42,7 @@ export function ArtifactFormWrapper({
         (data.get("character") ?? "").toString(),
       );
       console.log(data.get("uid"), data.get("character"), check);
-      setWarningUid(data.get("character")?.toString());
+      setWarningUid(data.get("uid")?.toString());
       setWarningSrc("submit");
       setDataHold(data);
       if (check) return setDialog(check);
@@ -69,8 +69,8 @@ export function ArtifactFormWrapper({
         {...props}
         onSubmit={(e) => {
           e.preventDefault();
-          submit(new FormData(e.target as HTMLFormElement)).finally(
-            callback.current,
+          submit(new FormData(e.target as HTMLFormElement)).finally(() =>
+            setTimeout(callback.current, 1000),
           );
         }}
       />
