@@ -12,7 +12,7 @@ const { DONATE_WIDGET_KEY, GEMINI_TTS_API_KEY } = process.env as Record<
 
 const MODELS = [
   "gemini-2.5-flash-preview-tts",
-  "gemini-3.1-flash-preview-tts",
+  // "gemini-3.1-flash-preview-tts",
 ] as const;
 const API_KEYS = GEMINI_TTS_API_KEY.split(",")
   .map((k) => k.trim())

@@ -18,6 +18,7 @@ import { actionLog } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { guides } from "@/lib/db/schema";
+import { forceRefresh } from "../../../settings/api";
 
 export default async function GuideEditPage({
   params,
@@ -66,6 +67,7 @@ export default async function GuideEditPage({
     await actionLog(`Updated guide ${data.name}`, data);
 
     revalidatePath("/admin/guide");
+    forceRefresh("/guide");
     return { toast: "Guide updated successfully.", close: true };
   }
 
@@ -82,8 +84,8 @@ export default async function GuideEditPage({
   }
 
   return (
-    <ModalBase title="Add Guide">
-      <FormProvider id="guide-create" onSubmit={submit} values={guide}>
+    <ModalBase title={`Edit Guide ${guide.name}`}>
+      <FormProvider id={`guide-${id}`} onSubmit={submit} values={guide}>
         <FormRow>
           <FormInput name="name" label="Name">
             <Input placeholder="[6.3] Flins Guide" autoFocus />

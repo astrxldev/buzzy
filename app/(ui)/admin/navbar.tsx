@@ -2,7 +2,6 @@
 
 import {
   AlignJustify,
-  Badge,
   BadgeDollarSign,
   BitcoinIcon,
   ChevronRight,
@@ -10,10 +9,10 @@ import {
   Compass,
   ExternalLink,
   Form,
-  GitGraph,
   Grid3x3,
   Home,
   IdCard,
+  Layout,
   List,
   Package,
   Plus,
@@ -158,11 +157,17 @@ function DropdownMenu({
 
 export function AdminNavbar({
   adminShortcuts,
+  tierlistTypes,
   tierlistVersions,
 }: {
   adminShortcuts: {
     name: string;
     url: string;
+  }[];
+  tierlistTypes: {
+    id: string;
+    name: string;
+    count: number;
   }[];
   tierlistVersions: {
     id: string;
@@ -181,9 +186,12 @@ export function AdminNavbar({
       name: "Tierlist",
       icon: Table,
       sub: [
-        { name: "Versions", icon: GitGraph, href: "/admin/tl/ver" },
-        { name: "Badges", icon: Badge, href: "/admin/tl/badges" },
         { name: "Layout", icon: Columns3Cog, href: "/admin/tl/layout" },
+        ...tierlistTypes.map((type) => ({
+          name: type.name,
+          icon: Layout,
+          href: `/admin/tl/${type.id}`,
+        })),
       ],
     },
     { name: "Guide", icon: Compass, href: "/admin/guide" },

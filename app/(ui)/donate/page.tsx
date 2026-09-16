@@ -1,9 +1,8 @@
 import { sql } from "drizzle-orm";
-import { QrCodeIcon, SendIcon } from "lucide-react";
+import { CircleX, QrCodeIcon, SendIcon } from "lucide-react";
 import type { Metadata } from "next";
 import z from "zod";
 import { th } from "zod/v4/locales";
-import PromptpayImage from "#/assets/promptpay.jpg";
 import TruemoneyIcon from "#/assets/tmn.webp";
 import DonateLogo from "#/logos/donate.webp";
 import Cropper from "@/components/cropper";
@@ -37,6 +36,7 @@ import {
 } from "../rubgram/admin/@modal/manual/client";
 import { DownloadButton } from "../rubgram/client";
 import Link from "next/link";
+import { DynamicPPQR } from "./ppqr";
 
 const { TMN_DEST_PHONE_NUM, SASTIFY_API_PRIVKEY } = process.env as Record<
   string,
@@ -116,6 +116,14 @@ export default async function () {
 
     const ph = getPostHogClient();
     const distinctId = crypto.randomUUID();
+
+    if ($.message && $.artifact === "false") {
+      // @ts-expect-error
+      $.artifact = "true";
+      const match = $.message.match(/\b(?:[0-35-9]|18)\d{8}\b/);
+      // @ts-expect-error
+      if (match) $.uid = match[0];
+    }
 
     return await db.transaction(async (tx): Promise<FormSubmitResult> => {
       if ($.type === "pp") {
@@ -205,6 +213,7 @@ export default async function () {
           amount,
           message,
           image: downscaled,
+          method: $.type,
           uid: $.artifact === "true" ? $.uid : null,
           // dont send on screen if less than 10
           sent: $.amount < 10,
@@ -322,6 +331,15 @@ export default async function () {
               {
                 label: (
                   <span className="flex items-center gap-1">
+                    <QrCodeIcon className="size-6" />
+                    PromptPay
+                  </span>
+                ),
+                value: "pp",
+              },
+              {
+                label: (
+                  <span className="flex items-center gap-1">
                     <Image
                       src={TruemoneyIcon}
                       alt="Truemoney"
@@ -332,46 +350,49 @@ export default async function () {
                 ),
                 value: "tmn",
               },
-              {
-                label: (
-                  <span className="flex items-center gap-1">
-                    <QrCodeIcon className="size-6" />
-                    PromptPay
-                  </span>
-                ),
-                value: "pp",
-              },
             ]}
           >
             <FormChoice value="tmn">
-              <FormInput name="link" label="ลิ้งค์อั่งเปา">
-                <Input placeholder="https://gift.truemoney.com/campaign/?v=..." />
-              </FormInput>
+              {artifactConfig.donateTruemoney ? (
+                <FormInput name="link" label="ลิ้งค์อั่งเปา">
+                  <Input placeholder="https://gift.truemoney.com/campaign/?v=..." />
+                </FormInput>
+              ) : (
+                <div className="flex gap-2">
+                  <CircleX className="text-red-500" />{" "}
+                  ขณะนี้การโอนเงินด้วยทรูมันนี่ใช้ไม่ได้ชั่วคราว
+                </div>
+              )}
             </FormChoice>
             <FormChoice value="pp">
-              <div className="flex w-full gap-2 pb-2">
-                <Image
-                  src={PromptpayImage}
-                  alt="Promptpay QR Code"
-                  className="max-w-32 shrink-0 rounded"
-                />
-                <div className="relative flex shrink-0 flex-col">
-                  <span className="text-sm font-bold">บัญชีรับโดเนท</span>
-                  <span className="text-sm text-muted-foreground">
-                    ผู้รับ: นาย พัชรพล พลพันธุ์
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    บัญชี: xxx-x-x8666-x
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    เลขที่อ้างอิง: 004999056945438
-                  </span>
-                  <DownloadButton />
+              {artifactConfig.donatePromptpay ? (
+                <>
+                  <div className="flex w-full gap-2 pb-2">
+                    <DynamicPPQR />
+                    <div className="relative flex shrink-0 flex-col">
+                      <span className="text-sm font-bold">บัญชีรับโดเนท</span>
+                      <span className="text-sm text-muted-foreground">
+                        ผู้รับ: นาย พัชรพล พลพันธุ์
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        บัญชี: xxx-x-x8666-x
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        เลขที่อ้างอิง: 004999056945438
+                      </span>
+                      <DownloadButton />
+                    </div>
+                  </div>
+                  <FormInput name="slip">
+                    <SlipUpload />
+                  </FormInput>
+                </>
+              ) : (
+                <div className="flex gap-2">
+                  <CircleX className="text-red-500" />{" "}
+                  ขณะนี้การโอนเงินด้วยพร้อมเพย์ใช้ไม่ได้ชั่วคราว
                 </div>
-              </div>
-              <FormInput name="slip">
-                <SlipUpload />
-              </FormInput>
+              )}
             </FormChoice>
           </FormTab>
           <div className="flex justify-end">

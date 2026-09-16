@@ -1,7 +1,7 @@
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { sse } from "@/lib/db/sse-endpoints";
-
-export const revalidate = 900;
+import { youtubeCache } from "@/lib/adaptive-cache";
 
 export type YoutubeLiveInfo =
   | {
@@ -54,27 +54,34 @@ type APISearchResponse = {
   items: APISearchResource[];
 };
 
-export async function GET() {
+var lastResponse: Response;
+
+export async function GET(req: NextRequest) {
+  if (req.nextUrl.searchParams.has("last") && lastResponse)
+    return lastResponse.clone();
+
   const channelId = process.env.YOUTUBE_CHANNEL_ID;
   const apiKey = process.env.YOUTUBE_API_KEY;
 
   if (!apiKey || !channelId) return NextResponse.json<YoutubeLiveInfo>("none");
 
-  const response = await fetch(
+  const response = await youtubeCache.fetch(
     `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&eventType=live&type=video&maxResults=1&key=${apiKey}`,
     {
-      next: {
-        revalidate: 900, // refresh every 15 minutes
-      },
-      cache: "force-cache",
+      cache: "no-store",
     },
   );
 
-  if (!response.ok)
-    throw new Error(`YouTube API error: ${response.statusText}`);
+  if (!response.ok) {
+    console.error(`YouTube API error: ${response.statusText}`);
+    return NextResponse.json("none");
+  }
 
   const data: APISearchResponse = await response.json();
-  if (data.items.length <= 0) return NextResponse.json<YoutubeLiveInfo>("none");
+
+  if (data.items.length === 0)
+    return NextResponse.json<YoutubeLiveInfo>("none");
+
   const live = data.items[0];
 
   const res: YoutubeLiveInfo = {
@@ -85,5 +92,10 @@ export async function GET() {
   };
 
   sse.active.pub("live", res);
-  return NextResponse.json<YoutubeLiveInfo>(res);
+
+  return (lastResponse = NextResponse.json<YoutubeLiveInfo>(res));
 }
+
+export const POST = GET;
+
+export const revalidate = 60;

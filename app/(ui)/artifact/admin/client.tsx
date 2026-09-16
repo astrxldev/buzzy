@@ -126,8 +126,8 @@ export function SidebarLink({
           <Checkbox
             className="mr-2"
             checked={checked}
-            onCheckedChange={async () => {
-              setChecked((x) => !x);
+            onCheckedChange={async (checked) => {
+              setChecked(checked === true);
               await toggleCheck(submission.id);
               stop();
             }}

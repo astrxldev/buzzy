@@ -11,12 +11,12 @@ import {
   ImageIcon,
   MessageCircleWarning,
   WalletIcon,
+  QrCodeIcon as PromptpayIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { type ComponentProps, useEffect, useRef, useState } from "react";
-import { useEllipsisVisible } from "react-hook-text-overflow";
 import { DataTable } from "@/components/tantable";
 import { SimpleTooltip } from "@/components/tooltip";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,10 @@ import { getImage, reloadWidget, resendPopup, testPopup } from "./api";
 import { formatDistanceToNow } from "date-fns";
 import { lePalette } from "../../rubgram/admin/[id]/client";
 import { th } from "date-fns/locale";
+import TruemoneyIcon from "#/assets/tmn.webp";
+import Image from "@/components/image";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toggleCheck } from "@/lib/api";
 
 // directly adapted for date instead of UUID
 function colorFor(date: Date) {
@@ -43,7 +47,36 @@ function colorFor(date: Date) {
   return lePalette[seed % lePalette.length];
 }
 
-const columns: ColumnDef<typeof donations.$inferSelect>[] = [
+function ArtifactCheckbox({
+  checked,
+  submissionId,
+}: {
+  checked: boolean;
+  submissionId: string;
+}) {
+  const [value, setValue] = useState(checked);
+
+  useEffect(() => {
+    setValue(checked);
+  }, [checked]);
+
+  return (
+    <Checkbox
+      checked={value}
+      onCheckedChange={async (checked) => {
+        setValue(checked === true);
+        await toggleCheck(submissionId);
+      }}
+    />
+  );
+}
+
+const columns: ColumnDef<
+  typeof donations.$inferSelect & {
+    checked: boolean | null;
+    artifactSubmissionId: string | null;
+  }
+>[] = [
   {
     accessorKey: "created",
     header: "",
@@ -61,6 +94,21 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
   },
   { accessorKey: "name", header: "ชื่อ", meta: { className: "w-50 truncate" } },
   {
+    accessorKey: "art_check",
+    header: "",
+    meta: { className: "w-6 truncate" },
+    cell(row) {
+      const { artifactSubmissionId, checked } = row.row.original;
+      if (checked === null || !artifactSubmissionId) return;
+      return (
+        <ArtifactCheckbox
+          checked={checked}
+          submissionId={artifactSubmissionId}
+        />
+      );
+    },
+  },
+  {
     accessorFn: (row) => `${row.amount}฿`,
     header: "จำนวน",
     meta: { className: "w-24" },
@@ -68,11 +116,22 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
   {
     accessorKey: "message",
     cell(props) {
-      const [overflow, ref] = useEllipsisVisible();
-      return overflow ? (
-        <HoverCard openDelay={150} closeDelay={0}>
+      const [open, setOpen] = useState(false);
+      return (
+        <HoverCard
+          openDelay={150}
+          closeDelay={200}
+          open={open}
+          onOpenChange={(o) => o || setOpen(false)}
+        >
           <HoverCardTrigger>
-            <div ref={ref} className="truncate">
+            <div
+              className="truncate"
+              onContextMenu={(ev) => {
+                ev.preventDefault();
+                setOpen(true);
+              }}
+            >
               {props.row.original.message}
             </div>
           </HoverCardTrigger>
@@ -84,10 +143,6 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
             </div>
           </HoverCardContent>
         </HoverCard>
-      ) : (
-        <div ref={ref} className="truncate">
-          {props.row.original.message}
-        </div>
       );
     },
     header: "ข้อความ",
@@ -135,7 +190,7 @@ const columns: ColumnDef<typeof donations.$inferSelect>[] = [
     cell(row) {
       return <ActionRow row={row.row.original} filler />;
     },
-    meta: { className: "w-27 p-0" },
+    meta: { className: "w-36 p-0" },
   },
 ];
 
@@ -148,6 +203,15 @@ function ActionRow({
 }) {
   return (
     <div className="flex gap-1">
+      {row.method === "pp" ? (
+        <PromptpayIcon className="size-8 p-1 opacity-50" />
+      ) : (
+        <Image
+          src={TruemoneyIcon}
+          alt="truemoney"
+          className="size-8 p-1 opacity-50 brightness-200 grayscale"
+        />
+      )}
       <SimpleTooltip text="แสดง Popup อีกครั้ง">
         <ActionButton
           variant="outline"
@@ -246,11 +310,14 @@ function TopRow({
         <span>รวมวันนี้</span>
         <span className="text-3xl font-bold">{stats.today}฿</span>
       </div>
-      <div className="relative flex flex-1 flex-col overflow-hidden rounded-lg border bg-card/50 px-2 py-1 ">
+      <Link
+        className="relative flex flex-1 flex-col overflow-hidden rounded-lg border bg-card/50 px-2 py-1"
+        href="/donate/admin/calendar"
+      >
         <WalletIcon className="absolute top-1/3 left-1/3 size-6/8 opacity-20" />
-        <span>รวมทั้งหมด</span>
+        <span>รวมเดือนนี้</span>
         <span className="text-3xl font-bold">{stats.total}฿</span>
-      </div>
+      </Link>
     </div>
   );
 }
@@ -259,7 +326,10 @@ export function DonateAdminPage({
   data,
   stats,
 }: {
-  data: (typeof donations.$inferSelect)[];
+  data: (typeof donations.$inferSelect & {
+    checked: boolean | null;
+    artifactSubmissionId: string | null;
+  })[];
   stats: {
     total: number;
     today: number;
@@ -276,13 +346,13 @@ export function DonateAdminPage({
     <div className="mx-auto flex w-full max-w-[max(1280px,90%)] flex-col">
       <span className="flex items-center gap-1 pt-1 pb-2 text-3xl font-semibold">
         <BitcoinIcon size={32} />
-        โดเนททั้งหมด
+        โดเนทเดือนนี้
       </span>
       <TopRow row={data[0]} ref={topRowRef} stats={stats} />
       <DataTable
         columns={columns}
         emptyDescription="No donation came in yet."
-        data={data.slice(1)}
+        data={data}
         className="w-full overflow-y-auto bg-black/25 backdrop-blur-sm"
         style={{
           maxHeight,
@@ -296,10 +366,30 @@ export function DonateAdminPage({
 // component cuz simplicity sake
 export function DonateWatcher() {
   const router = useRouter();
+  const [newDonates, setNewDonates] = useState(0);
+
+  useEffect(() => {
+    if (newDonates <= 0) return ((document.title = "โดเนททั้งหมด"), undefined);
+    var blink = true;
+    const interval = setInterval(() => {
+      blink = !blink;
+      document.title = blink ? "โดเนททั้งหมด" : `${newDonates} โดเนทใหม่`;
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [newDonates]);
+
+  useEffect(() => {
+    function listener() {
+      setNewDonates(0);
+    }
+    window.addEventListener("focus", listener);
+    return () => window.removeEventListener("focus", listener);
+  }, []);
+
   useEffect(() => {
     if (!router) return;
     return sse.donate.subMany({
-      ping: router.refresh.bind(router),
+      ping: () => (router.refresh(), setNewDonates((x) => x + 1)),
       update: router.refresh.bind(router),
     }).clean;
   }, [router]);

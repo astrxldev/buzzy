@@ -180,8 +180,10 @@ export async function toggleCheck(submissionId: string) {
     .where(eq(submissions.id, submissionId));
   revalidatePath("/artifact/admin");
   revalidatePath("/artifact");
+  revalidatePath("/donate/admin");
 
   sse.artifact.pub("update", { type: "toggleCheck" });
+  sse.donate.pub("update", null);
   await actionLog(`Toggled an artifact submission check mark`);
 }
 

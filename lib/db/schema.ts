@@ -74,7 +74,9 @@ export const versions = pgTable("versions", {
 
 export const settings = pgTable("settings", {
   id: boolean().primaryKey().default(true),
-  enka: boolean().notNull().default(false), // Turn this off when Enka is on maintenance
+  enka: boolean().notNull().default(true), // Turn this off when Enka is on maintenance
+  donatePromptpay: boolean().notNull().default(true),
+  donateTruemoney: boolean().notNull().default(true),
   donateGoal: numeric({ mode: "number" }),
   donateGoalStarting: timestamp(),
 });
@@ -301,6 +303,7 @@ export const tierlistVersions = tierlist.table("versions", {
     }),
   order: integer().notNull(),
   placements: jsonb().notNull().$type<{ [x: string]: string[] }>().default({}),
+  snapshot: jsonb().$type<Record<string, unknown> | null>().default(null),
 });
 
 export const tierlistStates = tierlist.table("states", {
@@ -347,6 +350,7 @@ export const guides = pgTable("guides", {
 
 //#region Donate
 export const schDonate = pgSchema("donate");
+export const paymentMethod = schDonate.enum("payment_method", ["tmn", "pp"]);
 
 export const donations = schDonate.table("donations", {
   id: text().primaryKey().$defaultFn(uuidv7),
@@ -359,6 +363,23 @@ export const donations = schDonate.table("donations", {
   lastPing: timestamp("last_ping").default(new Date("01-01-2000")).notNull(),
   sent: boolean().default(false).notNull(),
   uid: text(),
+  method: paymentMethod().notNull().default("pp"),
+});
+
+export type TTrackingKey = string & { __brand: "tracking_key" };
+export type TAccessKey = string & { __brand: "access_key" };
+export type TUploadKey = string & { __brand: "upload_key" };
+
+export const slipSync = schDonate.table("sync", {
+  trackingKey: text().primaryKey().$defaultFn(uuidv7).$type<TTrackingKey>(),
+  accessKey: text().notNull().$defaultFn(uuidv7).$type<TAccessKey>(),
+  uploadKey: text().notNull().$defaultFn(uuidv7).$type<TUploadKey>(),
+  created: timestamp("created_at").defaultNow().notNull(),
+
+  data: bytea(),
+  name: text(),
+  type: text(),
+  size: text(),
 });
 
 //#endregion

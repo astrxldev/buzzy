@@ -299,13 +299,11 @@ export default async function EndgamePage({
             </Tooltip>
             {q && (
               <AlertDialog>
-                <SimpleTooltip text="ยกเลิกคิว">
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" type="button">
-                      <X /> ยกเลิก
-                    </Button>
-                  </AlertDialogTrigger>
-                </SimpleTooltip>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" type="button">
+                    <X /> ยกเลิก
+                  </Button>
+                </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>แน่ใจหรอ</AlertDialogTitle>

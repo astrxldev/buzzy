@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { inArray } from "drizzle-orm";
+import { inArray, sql } from "drizzle-orm";
 import { cdnify, checkCdnRefs } from "@/lib/api";
 import { AmberElementMap } from "@/lib/const";
 import { db } from "@/lib/db";
@@ -91,6 +91,20 @@ const extra: Avatar[] = [
     route: "Dendro Traveler Boy",
     release: 1657659600,
   },
+  {
+    id: "10000005-cyro",
+    rank: 5,
+    name: "Traveler Cyro",
+    element: "Ice",
+    weaponType: "WEAPON_SWORD_ONE_HAND",
+    region: "MAINACTOR",
+    specialProp: "FIGHT_PROP_ATTACK_PERCENT",
+    bodyType: "BOY",
+    icon: "custom/traveler_cyro.webp:image/webp",
+    birthday: [0, 0],
+    route: "Cyro Traveler Boy",
+    release: 1786496400,
+  },
 ];
 
 async function main() {
@@ -104,7 +118,7 @@ async function main() {
         e.json(),
       ),
     ]);
-  await db.transaction(async (tx) => {
+  return await db.transaction(async (tx) => {
     // console.log("Deleting existing versions...");
     // await tx.delete(versions);
     console.log("Creating new versions...");
@@ -209,7 +223,9 @@ async function main() {
         })
         .onConflictDoNothing();
     }
-    let i = 0;
+    let [{ maxOrder: i }] = await db
+      .select({ maxOrder: sql<number>`MAX(${characters.order})` })
+      .from(characters);
     for (const char of newChars) {
       i += 10;
       process.stdout.write(
@@ -248,7 +264,7 @@ async function toFile(res: Response) {
 
 const customImageRegex = /^custom\/([a-z0-9_.-]+)(?::([a-z]+\/[a-z]+))/im;
 
-main();
+if (import.meta.main) main();
 
 export interface AvatarApiResponse {
   response: number;
@@ -287,3 +303,5 @@ export interface ChangelogVersion {
   };
   version: string;
 }
+
+export const syncAmber = main;

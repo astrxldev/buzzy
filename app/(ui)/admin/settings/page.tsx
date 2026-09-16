@@ -8,11 +8,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { SettingsAccountSection } from "./account";
-import { getEnka } from "./api";
+import { getSettongs } from "./api";
 import { SettingsServicesSection } from "./services";
 
 export default async function () {
-  const enka = await getEnka();
+  const { enka, donatePromptpay, donateTruemoney } = await getSettongs();
 
   return (
     <div className="grid h-full w-full gap-8 p-2 pl-0">
@@ -22,7 +22,11 @@ export default async function () {
           <TabsTrigger value="account">บัญชี</TabsTrigger>
         </TabsList>
         <TabsContent value="external">
-          <SettingsServicesSection enka={enka} />
+          <SettingsServicesSection
+            enka={enka}
+            donPp={donatePromptpay}
+            donTmn={donateTruemoney}
+          />
         </TabsContent>
         <TabsContent value="account">
           <SettingsAccountSection />
@@ -49,3 +53,5 @@ export function Section({
     </Card>
   );
 }
+
+export const dynamic = "force-dynamic";

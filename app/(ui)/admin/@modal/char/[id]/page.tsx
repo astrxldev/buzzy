@@ -100,9 +100,9 @@ export default async function CharacterEditPage({
   }
 
   return (
-    <ModalBase title="Edit Character">
+    <ModalBase title={`Edit ${char.name}`}>
       <FormProvider
-        id="char-create"
+        id={`char-${charId}`}
         onSubmit={submit}
         values={{ ...char, stars: char.stars.toString(), element: char.vision }}
       >

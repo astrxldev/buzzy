@@ -58,6 +58,7 @@ const columns: ColumnDef<{
     ),
     enableSorting: false,
     enableHiding: false,
+    meta: { className: "w-6" },
   },
   {
     accessorKey: "name",

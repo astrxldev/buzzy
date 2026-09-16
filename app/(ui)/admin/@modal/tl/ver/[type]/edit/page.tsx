@@ -84,8 +84,8 @@ export default async function TlTypeEditPage({
   }
 
   return (
-    <ModalBase title="Create Tierlist Type">
-      <FormProvider id="tl-type-create" onSubmit={submit} values={type}>
+    <ModalBase title={`Edit ${type.name} Type`}>
+      <FormProvider id={`tl-${typeId}`} onSubmit={submit} values={type}>
         <FormRow>
           <FormInput name="name" label="Name">
             <Input placeholder="Abyss" autoFocus />

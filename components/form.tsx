@@ -234,6 +234,7 @@ export function FormProvider({
           : typeof error === "string"
             ? error
             : "Something went wrong";
+      if (message.includes("NEXT_REDIRECT")) return;
       toast.error(message);
     } finally {
       setLoading(false);

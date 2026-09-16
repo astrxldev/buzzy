@@ -183,7 +183,9 @@ export default function OGImage() {
     >
       Buzz Feature
     </div>,
-    { ...size },
+    {
+      ...size,
+    },
   );
 }
 ```
