@@ -3,7 +3,7 @@ import type z from "zod";
 
 export const redis =
   typeof Bun !== "undefined"
-    ? new Bun.RedisClient(undefined, { maxRetries: 4294967295 })
+    ? new Bun.RedisClient(undefined, { maxRetries: 0xffffffff })
     : null;
 
 type PubPayload = { event?: string; data: unknown };
