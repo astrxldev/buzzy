@@ -24,7 +24,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@google/genai": "^2.8.0",
     "@headless-tree/core": "^1.6.0",
-    "@headless-tree/react": "^1.6.0",
+    "@headless-tree/react": "^1.7.0",
     "@hookform/resolvers": "^5.2.2",
     "@next/bundle-analyzer": "16.2.6",
     "@origin-space/image-cropper": "^0.1.9",
