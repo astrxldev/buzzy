@@ -40,7 +40,7 @@ export async function GET() {
   );
   return Response.json(
     { red, ...res },
-    { status: red ? (res.database ? 200 : 201) : 503 },
+    { status: res.database && red ? 200 : 201 },
   );
 }
 

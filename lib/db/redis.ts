@@ -1,7 +1,10 @@
 import ReconnectingEventSource from "reconnecting-eventsource";
 import type z from "zod";
 
-export const redis = typeof Bun !== "undefined" ? Bun.redis : null;
+export const redis =
+  typeof Bun !== "undefined"
+    ? new Bun.RedisClient(undefined, { maxRetries: 4294967295 })
+    : null;
 
 type PubPayload = { event?: string; data: unknown };
 
@@ -126,7 +129,7 @@ export class EventSourceEndpoint<T extends EventSourceEventMap> {
       throw new Error(
         "EventSourceEndpoint.pub(...) can only be called on the server.",
       );
-    return this.manager.publish(this.eventMap[event].parse(data), {
+    this.manager.publish(this.eventMap[event].parse(data), {
       topic: this.endpoint,
       event: String(event),
     });
