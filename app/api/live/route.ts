@@ -63,7 +63,8 @@ export async function GET(req: NextRequest) {
   const channelId = process.env.YOUTUBE_CHANNEL_ID;
   const apiKey = process.env.YOUTUBE_API_KEY;
 
-  if (!apiKey || !channelId) return NextResponse.json<YoutubeLiveInfo>("none");
+  // TEMPORARY: Hacked channel
+  if (!apiKey || !channelId && true) return NextResponse.json<YoutubeLiveInfo>("none");
 
   const response = await youtubeCache.fetch(
     `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&eventType=live&type=video&maxResults=1&key=${apiKey}`,

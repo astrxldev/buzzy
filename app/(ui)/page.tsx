@@ -17,16 +17,17 @@ export default function Home() {
       <div className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col">
         <section>
           <center>
-            <Link href="https://www.youtube.com/@Genshinmaichaigamemurtur">
-              <Image
-                src={Banner}
-                alt="Banner"
-                className="mt-24 w-3/4 rounded-t-xl sm:w-125"
-                width={500}
-                height={100}
-                fetchPriority="high"
-              />
-            </Link>
+            {/* TEMPORARY: Hacked channel */}
+            {/* <Link href="https://www.youtube.com/@Genshinmaichaigamemurtur"> */}
+            <Image
+              src={Banner}
+              alt="Banner"
+              className="mt-24 w-3/4 rounded-t-xl sm:w-125"
+              width={500}
+              height={100}
+              fetchPriority="high"
+            />
+            {/* </Link> */}
           </center>
         </section>
 
