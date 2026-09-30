@@ -63,7 +63,6 @@ import {
   DownloadButton,
   PriceEstimation,
   ServiceSelector,
-  SlipUpload,
   SubmissionListModal,
   SubmitAnotherButton,
   WelcomeScreening,
@@ -73,6 +72,7 @@ import { RulesDialog } from "./rules";
 import { ActionButton } from "@/components/action-button";
 import { generateQrcode } from "../donate/api";
 import { Conditional } from "@/components/conditional";
+import { SlipUpload } from "./admin/@modal/manual/client";
 
 export const metadata: Metadata = {
   title: "รับกรรมแทนทางบ้าน",
@@ -238,6 +238,7 @@ export default async function EndgamePage({
                       <DownloadButton />
                     </div>
                   </div>
+                  {/* <SlipUpload /> */}
                   <SlipUpload />
                 </div>
                 <input hidden name="sid" readOnly value={sid?.value} />

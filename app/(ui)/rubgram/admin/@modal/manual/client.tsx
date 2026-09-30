@@ -236,6 +236,7 @@ export function SlipUpload({
         type="file"
         accept="image/*"
         hidden
+        name="slip"
         onChange={() => {
           const file = ref.current?.files?.[0] || null;
           setValue(file);
