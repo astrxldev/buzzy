@@ -140,7 +140,7 @@ export default async function EndgamePage({
         .then((e) => e.length)
     : 0;
 
-  const qrcode = await generateQrcode(q.price);
+  const qrcode = q ? await generateQrcode(q.price) : "";
 
   return (
     <EndgameFormWrapper id="mainform" type={q ? "payment" : "registration"}>
