@@ -127,7 +127,7 @@ export default async function EndgamePage({
     session ? getUserSubmissions(session.uid) : [],
     promiseCfg,
   ]);
-  const canExpire: Promise<number> = q
+  const canExpire = q
     ? db
         .select({ queue: endgameSubmissions.queue })
         .from(endgameSubmissions)
