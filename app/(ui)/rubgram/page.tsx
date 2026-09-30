@@ -238,7 +238,7 @@ export default async function EndgamePage({
                       <DownloadButton />
                     </div>
                   </div>
-                  <div className="flex flex-col grow">
+                  <div className="flex flex-col w-full">
                     <SlipUpload />
                   </div>
                 </div>
