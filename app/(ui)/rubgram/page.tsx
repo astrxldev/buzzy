@@ -70,6 +70,7 @@ import {
 } from "./client";
 import { EndgameFormWrapper } from "./form";
 import { RulesDialog } from "./rules";
+import { ActionButton } from "@/components/action-button";
 
 export const metadata: Metadata = {
   title: "รับกรรมแทนทางบ้าน",
@@ -299,17 +300,15 @@ export default async function EndgamePage({
             </Tooltip>
             {/* {q && ( */}
             <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <>
-                  <Button
-                    variant="destructive"
-                    type="button"
-                    hidden={!q}
-                    style={{ opacity: q ? 1 : 0 }}
-                  >
-                    <X /> ยกเลิก
-                  </Button>
-                </>
+              <AlertDialogTrigger>
+                <Button
+                  variant="destructive"
+                  type="button"
+                  hidden={!q}
+                  style={{ opacity: q ? 1 : 0 }}
+                >
+                  <X /> ยกเลิก
+                </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
@@ -335,7 +334,8 @@ export default async function EndgamePage({
               {count} / {config.limit < 0 ? "∞" : config.limit} คิว
             </Kbd>
             <SimpleTooltip text="ถัดไป">
-              <Button
+              <ActionButton
+                action="provider"
                 type="submit"
                 form="mainform"
                 disabled={
@@ -345,7 +345,7 @@ export default async function EndgamePage({
                 }
               >
                 <SendHorizonal />
-              </Button>
+              </ActionButton>
             </SimpleTooltip>
           </div>
         </CardFooter>
