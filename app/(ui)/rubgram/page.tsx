@@ -298,25 +298,32 @@ export default async function EndgamePage({
               <TooltipContent>อ่านกฏการลงคิว</TooltipContent>
             </Tooltip>
             {/* {q && ( */}
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" type="button">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <>
+                  <Button
+                    variant="destructive"
+                    type="button"
+                    hidden={!q}
+                    style={{ opacity: q ? 1 : 0 }}
+                  >
                     <X /> ยกเลิก
                   </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>แน่ใจหรอ</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      ต้องการยกเลิกการลงคิวของคุณหรือไม่
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>ไม่ยกเลิก</AlertDialogCancel>
-                    <CancelButton sid={sid!.value} />
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                </>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>แน่ใจหรอ</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    ต้องการยกเลิกการลงคิวของคุณหรือไม่
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>ไม่ยกเลิก</AlertDialogCancel>
+                  <CancelButton sid={sid!.value} />
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             {/* )} */}
             <Suspense>
               <LiveButton />
