@@ -55,15 +55,19 @@ export class PubSubManager {
     function ping() {
       clearTimeout(heartbeatTimeout);
       heartbeatTimeout = setTimeout(() => {
-        void writer.write(":)\n\n").catch(() => {});
+        try {
+          void writer.write(":)\n\n").catch(() => { });
+        } catch { }
         ping();
       }, 90000); // cloudflare timeout = 100s
     }
 
     const write = (payload: PubPayload) => {
-      void writer
-        .write(this.constructMessage(payload.data, payload.event))
-        .catch(() => {});
+      try {
+        void writer
+          .write(this.constructMessage(payload.data, payload.event))
+          .catch(() => { });
+      } catch { }
       ping();
     };
 
@@ -83,6 +87,7 @@ export class PubSubManager {
       console.log(` DSC ${topic}`);
 
       sub.unsubscribe(`${this.prefix}${topic}`, handler);
+      void writer.close().catch(() => { });
       clearInterval(heartbeatTimeout);
       clearTimeout(timeout);
     };
@@ -122,7 +127,7 @@ export class EventSourceEndpoint<T extends EventSourceEventMap> {
   constructor(
     private endpoint: string,
     private eventMap: T,
-  ) {}
+  ) { }
 
   pub<K extends keyof T>(event: K, data: z.infer<T[K]>) {
     if (!this.manager)
@@ -139,8 +144,8 @@ export class EventSourceEndpoint<T extends EventSourceEventMap> {
     events: Partial<{ [K in keyof T]: (data: z.infer<T[K]>) => void }>,
     {
       endpoint = this.defaultEndpointUrl,
-      onerror = () => {},
-      onopen = () => {},
+      onerror = () => { },
+      onopen = () => { },
     }: SubOption = {},
   ) {
     const es = new ReconnectingEventSource(endpoint);
@@ -159,8 +164,8 @@ export class EventSourceEndpoint<T extends EventSourceEventMap> {
     callback: (data: z.infer<T[K]>) => void,
     {
       endpoint = this.defaultEndpointUrl,
-      onerror = () => {},
-      onopen = () => {},
+      onerror = () => { },
+      onopen = () => { },
     }: SubOption = {},
   ) {
     const listener = (e: MessageEvent<string>) => callback(JSON.parse(e.data));
