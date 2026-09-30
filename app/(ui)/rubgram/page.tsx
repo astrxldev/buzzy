@@ -238,8 +238,9 @@ export default async function EndgamePage({
                       <DownloadButton />
                     </div>
                   </div>
-                  {/* <SlipUpload /> */}
-                  <SlipUpload />
+                  <div className="flex flex-col grow">
+                    <SlipUpload />
+                  </div>
                 </div>
                 <input hidden name="sid" readOnly value={sid?.value} />
               </>
