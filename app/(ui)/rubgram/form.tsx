@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { toast } from "sonner";
 import { submitEndgame, submitEndgamePayment } from "./api";
+import { useRef } from "react";
+import {
+  ActionSubmitContext,
+  ActionSubmitContextData,
+} from "@/components/action-submit-provider";
 
 export function EndgameFormWrapper({
   type,
@@ -12,6 +17,13 @@ export function EndgameFormWrapper({
 }: React.ComponentProps<"form"> & { type: "registration" | "payment" }) {
   const router = useRouter();
   const { start, stop } = useProgress();
+  const callback = useRef<() => void>(() => {});
+  const context: ActionSubmitContextData = {
+    listenForComplete(complete) {
+      callback.current = complete;
+    },
+  };
+
   async function submit(data: FormData) {
     start();
     posthog.capture(
@@ -37,12 +49,16 @@ export function EndgameFormWrapper({
       .finally(stop);
   }
   return (
-    <form
-      {...props}
-      onSubmit={(e) => {
-        e.preventDefault();
-        submit(new FormData(e.target as HTMLFormElement));
-      }}
-    />
+    <ActionSubmitContext.Provider value={context}>
+      <form
+        {...props}
+        onSubmit={(e) => {
+          e.preventDefault();
+          submit(new FormData(e.target as HTMLFormElement)).finally(() =>
+            setTimeout(callback.current, 1000),
+          );
+        }}
+      />
+    </ActionSubmitContext.Provider>
   );
 }
