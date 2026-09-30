@@ -9,9 +9,9 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import QRCode from "react-qr-code";
 import Link from "next/link";
 import { Suspense } from "react";
-import PromptpayImage from "#/assets/promptpay.jpg";
 import banner from "#/logos/rubgram.webp";
 import { Blocker } from "@/components/blocker";
 import Image from "@/components/image";
@@ -71,6 +71,7 @@ import {
 import { EndgameFormWrapper } from "./form";
 import { RulesDialog } from "./rules";
 import { ActionButton } from "@/components/action-button";
+import { generateQrcode } from "../donate/api";
 
 export const metadata: Metadata = {
   title: "รับกรรมแทนทางบ้าน",
@@ -134,6 +135,8 @@ export default async function EndgamePage({
           ),
         )
     : [];
+
+  const qrcode = await generateQrcode(q.price);
 
   return (
     <EndgameFormWrapper id="mainform" type={q ? "payment" : "registration"}>
@@ -202,11 +205,14 @@ export default async function EndgamePage({
               <>
                 <div className="flex flex-col items-center gap-2">
                   <div className="flex w-full gap-2">
-                    <Image
+                    {/* <Image
                       src={PromptpayImage}
                       alt="Promptpay QR Code"
                       className="max-w-32 shrink-0 rounded"
-                    />
+                    /> */}
+                    <div className="shrink-0 rounded bg-white p-1">
+                      <QRCode value={qrcode} size={128 - 8} />
+                    </div>
                     <div className="relative flex shrink-0 flex-col">
                       <span className="text-lg font-bold">
                         ยอดชำระ {q.price} บาท{" "}
