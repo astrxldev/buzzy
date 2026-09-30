@@ -320,7 +320,7 @@ export default async function EndgamePage({
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>ไม่ยกเลิก</AlertDialogCancel>
-                    <CancelButton sid={sid!.value} />
+                    <CancelButton sid={sid?.value ?? ""} />
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
