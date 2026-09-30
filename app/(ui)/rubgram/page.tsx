@@ -72,6 +72,7 @@ import { EndgameFormWrapper } from "./form";
 import { RulesDialog } from "./rules";
 import { ActionButton } from "@/components/action-button";
 import { generateQrcode } from "../donate/api";
+import { Conditional } from "@/components/conditional";
 
 export const metadata: Metadata = {
   title: "รับกรรมแทนทางบ้าน",
@@ -88,11 +89,12 @@ export default async function EndgamePage({
 
   const cookie = await cookies();
   const sid = cookie.get("rsid");
+  const promiseCfg = getEndgameConfig();
   const session = await getDiscordSession();
 
-  const [q] =
+  const [[q], userSubs, { count, ...config }] = await Promise.all([
     !isNew && sid?.value
-      ? await db
+      ? db
           .select({
             // Using endgame.submissions.queue here because
             // ${endgameSubmissions.queue} does not work
@@ -121,11 +123,12 @@ export default async function EndgamePage({
               not(endgameSubmissions.deleted),
             ),
           )
-      : [];
-  const userSubs = session ? await getUserSubmissions(session.uid) : [];
-  const { count, ...config } = await getEndgameConfig();
-  const [canExpire] = q
-    ? await db
+      : [],
+    session ? getUserSubmissions(session.uid) : [],
+    promiseCfg,
+  ]);
+  const canExpire: Promise<number> = q
+    ? db
         .select({ queue: endgameSubmissions.queue })
         .from(endgameSubmissions)
         .where(
@@ -134,7 +137,8 @@ export default async function EndgamePage({
             lt(endgameSubmissions.queue, q.queue),
           ),
         )
-    : [];
+        .then((e) => e.length)
+    : 0;
 
   const qrcode = await generateQrcode(q.price);
 
@@ -150,14 +154,14 @@ export default async function EndgamePage({
                 <div className="flex flex-col items-center gap-1">
                   <span className="text-3xl font-bold">คิวของคุณคือหมายเลข</span>
                   <span className="text-5xl font-bold">{q.queue}</span>
-                  {canExpire && (
+                  <Conditional c={canExpire}>
                     <span className="flex items-center gap-1 text-muted-foreground">
                       <SimpleTooltip text="มีบางคิวก่อนหน้าของคุณยังไม่ได้ชำระเงิน">
                         <AlertCircle size={16} />
                       </SimpleTooltip>
                       เลขคิวของคุณอาจมีการเปลื่ยนแปลง
                     </span>
-                  )}
+                  </Conditional>
                 </div>
                 <div className="absolute right-0 bottom-0 m-2 flex gap-2">
                   <SubmissionListModal subs={userSubs}>
