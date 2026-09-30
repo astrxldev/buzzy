@@ -136,231 +136,233 @@ export default async function EndgamePage({
     : [];
 
   return (
-    <div className="flex h-svh flex-col items-center justify-center gap-2">
-      <Card className="w-full max-w-md">
-        {q ? (
-          !q.paid ? (
-            ""
-          ) : (
+    <EndgameFormWrapper id="mainform" type={q ? "payment" : "registration"}>
+      <div className="flex h-svh flex-col items-center justify-center gap-2">
+        <Card className="w-full max-w-md">
+          {q ? (
+            !q.paid ? (
+              ""
+            ) : (
+              <Blocker>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-3xl font-bold">คิวของคุณคือหมายเลข</span>
+                  <span className="text-5xl font-bold">{q.queue}</span>
+                  {canExpire && (
+                    <span className="flex items-center gap-1 text-muted-foreground">
+                      <SimpleTooltip text="มีบางคิวก่อนหน้าของคุณยังไม่ได้ชำระเงิน">
+                        <AlertCircle size={16} />
+                      </SimpleTooltip>
+                      เลขคิวของคุณอาจมีการเปลื่ยนแปลง
+                    </span>
+                  )}
+                </div>
+                <div className="absolute right-0 bottom-0 m-2 flex gap-2">
+                  <SubmissionListModal subs={userSubs}>
+                    <Button variant="outline" size="sm">
+                      <List /> รายการคิว
+                    </Button>
+                  </SubmissionListModal>
+                  <SubmitAnotherButton />
+                </div>
+              </Blocker>
+            )
+          ) : config.locked ? (
+            <Blocker>
+              <span className="text-3xl font-bold">ยังไม่เปิดรับคิว</span>
+            </Blocker>
+          ) : config.full ? (
             <Blocker>
               <div className="flex flex-col items-center gap-1">
-                <span className="text-3xl font-bold">คิวของคุณคือหมายเลข</span>
-                <span className="text-5xl font-bold">{q.queue}</span>
-                {canExpire && (
-                  <span className="flex items-center gap-1 text-muted-foreground">
-                    <SimpleTooltip text="มีบางคิวก่อนหน้าของคุณยังไม่ได้ชำระเงิน">
-                      <AlertCircle size={16} />
-                    </SimpleTooltip>
-                    เลขคิวของคุณอาจมีการเปลื่ยนแปลง
-                  </span>
-                )}
-              </div>
-              <div className="absolute right-0 bottom-0 m-2 flex gap-2">
-                <SubmissionListModal subs={userSubs}>
-                  <Button variant="outline" size="sm">
-                    <List /> รายการคิว
-                  </Button>
-                </SubmissionListModal>
-                <SubmitAnotherButton />
+                <span className="text-3xl font-bold">คิวเต็มแล้ว</span>
               </div>
             </Blocker>
-          )
-        ) : config.locked ? (
-          <Blocker>
-            <span className="text-3xl font-bold">ยังไม่เปิดรับคิว</span>
-          </Blocker>
-        ) : config.full ? (
-          <Blocker>
-            <div className="flex flex-col items-center gap-1">
-              <span className="text-3xl font-bold">คิวเต็มแล้ว</span>
-            </div>
-          </Blocker>
-        ) : (
-          <WelcomeScreening {...{ session, userSubs }} />
-        )}
-        <CardHeader className="justify-center">
-          <CardTitle>
-            <div className="w-[276.5px]">
-              <Link href="/">
-                <Image
-                  style={{
-                    transform: "translateY(-70%)",
-                  }}
-                  className="absolute z-50"
-                  height={137.5}
-                  width={276.5}
-                  src={banner}
-                  alt="รับกรรมแทนทางบ้าน"
-                />
-              </Link>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {q ? (
-            <EndgameFormWrapper id="mainform" type="payment">
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex w-full gap-2">
-                  <Image
-                    src={PromptpayImage}
-                    alt="Promptpay QR Code"
-                    className="max-w-32 shrink-0 rounded"
-                  />
-                  <div className="relative flex shrink-0 flex-col">
-                    <span className="text-lg font-bold">
-                      ยอดชำระ {q.price} บาท{" "}
-                      {q.expires && (
-                        <Kbd suppressHydrationWarning>
-                          <Countdown time={q.expires} refreshWhenOver />
-                        </Kbd>
-                      )}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      ผู้รับ: นาย พัชรพล พลพันธุ์
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      บัญชี: xxx-x-x8666-x
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      เลขที่อ้างอิง: 004999056945438
-                    </span>
-                    <DownloadButton />
-                  </div>
-                </div>
-                <SlipUpload />
-              </div>
-              <input hidden name="sid" readOnly value={sid?.value} />
-            </EndgameFormWrapper>
           ) : (
-            <EndgameFormWrapper id="mainform" type="registration">
-              <div className="flex flex-col gap-3">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">ชื่อ*</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    type="text"
-                    placeholder={session?.display || "Mr. Buzz"}
-                    autoComplete="name"
-                    maxLength={32}
-                    required
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="server">เซิร์ฟเวอร์*</Label>
-                  <Select name="server">
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="เลือกเซิร์ฟเวอร์ที่คุณอยู่" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>เซิร์ฟเวอร์</SelectLabel>
-                        <SelectItem value="as">Asia</SelectItem>
-                        <SelectItem value="us">America</SelectItem>
-                        <SelectItem value="eu">Europe</SelectItem>
-                        <SelectItem value="tw">TW, HK, MO</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <ServiceSelector {...{ count, ...config }} />
-              </div>
-              <input hidden name="user" readOnly value={session?.uid || ""} />
-            </EndgameFormWrapper>
+            <WelcomeScreening {...{ session, userSubs }} />
           )}
-        </CardContent>
-        <CardFooter className="flex justify-between gap-2">
-          <div className="flex gap-2">
-            <SimpleTooltip text="ลัดคิว 50 บาท (ไม่รวมยอดที่ต้องจ่าย)">
-              <Link href="/donate" target="_blank" rel="noreferrer">
-                <Button
-                  variant="outline"
-                  className={
-                    config.limit >= 0 && count >= config.limit
-                      ? "animate-pulse border-white! bg-emerald-600!"
-                      : ""
-                  }
-                  type="button"
-                >
-                  <CircleDollarSign />
-                </Button>
-              </Link>
-            </SimpleTooltip>
-            <Tooltip>
-              <RulesDialog>
-                <TooltipTrigger asChild>
-                  <Button variant="destructive" type="button">
-                    <BookAlert />
+          <CardHeader className="justify-center">
+            <CardTitle>
+              <div className="w-[276.5px]">
+                <Link href="/">
+                  <Image
+                    style={{
+                      transform: "translateY(-70%)",
+                    }}
+                    className="absolute z-50"
+                    height={137.5}
+                    width={276.5}
+                    src={banner}
+                    alt="รับกรรมแทนทางบ้าน"
+                  />
+                </Link>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {q ? (
+              <>
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex w-full gap-2">
+                    <Image
+                      src={PromptpayImage}
+                      alt="Promptpay QR Code"
+                      className="max-w-32 shrink-0 rounded"
+                    />
+                    <div className="relative flex shrink-0 flex-col">
+                      <span className="text-lg font-bold">
+                        ยอดชำระ {q.price} บาท{" "}
+                        {q.expires && (
+                          <Kbd suppressHydrationWarning>
+                            <Countdown time={q.expires} refreshWhenOver />
+                          </Kbd>
+                        )}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        ผู้รับ: นาย พัชรพล พลพันธุ์
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        บัญชี: xxx-x-x8666-x
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        เลขที่อ้างอิง: 004999056945438
+                      </span>
+                      <DownloadButton />
+                    </div>
+                  </div>
+                  <SlipUpload />
+                </div>
+                <input hidden name="sid" readOnly value={sid?.value} />
+              </>
+            ) : (
+              <>
+                <div className="flex flex-col gap-3">
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">ชื่อ*</Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      type="text"
+                      placeholder={session?.display || "Mr. Buzz"}
+                      autoComplete="name"
+                      maxLength={32}
+                      required
+                    />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="server">เซิร์ฟเวอร์*</Label>
+                    <Select name="server">
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="เลือกเซิร์ฟเวอร์ที่คุณอยู่" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>เซิร์ฟเวอร์</SelectLabel>
+                          <SelectItem value="as">Asia</SelectItem>
+                          <SelectItem value="us">America</SelectItem>
+                          <SelectItem value="eu">Europe</SelectItem>
+                          <SelectItem value="tw">TW, HK, MO</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <ServiceSelector {...{ count, ...config }} />
+                </div>
+                <input hidden name="user" readOnly value={session?.uid || ""} />
+              </>
+            )}
+          </CardContent>
+          <CardFooter className="flex justify-between gap-2">
+            <div className="flex gap-2">
+              <SimpleTooltip text="ลัดคิว 50 บาท (ไม่รวมยอดที่ต้องจ่าย)">
+                <Link href="/donate" target="_blank" rel="noreferrer">
+                  <Button
+                    variant="outline"
+                    className={
+                      config.limit >= 0 && count >= config.limit
+                        ? "animate-pulse border-white! bg-emerald-600!"
+                        : ""
+                    }
+                    type="button"
+                  >
+                    <CircleDollarSign />
                   </Button>
-                </TooltipTrigger>
-              </RulesDialog>
-              <TooltipContent>อ่านกฏการลงคิว</TooltipContent>
-            </Tooltip>
-            {/* {q && ( */}
-            <AlertDialog>
-              <AlertDialogTrigger>
-                <Button
-                  variant="destructive"
-                  type="button"
-                  hidden={!q}
-                  style={{ opacity: q ? 1 : 0 }}
+                </Link>
+              </SimpleTooltip>
+              <Tooltip>
+                <RulesDialog>
+                  <TooltipTrigger asChild>
+                    <Button variant="destructive" type="button">
+                      <BookAlert />
+                    </Button>
+                  </TooltipTrigger>
+                </RulesDialog>
+                <TooltipContent>อ่านกฏการลงคิว</TooltipContent>
+              </Tooltip>
+              {/* {q && ( */}
+              <AlertDialog>
+                <AlertDialogTrigger>
+                  <Button
+                    variant="destructive"
+                    type="button"
+                    hidden={!q}
+                    style={{ opacity: q ? 1 : 0 }}
+                  >
+                    <X /> ยกเลิก
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>แน่ใจหรอ</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      ต้องการยกเลิกการลงคิวของคุณหรือไม่
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>ไม่ยกเลิก</AlertDialogCancel>
+                    <CancelButton sid={sid!.value} />
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              {/* )} */}
+              <Suspense>
+                <LiveButton />
+              </Suspense>
+            </div>
+            <div className="flex items-center gap-2">
+              {!q && <PriceEstimation />}
+              <Kbd>
+                {count} / {config.limit < 0 ? "∞" : config.limit} คิว
+              </Kbd>
+              <SimpleTooltip text="ถัดไป">
+                <ActionButton
+                  action="provider"
+                  type="submit"
+                  form="mainform"
+                  disabled={
+                    q?.paid ||
+                    config.locked ||
+                    (config.limit >= 0 && count >= config.limit)
+                  }
                 >
-                  <X /> ยกเลิก
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>แน่ใจหรอ</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    ต้องการยกเลิกการลงคิวของคุณหรือไม่
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>ไม่ยกเลิก</AlertDialogCancel>
-                  <CancelButton sid={sid!.value} />
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-            {/* )} */}
-            <Suspense>
-              <LiveButton />
-            </Suspense>
-          </div>
-          <div className="flex items-center gap-2">
-            {!q && <PriceEstimation />}
-            <Kbd>
-              {count} / {config.limit < 0 ? "∞" : config.limit} คิว
-            </Kbd>
-            <SimpleTooltip text="ถัดไป">
-              <ActionButton
-                action="provider"
-                type="submit"
-                form="mainform"
-                disabled={
-                  q?.paid ||
-                  config.locked ||
-                  (config.limit >= 0 && count >= config.limit)
-                }
-              >
-                <SendHorizonal />
-              </ActionButton>
-            </SimpleTooltip>
-          </div>
-        </CardFooter>
-      </Card>
-      <span className="m-1 rounded-sm border p-1 text-xs">
-        หากติดปัญหา โปรดแจ้งผ่านทาง
-        <a
-          href="https://discord.gg/HQwDXNhxuK"
-          className="text-green-200 underline"
-        >
-          ช่องดิสคอร์ด
-        </a>
-      </span>
-      {sid && !q && !isNew && <ClearCookie />}
-      <Watcher />
-    </div>
+                  <SendHorizonal />
+                </ActionButton>
+              </SimpleTooltip>
+            </div>
+          </CardFooter>
+        </Card>
+        <span className="m-1 rounded-sm border p-1 text-xs">
+          หากติดปัญหา โปรดแจ้งผ่านทาง
+          <a
+            href="https://discord.gg/HQwDXNhxuK"
+            className="text-green-200 underline"
+          >
+            ช่องดิสคอร์ด
+          </a>
+        </span>
+        {sid && !q && !isNew && <ClearCookie />}
+        <Watcher />
+      </div>
+    </EndgameFormWrapper>
   );
 }
