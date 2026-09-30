@@ -297,7 +297,7 @@ export default async function EndgamePage({
               </RulesDialog>
               <TooltipContent>อ่านกฏการลงคิว</TooltipContent>
             </Tooltip>
-            {q && (
+            {/* {q && ( */}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" type="button">
@@ -317,7 +317,7 @@ export default async function EndgamePage({
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-            )}
+            {/* )} */}
             <Suspense>
               <LiveButton />
             </Suspense>
