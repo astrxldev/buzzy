@@ -6,6 +6,8 @@ export const redis =
     ? new Bun.RedisClient(undefined, { maxRetries: 0xffffffff })
     : null;
 
+if (redis) redis.onclose = () => setTimeout(redis.connect, 5000);
+
 type PubPayload = { event?: string; data: unknown };
 
 export class PubSubManager {
