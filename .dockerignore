@@ -3,7 +3,7 @@ data
 .github
 .direnv
 .git
-.env.local
+.env*
 .next
 
 Dockerfile
