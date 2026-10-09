@@ -1,5 +1,18 @@
 # Buzz Events — k3s Deployment
 
+## Next.js Preview (`next` branch)
+
+- The `next` branch deploys a separate preview at `buzz-next.sudloh.com` using only `k8s/next/` resources: Deployment, Service, and Ingress named `app-next` with label `component: app-next`.
+- The preview shares the `buzz` namespace and existing `buzz-env` secret, including its database credentials. `BASE_URL`, `BETTER_AUTH_URL`, and `DISCORD_REDIRECT_URI` are overridden for preview build and runtime behavior so production auth URLs in the shared secret cannot redirect preview traffic.
+- Register `https://buzz-next.sudloh.com/rubgram/callback` as an allowed redirect URI in the Discord OAuth application used by `buzz-env`. DNS and HTTPS/TLS for `buzz-next.sudloh.com` must also be routed to the cluster ingress before preview auth is usable.
+- The preview currently has no backend deployment. No backend images or production image tags are built, pushed, or rolled out by `.github/workflows/build-next.yml`.
+- Each run builds immutable `frontend-next-$SHA` and `migration-next-$SHA` images. It waits for the uniquely named `db-migrate-next-$SHA` Job to complete successfully before applying preview resources, so a failed or timed-out migration does not deploy the app.
+- The workflow is limited to the local `next` branch (push or manual dispatch from `next`) and does not alter the existing main/dev workflow or root `k8s/kustomization.yaml`.
+- The database is shared with production: any schema migration from the preview also affects production. No schema changes are included in this preview setup; review compatibility and production impact before introducing future schema changes.
+
+Bootstrap/application is performed by the next workflow after migration; do not apply the root `k8s/` kustomization for this preview because it manages production and backend resources.
+Before the first workflow run, update the existing deployer permissions with `kubectl apply -f k8s/role.yaml` so it can create the preview Deployment (the existing Role already permits creating Services and Ingresses).
+
 ## Architecture Decisions
 
 ### Ingress

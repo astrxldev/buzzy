@@ -1,0 +1,94 @@
+name: Build and Deploy Next Preview
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - next
+
+concurrency:
+  group: buzz-next-deploy
+  cancel-in-progress: false
+
+jobs:
+  build-migrate-deploy:
+    if: gitea.ref == 'refs/heads/next'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubectl
+        run: |
+          set -euo pipefail
+          ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+          curl -fsSLO "https://dl.k8s.io/release/v1.35.0/bin/linux/${ARCH}/kubectl"
+          chmod +x kubectl
+          mv kubectl /usr/local/bin/kubectl
+
+      - name: Configure kubectl
+        env:
+          KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
+        run: |
+          set -euo pipefail
+          kubectl config set-cluster buzz --server=https://astrxl-la3.neko-piranha.ts.net:6443 --insecure-skip-tls-verify=true
+          kubectl config set-credentials ci-deployer --token="$KUBE_TOKEN"
+          kubectl config set-context buzz --cluster=buzz --user=ci-deployer --namespace=buzz
+          kubectl config use-context buzz
+
+      - name: Prepare shared environment for preview build
+        run: |
+          set -euo pipefail
+          kubectl get secret buzz-env -n buzz \
+            -o go-template='{{range $k,$v := .data}}{{$k}}={{$v|base64decode}}{{"\n"}}{{end}}' > .env
+          chmod 600 .env
+          sed -i '/^BASE_URL=/d' .env
+          sed -i '/^BETTER_AUTH_URL=/d;/^DISCORD_REDIRECT_URI=/d' .env
+          printf '%s\n' \
+            'BASE_URL=https://buzz-next.sudloh.com' \
+            'BETTER_AUTH_URL=https://buzz-next.sudloh.com' \
+            'DISCORD_REDIRECT_URI=https://buzz-next.sudloh.com/rubgram/callback' >> .env
+
+      - name: Build and push immutable preview images
+        env:
+          TAG: ${{ gitea.sha }}
+          IMAGE_REPOSITORY: registry.neko-piranha.ts.net/${{ gitea.repository }}
+        run: |
+          set -euo pipefail
+          docker build -t "$IMAGE_REPOSITORY:frontend-next-$TAG" .
+          docker build --target migration -t "$IMAGE_REPOSITORY:migration-next-$TAG" .
+          docker push "$IMAGE_REPOSITORY:frontend-next-$TAG"
+          docker push "$IMAGE_REPOSITORY:migration-next-$TAG"
+
+      - name: Run database migration
+        env:
+          TAG: ${{ gitea.sha }}
+          IMAGE_REPOSITORY: registry.neko-piranha.ts.net/${{ gitea.repository }}
+        run: |
+          set -euo pipefail
+          JOB="db-migrate-next-${TAG}"
+          kubectl delete job "$JOB" -n buzz --ignore-not-found
+          kubectl create job "$JOB" \
+            --image="$IMAGE_REPOSITORY:migration-next-$TAG" \
+            -n buzz --dry-run=client -o json -- bun dr push \
+            | jq '.spec.template.spec.containers[0].envFrom = [{"secretRef":{"name":"buzz-env"}}] | .spec.template.spec.containers[0].imagePullPolicy = "Always"' \
+            | kubectl apply -f -
+
+          if ! kubectl wait --for=condition=complete "job/$JOB" -n buzz --timeout=600s; then
+            kubectl describe job "$JOB" -n buzz || true
+            POD=$(kubectl get pods -n buzz -l "job-name=$JOB" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+            if [ -n "$POD" ]; then
+              kubectl logs "$POD" -n buzz --all-containers=true || true
+            fi
+            exit 1
+          fi
+
+      - name: Apply preview resources and wait for rollout
+        env:
+          TAG: ${{ gitea.sha }}
+          IMAGE_REPOSITORY: registry.neko-piranha.ts.net/${{ gitea.repository }}
+        run: |
+          set -euo pipefail
+          kubectl kustomize k8s/next \
+            | sed "s|${IMAGE_REPOSITORY}:frontend-next-__TAG__|${IMAGE_REPOSITORY}:frontend-next-${TAG}|g" \
+            | kubectl apply -f -
+          kubectl rollout status deployment/app-next -n buzz --timeout=180s

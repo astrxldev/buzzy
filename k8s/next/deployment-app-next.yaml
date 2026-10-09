@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-next
+  labels:
+    app: buzz
+    component: app-next
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: buzz
+      component: app-next
+  template:
+    metadata:
+      labels:
+        app: buzz
+        component: app-next
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+        - name: app-next
+          image: registry.neko-piranha.ts.net/astral/buzz:frontend-next-__TAG__
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: buzz-env
+          env:
+            - name: BASE_URL
+              value: https://buzz-next.sudloh.com
+            - name: BETTER_AUTH_URL
+              value: https://buzz-next.sudloh.com
+            - name: DISCORD_REDIRECT_URI
+              value: https://buzz-next.sudloh.com/rubgram/callback
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 60
+            timeoutSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 15
