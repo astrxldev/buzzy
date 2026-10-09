@@ -6,12 +6,19 @@
 - The preview shares the `buzz` namespace and existing `buzz-env` secret, including its database credentials. `BASE_URL`, `BETTER_AUTH_URL`, and `DISCORD_REDIRECT_URI` are overridden for preview build and runtime behavior so production auth URLs in the shared secret cannot redirect preview traffic.
 - Register `https://buzz-next.sudloh.com/rubgram/callback` as an allowed redirect URI in the Discord OAuth application used by `buzz-env`. DNS and HTTPS/TLS for `buzz-next.sudloh.com` must also be routed to the cluster ingress before preview auth is usable.
 - The preview currently has no backend deployment. No backend images or production image tags are built, pushed, or rolled out by `.github/workflows/build-next.yml`.
-- Each run builds immutable `frontend-next-$SHA` and `migration-next-$SHA` images. It waits for the uniquely named `db-migrate-next-$SHA` Job to complete successfully before applying preview resources, so a failed or timed-out migration does not deploy the app.
+- Each run builds and pushes only the immutable `frontend-next-$SHA` image. The preview workflow never builds, tags, pushes, starts, waits for, or cleans up a database migration; it does not run migrations. The preview shares the production database, so schema changes remain a separate, deliberate operation.
 - The workflow is limited to the local `next` branch (push or manual dispatch from `next`) and does not alter the existing main/dev workflow or root `k8s/kustomization.yaml`.
-- The database is shared with production: any schema migration from the preview also affects production. No schema changes are included in this preview setup; review compatibility and production impact before introducing future schema changes.
 
-Bootstrap/application is performed by the next workflow after migration; do not apply the root `k8s/` kustomization for this preview because it manages production and backend resources.
-Before the first workflow run, update the existing deployer permissions with `kubectl apply -f k8s/role.yaml` so it can create the preview Deployment (the existing Role already permits creating Services and Ingresses).
+Bootstrap the preview Deployment once from a trusted local kubectl context; do not have CI create it or apply the Deployment manifest. The CI service account can update/patch existing Deployments, but cannot create them. Before CI runs, a cluster operator must create `app-next` in namespace `buzz` using the `k8s/next/deployment-app-next.yaml` template, replacing `__TAG__` with a real immutable frontend tag (for example `frontend-next-<commit-sha>`), and ensure `buzz-env` exists. For example:
+
+```bash
+TAG=<commit-sha>
+IMAGE=registry.neko-piranha.ts.net/astral/buzz
+sed "s|${IMAGE}:frontend-next-__TAG__|${IMAGE}:frontend-next-${TAG}|g" k8s/next/deployment-app-next.yaml | kubectl apply -f -
+kubectl apply -f k8s/next/service-app-next.yaml -f k8s/next/ingress-app-next.yaml
+```
+
+The workflow checks that `deployment/app-next` exists, applies only the preview Service and Ingress, then updates its `app-next` container image and waits for rollout. Do not apply the root `k8s/` kustomization for this preview because it manages production and backend resources. The existing Role already permits creating Services and Ingresses and updating/patching Deployments; no Deployment `create` permission is required.
 
 ## Architecture Decisions
 
