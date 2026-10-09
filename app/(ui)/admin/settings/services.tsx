@@ -14,7 +14,7 @@ import {
   toggleEnka,
 } from "./api";
 import { Broadcaster } from "./broadcaster";
-import { Section } from "./page";
+import { Section } from "./section";
 
 export function SettingsServicesSection({
   enka: enkaInitial,

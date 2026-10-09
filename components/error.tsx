@@ -13,7 +13,9 @@ export function ErrorModal({
     <ModalBase title="Modal Error">
       An error occured while spawning modal:
       <pre className="break-all whitespace-pre-wrap">
-        {error.stack?.split("\n").slice(0, 2).join("\n")}
+        {error instanceof Error
+          ? error.stack?.split("\n").slice(0, 2).join("\n")
+          : String(error)}
       </pre>
       <DialogFooter>
         <DialogClose asChild>

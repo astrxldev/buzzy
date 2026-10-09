@@ -8,7 +8,7 @@ const { DISCORD_BOT_TOKEN, GEMINI_TTS_API_KEY } = env as Record<string, string>;
 
 const redis = redisShared!;
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const red = await redis
