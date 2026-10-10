@@ -1,7 +1,7 @@
 "use server";
 
 import { fetch, randomUUIDv7 } from "bun";
-import { and, eq, inArray, isNotNull, lt, not, or, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, lt, not, sql } from "drizzle-orm";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -23,6 +23,14 @@ import {
   tierlistVersions,
 } from "./db/schema";
 import { sse, tlSse } from "./db/sse-endpoints";
+import type { TierlistWriteResult } from "./tierlist-sync";
+import {
+  finishTierlistWrite,
+  lockTierlistList,
+  normalizeTierlistPlacements,
+  resolveTierlistStateTarget,
+  validateTierlistStateInput,
+} from "./tierlist-write";
 import { b2s } from "./utils";
 
 export async function getCharacters(chars: string[]) {
@@ -262,60 +270,106 @@ export async function revalidateCard(sub: string) {
 
 export async function tlState(
   data: Partial<typeof tierlistStates.$inferInsert>,
-) {
+): Promise<TierlistWriteResult<(typeof tierlistStates.$inferSelect)[]>> {
   if (!(await adminCheck())) throw "Unauthorized";
-  const [existing] = await db
-    .select()
-    .from(tierlistStates)
-    .where(
-      or(
-        eq(tierlistStates.uuid, `${data.uuid}`),
-        and(
-          eq(tierlistStates.ref, `${data.ref}`),
-          eq(tierlistStates.list, `${data.list}`),
-        ),
-      ),
-    );
-  if (existing)
-    await db
-      .update(tierlistStates)
-      .set(data)
-      .where(eq(tierlistStates.uuid, existing.uuid));
-  else
-    await db
-      .insert(tierlistStates)
-      .values(data as typeof tierlistStates.$inferInsert);
-  const list = data.list || existing?.list;
-  const states = await db
-    .select()
-    .from(tierlistStates)
-    .where(eq(tierlistStates.list, list));
 
-  revalidatePath(`/api/tl/${list}/states`);
+  const { list, ref } = validateTierlistStateInput(data);
 
-  await actionLog(`Updated a state in tierlist ${list}`, data);
-  tlSse(list).pub("update_states", states);
+  const states = await db.transaction(async (tx) => {
+    await lockTierlistList(tx, list);
+    const [byUuid] = data.uuid
+      ? await tx
+          .select()
+          .from(tierlistStates)
+          .where(eq(tierlistStates.uuid, data.uuid))
+          .limit(1)
+      : [];
+    // If legacy duplicate refs exist, update the lexicographically first UUID
+    // deterministically. No duplicate rows are deleted by this write.
+    const [byRef] = await tx
+      .select()
+      .from(tierlistStates)
+      .where(and(eq(tierlistStates.ref, ref), eq(tierlistStates.list, list)))
+      .orderBy(asc(tierlistStates.uuid))
+      .limit(1);
+    const existing = resolveTierlistStateTarget(byUuid, byRef, list);
+
+    if (existing) {
+      const { uuid: _uuid, ...updates } = data;
+      await tx
+        .update(tierlistStates)
+        .set(updates)
+        .where(
+          and(
+            eq(tierlistStates.uuid, existing.uuid),
+            eq(tierlistStates.list, list),
+          ),
+        );
+    } else {
+      await tx
+        .insert(tierlistStates)
+        .values(data as typeof tierlistStates.$inferInsert);
+    }
+
+    return tx
+      .select()
+      .from(tierlistStates)
+      .where(eq(tierlistStates.list, list))
+      .orderBy(asc(tierlistStates.uuid));
+  });
+
+  return finishTierlistWrite({
+    list,
+    operation: "state",
+    data: states,
+    audit: () => actionLog(`Updated a state in tierlist ${list}`, data),
+    publish: () => tlSse(list).pub("update_states", states),
+    revalidate: () => revalidatePath(`/api/tl/${list}/states`),
+  });
 }
 
 export async function tlPlacements(
   list: string,
   placements: Record<string, string[]>,
-) {
+): Promise<TierlistWriteResult<Record<string, string[]>>> {
   if (!(await adminCheck())) throw "Unauthorized";
 
-  const { untiered: _, ...placementObj } = placements;
+  if (typeof list !== "string" || !list.trim())
+    throw new Error("A tierlist version is required.");
+  if (
+    !placements ||
+    typeof placements !== "object" ||
+    Array.isArray(placements) ||
+    Object.entries(placements).some(
+      ([tier, refs]) =>
+        !tier.trim() ||
+        !Array.isArray(refs) ||
+        refs.some((ref) => typeof ref !== "string"),
+    )
+  )
+    throw new Error("Invalid tierlist placements.");
 
-  await db
-    .update(tierlistVersions)
-    .set({
-      placements: placementObj,
-    })
-    .where(eq(tierlistVersions.id, list));
+  // Clone before removing the client-only untiered bucket; callers retain their
+  // original object and the legacy SSE event still receives its raw payload.
+  const placementObj = normalizeTierlistPlacements(placements);
+  const [version] = await db.transaction(async (tx) => {
+    await lockTierlistList(tx, list);
+    return tx
+      .update(tierlistVersions)
+      .set({ placements: placementObj })
+      .where(eq(tierlistVersions.id, list))
+      .returning({ placements: tierlistVersions.placements });
+  });
+  if (!version) throw new Error("Tierlist version not found.");
 
-  revalidatePath(`/api/tl/${list}`);
-
-  await actionLog(`Updated a placement in tierlist ${list}`);
-  tlSse(list).pub("update_placements", placements);
+  return finishTierlistWrite({
+    list,
+    operation: "placements",
+    data: version.placements,
+    audit: () => actionLog(`Updated a placement in tierlist ${list}`),
+    publish: () => tlSse(list).pub("update_placements", placements),
+    revalidate: () => revalidatePath(`/api/tl/${list}`),
+  });
 }
 
 export async function cdnDelete(ids: string[], force = false) {

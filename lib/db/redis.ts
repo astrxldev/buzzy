@@ -136,10 +136,15 @@ export class EventSourceEndpoint<T extends EventSourceEventMap> {
       throw new Error(
         "EventSourceEndpoint.pub(...) can only be called on the server.",
       );
-    this.manager.publish(this.eventMap[event].parse(data), {
+    const publication = this.manager.publish(this.eventMap[event].parse(data), {
       topic: this.endpoint,
       event: String(event),
     });
+    // Existing publishers intentionally fire-and-forget. Mark the rejection as
+    // observed for those callers while still returning the original promise to
+    // callers that need to await delivery.
+    void publication.catch(() => {});
+    return publication;
   }
 
   subMany(

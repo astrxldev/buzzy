@@ -77,6 +77,16 @@ import type {
   tierlistVersions,
 } from "@/lib/db/schema";
 import { tlSse } from "@/lib/db/sse-endpoints";
+import {
+  reconcileCanonicalStates,
+  reconcileScopedStateWrite,
+  TierlistCanonicalFetch,
+} from "@/lib/tierlist-canonical-fetch";
+import { TierlistSaveQueue } from "@/lib/tierlist-save-queue";
+import type {
+  TierlistSyncData,
+  TierlistWriteResult,
+} from "@/lib/tierlist-sync";
 import { cn } from "@/lib/utils";
 import { TierListCell } from "./cell";
 import { Draggable } from "./character";
@@ -138,6 +148,22 @@ export function TierList({
   const [states, setStates] = useState<(typeof tierlistStates.$inferSelect)[]>(
     [],
   );
+  const stateSaveGeneration = useRef(new Map<string, number>());
+  const stateEditRevision = useRef(new Map<string, number>());
+  const placementSaveGeneration = useRef(0);
+  const canonicalFetcher = useRef(
+    new TierlistCanonicalFetch<TierlistSyncData>(),
+  );
+  canonicalFetcher.current.setVersion(version.id);
+  const activeSaveQueues = useRef(new Set<string>());
+  const setSaveQueuePending = useCallback((key: string, pending: boolean) => {
+    if (pending) activeSaveQueues.current.add(key);
+    else activeSaveQueues.current.delete(key);
+    setEvStatus((status) => ({
+      ...status,
+      upload: activeSaveQueues.current.size > 0,
+    }));
+  }, []);
   const [_evStatus, setEvStatus] = useState<{
     upload: boolean;
     download: boolean;
@@ -167,33 +193,79 @@ export function TierList({
   //#endregion
 
   //#region states fetching
-  const fetchStates = useCallback(async () => {
-    setEvStatus((x) => ({ ...x, download: true }));
-    setStates(
-      await fetch(`/api/tl/${version.id}/states`)
-        .then((r) => r.json())
-        .finally(() => setEvStatus((x) => ({ ...x, download: false }))),
+  const fetchCanonical = useCallback(() => {
+    const revisionsAtRequest = new Map(stateEditRevision.current);
+    setEvStatus((status) => ({ ...status, download: true }));
+    canonicalFetcher.current.fetch(
+      version.id,
+      async () => {
+        const response = await fetch(`/api/tl/${version.id}/sync`, {
+          cache: "no-store",
+        });
+        if (!response.ok)
+          throw new Error(`Sync fetch failed (${response.status})`);
+        return (await response.json()) as TierlistSyncData;
+      },
+      (canonical) => {
+        setStates((current) => {
+          const locallyPending = stateSaveGeneration.current;
+          const protectedRefs = new Set(
+            [...stateEditRevision.current]
+              .filter(
+                ([ref, revision]) => revision !== revisionsAtRequest.get(ref),
+              )
+              .map(([ref]) => ref),
+          );
+          return reconcileCanonicalStates(
+            canonical.states.filter((entry) => !locallyPending.has(entry.ref)),
+            current,
+            new Set([...protectedRefs, ...[...locallyPending.keys()]]),
+          );
+        });
+        if (placementSaveGeneration.current === 0) {
+          setPlacements((current) => ({
+            ...Object.fromEntries(
+              tiers.flatMap((tier) =>
+                columns.map((column) => [
+                  `${tier.id}-${column.id}`,
+                  [] as string[],
+                ]),
+              ),
+            ),
+            ...canonical.placements,
+            untiered: current.untiered,
+          }));
+        }
+      },
+      (error) => {
+        toast.error(
+          `Sync ล้มเหลว: ${error instanceof Error ? error.message : error}`,
+        );
+      },
+      () => setEvStatus((status) => ({ ...status, download: false })),
     );
-  }, [version.id]);
+  }, [version.id, tiers, columns]);
   // Reload after connection restored
-  shared.signal("sync", fetchStates);
-  useEffect(() => {
-    fetchStates();
-  }, [fetchStates]);
-
+  shared.signal("sync", fetchCanonical);
   useEffect(() => {
     setEvStatus((x) => ({ ...x, ev: "connecting" }));
-    return tlSse(version.id).subMany(
+    canonicalFetcher.current.activate(version.id);
+    const subscription = tlSse(version.id).subMany(
       {
-        update_states: setStates,
-        update_placements: setPlacements,
+        update_states: () => void fetchCanonical(),
+        update_placements: () => void fetchCanonical(),
       },
       {
         onopen: () => setEvStatus((x) => ({ ...x, ev: "ready" })),
         onerror: () => setEvStatus((x) => ({ ...x, ev: "unknown" })),
       },
-    ).clean;
-  }, [version.id]);
+    );
+    void fetchCanonical();
+    return () => {
+      subscription.clean();
+    };
+  }, [version.id, fetchCanonical]);
+  useEffect(() => () => canonicalFetcher.current.dispose(), []);
   //#endregion
 
   const colRef = useRef<HTMLDivElement | null>(null);
@@ -277,6 +349,69 @@ export function TierList({
     ...version.placements,
     untiered: chars.map((ch) => ch.id).filter((c) => !tiered.includes(c)),
   });
+  const placementQueueGeneration = useRef(0);
+  const saveQueueVersion = useRef(version.id);
+  const stateQueues = useRef(
+    new Map<
+      string,
+      TierlistSaveQueue<
+        typeof tierlistStates.$inferInsert,
+        TierlistWriteResult<(typeof tierlistStates.$inferSelect)[]>
+      >
+    >(),
+  );
+  const placementQueue = useRef<TierlistSaveQueue<
+    Record<string, string[]>,
+    TierlistWriteResult<Record<string, string[]>>
+  > | null>(null);
+  if (saveQueueVersion.current !== version.id) {
+    placementQueue.current?.dispose();
+    for (const queue of stateQueues.current.values()) queue.dispose();
+    stateQueues.current.clear();
+    placementQueue.current = null;
+    saveQueueVersion.current = version.id;
+    stateSaveGeneration.current.clear();
+    stateEditRevision.current.clear();
+    placementSaveGeneration.current = 0;
+    placementQueueGeneration.current = 0;
+  }
+  if (!placementQueue.current) {
+    placementQueue.current = new TierlistSaveQueue(
+      (value) => tlPlacements(version.id, value),
+      ({ generation, result }) => {
+        if (generation !== placementQueueGeneration.current) return;
+        canonicalFetcher.current.invalidate(version.id);
+        setEvStatus((status) => ({ ...status, download: false }));
+        placementSaveGeneration.current = 0;
+        setPlacements((current) => ({
+          ...Object.fromEntries(
+            tiers.flatMap((tier) =>
+              columns.map((column) => [
+                `${tier.id}-${column.id}`,
+                [] as string[],
+              ]),
+            ),
+          ),
+          ...result.data,
+          untiered: current.untiered,
+        }));
+        if (result.publication === "failed") void fetchCanonical();
+      },
+      (pending) => setSaveQueuePending("placements", pending),
+      (error) =>
+        toast.error(
+          `Sync ล้มเหลว: ${error instanceof Error ? error.message : error}. เปลี่ยนแปลงยังไม่บันทึก; ลองแก้ไขอีกครั้งเพื่อ retry`,
+        ),
+    );
+  }
+  useEffect(
+    () => () => {
+      placementQueue.current?.dispose();
+      for (const queue of stateQueues.current.values()) queue.dispose();
+      stateQueues.current.clear();
+    },
+    [],
+  );
   const [dragging, setDragging] = useState<string | null>(null);
 
   function handleDragEnd(event: DragEndEvent) {
@@ -346,16 +481,15 @@ export function TierList({
     }
 
     setPlacements(newPlacements);
+    placementSaveGeneration.current++;
     posthog.capture("tierlist_character_placed", {
       character_id: charId.split("#")[0],
       target_cell: typeof over.id === "string" ? over.id : undefined,
       tierlist_version: version.id,
       tierlist_type: type.id,
     });
-    setEvStatus((x) => ({ ...x, upload: true }));
-    tlPlacements(version.id, newPlacements)
-      .catch((e) => toast.error(`Sync ล้มเหลว: ${e.message || e}`))
-      .finally(() => setEvStatus((x) => ({ ...x, upload: false })));
+    placementQueueGeneration.current++;
+    void placementQueue.current?.enqueue(newPlacements).catch(() => {});
   }
   //#endregion placements
 
@@ -383,9 +517,37 @@ export function TierList({
             ref,
           };
           setStates((s) => [...s.filter((e) => e.ref !== ref), newEntry]);
-          tlState(newEntry).catch((e) =>
-            toast.error(`Sync ล้มเหลว: ${e.message || e}`),
+          const generation = (stateSaveGeneration.current.get(ref) ?? 0) + 1;
+          stateSaveGeneration.current.set(ref, generation);
+          stateEditRevision.current.set(
+            ref,
+            (stateEditRevision.current.get(ref) ?? 0) + 1,
           );
+          canonicalFetcher.current.invalidate(version.id);
+          let queue = stateQueues.current.get(ref);
+          if (!queue) {
+            queue = new TierlistSaveQueue(
+              (value) => tlState(value),
+              ({ generation: savedGeneration, result }) => {
+                if (stateSaveGeneration.current.get(ref) !== savedGeneration)
+                  return;
+                canonicalFetcher.current.invalidate(version.id);
+                setEvStatus((status) => ({ ...status, download: false }));
+                stateSaveGeneration.current.delete(ref);
+                setStates((current) =>
+                  reconcileScopedStateWrite(current, ref, result.data),
+                );
+                if (result.publication === "failed") void fetchCanonical();
+              },
+              (pending) => setSaveQueuePending(`state:${ref}`, pending),
+              (error) =>
+                toast.error(
+                  `Sync ล้มเหลว: ${error instanceof Error ? error.message : error}. เปลี่ยนแปลงยังไม่บันทึก; ลองแก้ไขอีกครั้งเพื่อ retry`,
+                ),
+            );
+            stateQueues.current.set(ref, queue);
+          }
+          await queue.enqueue(newEntry).then(() => undefined);
         },
         async removeChar(cid: string) {
           setPlacements((s) =>
@@ -449,8 +611,7 @@ export function TierList({
               >
                 <span>
                   {type.name} เวอร์ชั่น {version.name} ระดับ
-                  <span className="text-yellow-400">{type.mode}</span>{" "}
-                  ใช้ได้ถึง{" "}
+                  <span className="text-yellow-400">{type.mode}</span> ใช้ได้ถึง{" "}
                 </span>
                 <span className="text-green-400">{version.deprecates}</span>
                 {deleteMode && (

@@ -2,7 +2,7 @@
 
 import { MessageSquareText, Trash } from "lucide-react";
 import Link from "next/link";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import AmberIcon from "#/amber.png";
 import Image from "@/components/image";
 import { SimpleTooltip } from "@/components/tooltip";
@@ -44,6 +44,7 @@ export function Draggable({
   const [comment, setComment] = useState("");
   const [assignedBadges, setBadges] = useState<string[]>([]);
   const [dirty, setDirty] = useState(0);
+  const editGeneration = useRef(0);
 
   useEffect(() => {
     if (dirty) return;
@@ -54,13 +55,20 @@ export function Draggable({
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (!dirty || !cid) return;
-      setDirty(0);
-      setState(cid, { comment, badges: assignedBadges });
+      const generation = editGeneration.current;
+      void setState(cid, { comment, badges: assignedBadges })
+        .then(() => {
+          if (editGeneration.current === generation) setDirty(0);
+        })
+        .catch(() => {
+          // Keep the local edit dirty so a later edit retries the latest intent.
+        });
     }, dirty);
     return () => clearTimeout(timeout);
   }, [dirty, comment, setState, cid, assignedBadges]);
 
   function toggleBadge(badge: string) {
+    editGeneration.current++;
     setDirty(200);
     setBadges(
       assignedBadges.includes(badge)
@@ -264,6 +272,7 @@ export function Draggable({
                   className="aspect-square resize-none bg-card disabled:opacity-90"
                   value={comment}
                   onChange={(ev) => {
+                    editGeneration.current++;
                     setDirty(500);
                     setComment(ev.target.value);
                   }}

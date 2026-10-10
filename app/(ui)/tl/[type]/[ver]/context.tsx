@@ -14,7 +14,7 @@ export const TierListContext = createContext<{
   setState: (
     char: string,
     data: Partial<typeof tierlistStates.$inferInsert>,
-  ) => void;
+  ) => Promise<void>;
   editable: boolean;
   deleteMode: boolean;
   removeChar: (cid: string) => void;
@@ -23,7 +23,7 @@ export const TierListContext = createContext<{
   badges: [],
   tileSize: 64,
   badgeSize: 24,
-  setState: () => {},
+  setState: async () => {},
   editable: false,
   deleteMode: false,
   removeChar: () => {},
