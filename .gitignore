@@ -59,3 +59,6 @@ node_modules/
 .direnv
 !.envrc
 .env*
+
+.version
+.serena
