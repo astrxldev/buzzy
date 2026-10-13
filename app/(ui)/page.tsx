@@ -7,6 +7,7 @@ import DonateLogo from "#/logos/donate.webp";
 import GuideLogo from "#/logos/guide.webp";
 import RubgramLogo from "#/logos/rubgram.webp";
 import TierlistLogo from "#/logos/tierlist.webp";
+import CommissionLogo from "#/logos/commission.webp";
 import Image from "@/components/image";
 import { SimpleTooltip } from "@/components/tooltip";
 import { cn } from "@/lib/utils";
@@ -66,11 +67,17 @@ export default function Home() {
             href="/donate"
             logo={DonateLogo}
           />
-          <HomeLink
+          {/* <HomeLink
             name="ซ่อมไอดีชาวบ้าน"
             desc="ซ่อมไอดีชาวบ้าน"
             href="/repair"
             logo={DonateLogo}
+          /> */}
+          <HomeLink
+            name="คอมมิชชั่น"
+            desc="คอมมิชชั่นจ้างแคลทีมดาเมท เปรียบเทียบดาเมท กลุ่มดาว"
+            href="https://guide.sudloh.com/commission"
+            logo={CommissionLogo}
           />
         </div>
         <footer className="flex h-full flex-col justify-end pb-3 text-muted-foreground md:justify-center">
