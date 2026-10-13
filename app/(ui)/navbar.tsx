@@ -7,6 +7,7 @@ import {
   LoaderPinwheel,
   StickyNote,
   Table,
+  UserCog,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -19,7 +20,7 @@ export function Navbar() {
   const mobile = useIsMobile();
 
   if (
-    !/^\/(?:tl(?:\/[a-zA-Z0-9]+)?|rubgram|artifact|guide|donate)$/gm.test(
+    !/^\/(?:tl(?:\/[a-zA-Z0-9]+)?|rubgram|artifact|guide|donate|repair)$/gm.test(
       pathname,
     )
   )
@@ -44,7 +45,8 @@ export function Navbar() {
       />
       <Item icon={<Table size={16} />} name="จัดเทียร์ลิสต์" href="/tl" />
       <Item icon={<StickyNote size={16} />} name="ไกด์ตัวละคร" href="/guide" />
-      <Item icon={<Bitcoin size={16} />} name="โดเนท" href="/donate" last />
+      <Item icon={<Bitcoin size={16} />} name="โดเนท" href="/donate" />
+      <Item icon={<UserCog size={16} />} name="ซ่อมไอดี" href="/repair" last />
     </div>
   );
 }

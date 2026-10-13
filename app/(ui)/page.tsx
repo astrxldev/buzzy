@@ -66,6 +66,12 @@ export default function Home() {
             href="/donate"
             logo={DonateLogo}
           />
+          <HomeLink
+            name="ซ่อมไอดีชาวบ้าน"
+            desc="ซ่อมไอดีชาวบ้าน"
+            href="/repair"
+            logo={DonateLogo}
+          />
         </div>
         <footer className="flex h-full flex-col justify-end pb-3 text-muted-foreground md:justify-center">
           <div className="flex flex-col justify-between gap-2 text-center sm:flex-row sm:text-left">
