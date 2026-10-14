@@ -14,6 +14,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { uuidv7 } from "uuidv7";
 import type { SlipokResponse } from "@/app/(ui)/rubgram/api";
+import type { SlipCheckResult } from "@/lib/slip-checker";
 import { bytea } from "./custom";
 
 export const element = pgEnum("character_element", [
@@ -77,6 +78,9 @@ export const settings = pgTable("settings", {
   enka: boolean().notNull().default(true), // Turn this off when Enka is on maintenance
   donatePromptpay: boolean().notNull().default(true),
   donateTruemoney: boolean().notNull().default(true),
+  slipCheckProvider: text({ enum: ["slipok", "slip2go"] })
+    .notNull()
+    .default("slipok"),
   donateGoal: numeric({ mode: "number" }),
   donateGoalStarting: timestamp(),
 });
@@ -194,7 +198,7 @@ export const endgameSlips = endgame.table("slips", {
   slip: bytea().notNull(),
   ref: text().unique().notNull(),
   amount: numeric().notNull(),
-  data: jsonb().$type<SlipokResponse>().notNull(),
+  data: jsonb().$type<SlipokResponse | SlipCheckResult>().notNull(),
 });
 
 export const endgameSettings = endgame.table("settings", {
