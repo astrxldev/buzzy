@@ -7,7 +7,7 @@ export function isSoundEligible(amount: unknown) {
   return (
     (typeof amount === "string" || typeof amount === "number") &&
     Number.isFinite(Number(amount)) &&
-    Number(amount) > 10
+    Number(amount) >= 10
   );
 }
 

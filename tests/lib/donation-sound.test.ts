@@ -65,10 +65,11 @@ describe("donation sound validation", () => {
     expect(() => parseDonationSound(odd)).toThrow();
   });
 
-  test("eligibility is strictly greater than ten; no attachment is unchanged", async () => {
+  test("eligibility starts at ten; no attachment is unchanged", async () => {
     const file = new File([wav()], "sound.wav", { type: "audio/wav" });
-    for (const amount of [1, 9.99, 10])
-      expect(prepareDonationSound(file, amount)).rejects.toThrow();
+    for (const amount of [1, 9.99])
+      await expect(prepareDonationSound(file, amount)).rejects.toThrow();
+    expect(await prepareDonationSound(file, 10)).not.toBeNull();
     expect(await prepareDonationSound(file, 10.01)).not.toBeNull();
     expect(await prepareDonationSound(undefined, 10)).toBeNull();
   });

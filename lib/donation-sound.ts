@@ -44,7 +44,7 @@ export async function prepareDonationSound(
   amount: number,
 ): Promise<DonationSound | null> {
   if (!file) return null;
-  if (amount <= 10) throw new Error("เสียงโดเนทใช้ได้เมื่อโดเนทมากกว่า 10 บาทเท่านั้น");
+  if (amount < 10) throw new Error("เสียงโดเนทใช้ได้เมื่อโดเนทตั้งแต่ 10 บาทขึ้นไปเท่านั้น");
   if (file.size > DONATION_SOUND_MAX_BYTES)
     throw new Error("เสียงต้องมีความยาวไม่เกิน 30 วินาที");
   return parseDonationSound(Buffer.from(await file.arrayBuffer()));

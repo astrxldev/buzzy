@@ -11,22 +11,22 @@ function renderField(amount: unknown) {
   );
 }
 
-test("sound upload stays visible and disabled at or below ten baht", () => {
-  for (const amount of [undefined, "", 0, 9, 10, "10"]) {
+test("sound upload stays visible and disabled below ten baht", () => {
+  for (const amount of [undefined, "", 0, 9, 9.99]) {
     const html = renderField(amount);
     expect(html).toContain("อัปโหลดเสียง");
     expect(html).toContain("ไม่บังคับ");
     expect(html).toContain('disabled=""');
     expect(html).not.toContain('class="hidden"');
-    expect(html).toContain("แนบเสียงได้เมื่อโดเนทมากกว่า 10 บาท");
+    expect(html).toContain("แนบเสียงได้เมื่อโดเนทตั้งแต่ 10 บาทขึ้นไป");
   }
 });
 
-test("sound upload becomes available only above ten baht", () => {
-  for (const amount of [10.01, "10.01", 100]) {
+test("sound upload becomes available at ten baht", () => {
+  for (const amount of [10, "10", 10.01, "10.01", 100]) {
     const html = renderField(amount);
     expect(html).toContain("อัปโหลดเสียง");
     expect(html).not.toContain('disabled=""');
-    expect(html).not.toContain("แนบเสียงได้เมื่อโดเนทมากกว่า 10 บาท");
+    expect(html).not.toContain("แนบเสียงได้เมื่อโดเนทตั้งแต่ 10 บาทขึ้นไป");
   }
 });

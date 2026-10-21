@@ -7,14 +7,14 @@ import {
 } from "@/app/(ui)/donate/sound-audio";
 
 describe("donation sound eligibility", () => {
-  test("requires a finite amount strictly greater than ten", () => {
+  test("requires a finite amount of at least ten", () => {
     for (const value of [
       undefined,
       null,
       "",
       0,
-      10,
-      "10",
+      9.99,
+      "9.99",
       "no",
       Infinity,
       true,
@@ -22,7 +22,7 @@ describe("donation sound eligibility", () => {
       {},
     ])
       expect(isSoundEligible(value)).toBe(false);
-    for (const value of [10.01, "10.01", 100])
+    for (const value of [10, "10", 10.01, "10.01", 100])
       expect(isSoundEligible(value)).toBe(true);
   });
 });

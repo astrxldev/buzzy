@@ -54,7 +54,7 @@ export function DonationSoundField() {
     <FormInput
       name="sound"
       label="อัปโหลดเสียง"
-      subLabel="(ไม่บังคับ · ไม่เกิน 30 วินาที)"
+      subLabel="ไม่บังคับ · ไม่เกิน 30 วินาที"
     >
       <SoundUpload />
     </FormInput>
@@ -108,7 +108,7 @@ function SoundUpload({
         </div>
         {!eligible && (
           <p className="text-xs text-muted-foreground">
-            แนบเสียงได้เมื่อโดเนทมากกว่า 10 บาท
+            แนบเสียงได้เมื่อโดเนทตั้งแต่ 10 บาทขึ้นไป
           </p>
         )}
         {open && !disabled && (
