@@ -37,6 +37,10 @@ export const sse = sseEndpointMap({
       name: z.string(),
       amount: z.number(),
       image: z.string().optional(),
+      sound: z
+        .string()
+        .regex(/^[a-f0-9]{64}$/)
+        .nullish(),
       message: z.string(),
     }),
     // roundtrip SSE system check

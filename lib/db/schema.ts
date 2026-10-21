@@ -357,6 +357,7 @@ export const donations = schDonate.table("donations", {
   name: text().notNull(),
   amount: numeric({ mode: "number", precision: 7, scale: 2 }).notNull(),
   image: bytea(),
+  sound: text(),
   message: text(),
   created: timestamp("created_at").defaultNow().notNull(),
   // The retry system

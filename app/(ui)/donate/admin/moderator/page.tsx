@@ -1,16 +1,16 @@
-import { adminCheck } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { DonateWatcher } from "../client";
-import { db } from "@/lib/db";
-import { donations } from "@/lib/db/schema";
 import { desc } from "drizzle-orm";
-import { Gavel, ImageOff, RefreshCw } from "lucide-react";
-import { fileToDataUrl } from "@/lib/utils";
+import { Gavel, ImageOff, RefreshCw, Volume2 } from "lucide-react";
+import { redirect } from "next/navigation";
+import { markDone } from "@/app/widget/donate/api";
+import { ActionButton } from "@/components/action-button";
 import Image from "@/components/image";
 import { Spinner } from "@/components/ui/spinner";
-import { ActionButton } from "@/components/action-button";
+import { adminCheck } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { donations } from "@/lib/db/schema";
+import { fileToDataUrl } from "@/lib/utils";
 import { reloadWidget } from "../api";
-import { markDone } from "@/app/widget/donate/api";
+import { DonateWatcher } from "../client";
 import { ClientTracker, PIP, VolumeChanger } from "./client";
 
 export default async function DonateModeratorPage() {
@@ -37,9 +37,11 @@ export default async function DonateModeratorPage() {
         {sub.image ? (
           <div className="relative flex aspect-square w-full max-w-100 items-center justify-center overflow-hidden rounded-lg border bg-black/50">
             <Image
-              src={await fileToDataUrl(
-                new File([Buffer.from(sub.image)], "abc.jpeg"),
-              )}
+              src={
+                await fileToDataUrl(
+                  new File([Buffer.from(sub.image)], "abc.jpeg"),
+                )
+              }
               alt="donation image"
               fill
               className="z-10"
@@ -53,7 +55,14 @@ export default async function DonateModeratorPage() {
         )}
         <div className="flex justify-between">
           <div className="flex flex-col">
-            <span className="font-bold">{sub.name}</span>
+            <span className="flex items-center gap-1 font-bold">
+              {sub.name}
+              {sub.sound && (
+                <span role="img" aria-label="มีเสียงที่แนบมา" title="มีเสียงที่แนบมา">
+                  <Volume2 className="size-4" />
+                </span>
+              )}
+            </span>
             <span>{sub.message}</span>
           </div>
           <span className="font-semibold">{sub.amount}฿</span>

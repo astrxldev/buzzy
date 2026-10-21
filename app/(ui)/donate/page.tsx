@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { CircleX, QrCodeIcon, SendIcon } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import z from "zod";
 import { th } from "zod/v4/locales";
 import TruemoneyIcon from "#/assets/tmn.webp";
@@ -25,18 +26,23 @@ import { Textarea } from "@/components/ui/textarea";
 import { getArtifactConfig } from "@/lib/api";
 import { uidRegex } from "@/lib/const";
 import { db } from "@/lib/db";
+import { redis } from "@/lib/db/redis";
 import { donations, endgameSlips, submissions } from "@/lib/db/schema";
 import { sse } from "@/lib/db/sse-endpoints";
+import {
+  type DonationSound,
+  prepareDonationSound,
+  storeDonationSound,
+} from "@/lib/donation-sound";
 import { checkSlip } from "@/lib/payment";
 import { getPostHogClient } from "@/lib/posthog-server";
 import { fileToDataUrl } from "@/lib/utils";
 import {
-  CurrencyInput,
   SlipUpload,
 } from "../rubgram/admin/@modal/manual/client";
 import { DownloadButton } from "../rubgram/client";
-import Link from "next/link";
 import { DynamicPPQR } from "./ppqr";
+import { DonationAmountInput, DonationSoundField } from "./sound-upload";
 
 const { TMN_DEST_PHONE_NUM, SASTIFY_API_PRIVKEY } = process.env as Record<
   string,
@@ -73,6 +79,7 @@ const Schema = z
       .min(1, "โดเนทขั้นต่ำ 1 บาท")
       .max(100000, "โดเนทได้ไม่เกิน 1 แสนบาท"),
     image: z.file().optional(),
+    sound: z.file().optional(),
   })
   .and(
     z.discriminatedUnion(
@@ -113,6 +120,18 @@ export default async function () {
     "use server";
     const { $, error } = formParse(Schema, data);
     if (error) return { error };
+
+    let preparedSound: DonationSound | null;
+    try {
+      preparedSound = await prepareDonationSound($.sound, $.amount);
+    } catch (error) {
+      return {
+        error: {
+          where: "sound",
+          what: error instanceof Error ? error.message : "เสียงไม่ถูกต้อง",
+        },
+      };
+    }
 
     const ph = getPostHogClient();
     const distinctId = crypto.randomUUID();
@@ -206,6 +225,7 @@ export default async function () {
             .toBuffer()
         : undefined;
 
+      const sound = await storeDonationSound(redis, preparedSound);
       const [{ id }] = await tx
         .insert(donations)
         .values({
@@ -213,6 +233,7 @@ export default async function () {
           amount,
           message,
           image: downscaled,
+          sound,
           method: $.type,
           uid: $.artifact === "true" ? $.uid : null,
           // dont send on screen if less than 10
@@ -255,6 +276,7 @@ export default async function () {
           amount,
           message,
           image: image ? await fileToDataUrl(image) : undefined,
+          sound,
         });
       else sse.donate.pub("update", null);
 
@@ -302,13 +324,14 @@ export default async function () {
                 label="จำนวนโดเนท"
                 subLabel="ขึ้นจอขั้นต่ำ 10 บาท"
               >
-                <CurrencyInput placeholder="ขั้นต่ำ 1 บาท" />
+                <DonationAmountInput placeholder="ขั้นต่ำ 1 บาท" />
               </FormInput>
             </div>
           </div>
           <FormInput name="message" label="ข้อความ" subLabel="สูงสุด 200 ตัวอักษร">
             <Textarea placeholder="ข้อความ" />
           </FormInput>
+          <DonationSoundField />
           {!artifactConfig.locked && (
             <>
               <FormInput name="artifact">

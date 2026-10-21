@@ -559,14 +559,18 @@ export function FormChoice({
 
 export function FormIf({
   children,
+  when,
   ...conditions
 }: {
   children: React.ReactNode;
+  when?: (values: FormValues) => boolean;
 } & Record<string, unknown>) {
   const { values } = useFormContext();
-  const match = Object.entries(conditions).every(
-    ([name, equals]) => values[name] === equals,
-  );
+  const match =
+    (when?.(values) ?? true) &&
+    Object.entries(conditions).every(
+      ([name, equals]) => values[name] === equals,
+    );
 
   return <div className={cn(!match && "hidden")}>{children}</div>;
 }

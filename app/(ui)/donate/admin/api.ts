@@ -71,6 +71,7 @@ export async function resendPopup(id: string) {
 
   sse.donate.pub("ping", {
     ...sub,
+    sound: sub.sound,
     message: sub.message ?? "",
     image: sub.image
       ? await fileToDataUrl(new File([Buffer.from(sub.image)], "abc.jpeg"))
