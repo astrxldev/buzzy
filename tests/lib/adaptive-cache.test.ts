@@ -1,5 +1,5 @@
 import { describe, expect, mock, test } from "bun:test";
-import { AdaptiveCache } from "./adaptive-cache";
+import { AdaptiveCache } from "@/lib/adaptive-cache";
 
 class FakeRedis {
   readonly strings = new Map<string, { value: string; expires: number }>();

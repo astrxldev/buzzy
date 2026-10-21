@@ -26,6 +26,7 @@ async function runResume() {
   });
   const result = {
     ...havent,
+    sound: havent.sound,
     message: havent.message ?? "",
     image: havent.image
       ? await fileToDataUrl(new File([Buffer.from(havent.image)], "abc.jpeg"))

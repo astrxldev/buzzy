@@ -5,14 +5,14 @@ import { youtubeCache } from "@/lib/adaptive-cache";
 
 export type YoutubeLiveInfo =
   | {
+    url: string;
+    thumbnails: {
       url: string;
-      thumbnails: {
-        url: string;
-        width: number;
-        height: number;
-      };
-      title: string;
-    }
+      width: number;
+      height: number;
+    };
+    title: string;
+  }
   | "none";
 
 type APISearchResource = {
@@ -63,6 +63,7 @@ export async function GET(req: NextRequest) {
   const channelId = process.env.YOUTUBE_CHANNEL_ID;
   const apiKey = process.env.YOUTUBE_API_KEY;
 
+  // TEMPORARY: Hacked channel
   if (!apiKey || !channelId) return NextResponse.json<YoutubeLiveInfo>("none");
 
   const response = await youtubeCache.fetch(

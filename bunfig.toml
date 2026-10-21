@@ -1,0 +1,5 @@
+[install]
+globalStore = false
+
+[test]
+root = "./tests"

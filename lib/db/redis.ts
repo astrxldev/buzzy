@@ -1,7 +1,12 @@
 import ReconnectingEventSource from "reconnecting-eventsource";
 import type z from "zod";
 
-export const redis = typeof Bun !== "undefined" ? Bun.redis : null;
+export const redis =
+  typeof Bun !== "undefined"
+    ? new Bun.RedisClient(undefined, { maxRetries: 0xffffffff })
+    : null;
+
+if (redis) redis.onclose = () => setTimeout(() => redis.connect(), 5000);
 
 type PubPayload = { event?: string; data: unknown };
 
@@ -52,15 +57,19 @@ export class PubSubManager {
     function ping() {
       clearTimeout(heartbeatTimeout);
       heartbeatTimeout = setTimeout(() => {
-        void writer.write(":)\n\n").catch(() => {});
+        try {
+          void writer.write(":)\n\n").catch(() => { });
+        } catch { }
         ping();
       }, 90000); // cloudflare timeout = 100s
     }
 
     const write = (payload: PubPayload) => {
-      void writer
-        .write(this.constructMessage(payload.data, payload.event))
-        .catch(() => {});
+      try {
+        void writer
+          .write(this.constructMessage(payload.data, payload.event))
+          .catch(() => { });
+      } catch { }
       ping();
     };
 
@@ -80,6 +89,7 @@ export class PubSubManager {
       console.log(` DSC ${topic}`);
 
       sub.unsubscribe(`${this.prefix}${topic}`, handler);
+      void writer.close().catch(() => { });
       clearInterval(heartbeatTimeout);
       clearTimeout(timeout);
     };
@@ -119,25 +129,30 @@ export class EventSourceEndpoint<T extends EventSourceEventMap> {
   constructor(
     private endpoint: string,
     private eventMap: T,
-  ) {}
+  ) { }
 
   pub<K extends keyof T>(event: K, data: z.infer<T[K]>) {
     if (!this.manager)
       throw new Error(
         "EventSourceEndpoint.pub(...) can only be called on the server.",
       );
-    return this.manager.publish(this.eventMap[event].parse(data), {
+    const publication = this.manager.publish(this.eventMap[event].parse(data), {
       topic: this.endpoint,
       event: String(event),
     });
+    // Existing publishers intentionally fire-and-forget. Mark the rejection as
+    // observed for those callers while still returning the original promise to
+    // callers that need to await delivery.
+    void publication.catch(() => {});
+    return publication;
   }
 
   subMany(
     events: Partial<{ [K in keyof T]: (data: z.infer<T[K]>) => void }>,
     {
       endpoint = this.defaultEndpointUrl,
-      onerror = () => {},
-      onopen = () => {},
+      onerror = () => { },
+      onopen = () => { },
     }: SubOption = {},
   ) {
     const es = new ReconnectingEventSource(endpoint);
@@ -156,8 +171,8 @@ export class EventSourceEndpoint<T extends EventSourceEventMap> {
     callback: (data: z.infer<T[K]>) => void,
     {
       endpoint = this.defaultEndpointUrl,
-      onerror = () => {},
-      onopen = () => {},
+      onerror = () => { },
+      onopen = () => { },
     }: SubOption = {},
   ) {
     const listener = (e: MessageEvent<string>) => callback(JSON.parse(e.data));

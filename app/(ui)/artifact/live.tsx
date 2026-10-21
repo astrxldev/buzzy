@@ -18,11 +18,11 @@ export async function LiveButton() {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Link href={url}>
-          <Button variant="outline" type="button">
+        <Button variant="outline" type="button" asChild>
+          <Link href={url} target="_blank">
             <TvMinimalPlay className="animate-pulse text-red-500" /> LIVE
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </TooltipTrigger>
       <TooltipContent>
         <div className="m-2 flex flex-col gap-2 rounded border bg-card p-2">

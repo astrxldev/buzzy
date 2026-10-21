@@ -9,11 +9,13 @@ import { VersionCheck } from "@/app/client";
 import { sse } from "@/lib/db/sse-endpoints";
 import { cn } from "@/lib/utils";
 import { markDone, markRunning } from "./api";
+import { playDonationSound } from "./sound-playback";
 
 type DonateData = {
   id: string;
   name: string;
   image?: string;
+  sound?: string | null;
   amount: number;
   message: string;
 };
@@ -61,12 +63,16 @@ export default function () {
       has_image: !!data.image,
     });
     console.log("Running SFX");
-    if (sfx.current) {
-      const player = sfx.current;
-      player.play();
-      console.log("Waiting for SFX to end");
-      await new Promise((r) => (player.onended = r));
-    }
+    const customSound = data.sound
+      ? new Audio(
+          `/api/donate/sound/${encodeURIComponent(data.sound)}?key=${encodeURIComponent(new URLSearchParams(location.search).get("key") ?? "")}`,
+        )
+      : null;
+    const customPlayed = customSound
+      ? await playDonationSound(customSound, 35_000)
+      : false;
+    if (!customPlayed && sfx.current)
+      await playDonationSound(sfx.current, 15000);
     console.log("Playing TTS");
     tts.play();
     if (ttsAvailable) await new Promise((r) => (tts.onended = r));

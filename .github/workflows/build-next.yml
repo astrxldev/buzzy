@@ -1,0 +1,72 @@
+name: Build and Deploy Next Preview
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - next
+
+concurrency:
+  group: buzz-next-deploy
+  cancel-in-progress: false
+
+jobs:
+  build-deploy:
+    if: gitea.ref == 'refs/heads/next'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubectl
+        run: |
+          set -euo pipefail
+          ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+          curl -fsSLO "https://dl.k8s.io/release/v1.35.0/bin/linux/${ARCH}/kubectl"
+          chmod +x kubectl
+          mv kubectl /usr/local/bin/kubectl
+
+      - name: Configure kubectl
+        env:
+          KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
+        run: |
+          set -euo pipefail
+          kubectl config set-cluster buzz --server=https://astrxl-la3.neko-piranha.ts.net:6443 --insecure-skip-tls-verify=true
+          kubectl config set-credentials ci-deployer --token="$KUBE_TOKEN"
+          kubectl config set-context buzz --cluster=buzz --user=ci-deployer --namespace=buzz
+          kubectl config use-context buzz
+
+      - name: Prepare shared environment for preview build
+        run: |
+          set -euo pipefail
+          kubectl get secret buzz-env -n buzz \
+            -o go-template='{{range $k,$v := .data}}{{$k}}={{$v|base64decode}}{{"\n"}}{{end}}' > .env
+          chmod 600 .env
+          sed -i '/^BASE_URL=/d' .env
+          sed -i '/^BETTER_AUTH_URL=/d;/^DISCORD_REDIRECT_URI=/d' .env
+          printf '%s\n' \
+            'BASE_URL=https://buzz-next.sudloh.com' \
+            'BETTER_AUTH_URL=https://buzz-next.sudloh.com' \
+            'DISCORD_REDIRECT_URI=https://buzz-next.sudloh.com/rubgram/callback' >> .env
+
+      - name: Build and push immutable frontend preview image
+        env:
+          TAG: ${{ gitea.sha }}
+          IMAGE_REPOSITORY: registry.neko-piranha.ts.net/${{ gitea.repository }}
+        run: |
+          set -euo pipefail
+          docker build -t "$IMAGE_REPOSITORY:frontend-next-$TAG" .
+          docker push "$IMAGE_REPOSITORY:frontend-next-$TAG"
+
+      - name: Update prebootstrapped preview and apply networking resources
+        env:
+          TAG: ${{ gitea.sha }}
+          IMAGE_REPOSITORY: registry.neko-piranha.ts.net/${{ gitea.repository }}
+        run: |
+          set -euo pipefail
+          if ! kubectl get deployment/app-next -n buzz >/dev/null; then
+            echo "Required prebootstrapped Deployment app-next is missing in namespace buzz; bootstrap it locally before running this workflow." >&2
+            exit 1
+          fi
+          kubectl apply -f k8s/next/service-app-next.yaml -f k8s/next/ingress-app-next.yaml
+          kubectl set image deployment/app-next app-next="$IMAGE_REPOSITORY:frontend-next-$TAG" -n buzz
+          kubectl rollout status deployment/app-next -n buzz --timeout=180s

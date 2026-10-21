@@ -102,7 +102,7 @@ async function buildLiveTierlistConfig(
   });
 }
 
-function shouldSnapshot(config: TierlistResolvedConfig) {
+export function shouldSnapshot(config: TierlistResolvedConfig) {
   const deprecatedAt = parseDate(config.version.deprecates);
   const olderThanMonth =
     Number.isFinite(deprecatedAt) &&
@@ -117,7 +117,7 @@ function shouldSnapshot(config: TierlistResolvedConfig) {
     config.chars.length > 0 &&
     config.chars.every((char) => placed.has(char.id));
 
-  return olderThanMonth || allTiered;
+  return olderThanMonth && allTiered;
 }
 
 function parseDate(value: string) {

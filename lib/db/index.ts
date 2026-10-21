@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/neon-http";
-import * as schema from "./schema";
 import { withReplicas } from "drizzle-orm/pg-core";
+import * as schema from "./schema";
 
 export const db = process.env.REPLICA_DATABASE_URL
   ? withReplicas(drizzle(process.env.DATABASE_URL!, { schema }), [

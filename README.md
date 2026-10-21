@@ -9,7 +9,7 @@ Next.js 16 application running multiple community events for YouTuber Buzz. Buil
 Payment-processing and stream-overlay system with two payment methods:
 
 - **TrueMoney (TMN):** Voucher gift link redemption via Sastify API
-- **PromptPay (SlipOK):** Slip image upload verified by SlipOK API
+- **PromptPay:** Slip image upload verified by SlipOK or Slip2Go, selected in admin settings
 
 Key features:
 
@@ -41,7 +41,7 @@ Paid endgame content service where Buzz plays on your account:
 - **Service selector:** Multiple configurable service types with real-time price estimation; "all services" discount
 - **Free queue counter:** Admin-configurable free slots (price = 0)
 - **20-minute payment window** with PromptPay QR code and slip upload
-- **SlipOK verification** with deduplication by `transRef`
+- **SlipOK / Slip2Go verification** with deduplication by `transRef`
 - **Expiration system:** Unpaid submissions auto-expire with queue rebalancing; expired users can restore and pay
 - **Admin panel:** Lock/limit/free controls, manual submission creation, Discord ping ("ถึงคิวแล้ว"), slip archive viewer by round, monthly archive
 - **Widget:** `/widget/rubgram-count` — OBS overlay displaying count/limit
@@ -77,195 +77,7 @@ Centralized management panel at `/admin` (guarded by better-auth):
 - **Audit log:** Last 1000 admin actions with user info
 - **Section shortcuts:** Links to artifact, rubgram, donate, and tierlist admin
 
-```mermaid
-graph TB
-  classDef page fill:#e1f5fe,stroke:#0288d1
-  classDef widget fill:#fff3e0,stroke:#ff9800
-  classDef api fill:#f3e5f5,stroke:#9c27b0
-  classDef sse fill:#e8f5e9,stroke:#4caf50
-  classDef db fill:#fce4ec,stroke:#e91e63
-  classDef external fill:#f5f5f5,stroke:#9e9e9e,stroke-dasharray:3
-  classDef infra fill:#fff8e1,stroke:#ffc107
-  classDef backend fill:#e0f7fa,stroke:#00bcd4
-  classDef auth fill:#efebe9,stroke:#795548
-  classDef payment fill:#fbe9e7,stroke:#ff5722
-
-  subgraph External["External World"]
-    direction LR
-    User(("User")):::external
-    Streamer(("Streamer (OBS)")):::external
-    DiscordUser(("Discord User")):::external
-  end
-
-  subgraph Infra["Infrastructure — Docker Swarm"]
-    Nginx["Nginx Reverse Proxy<br/>(SSE: buffering off, 200s timeout)"]:::infra
-    GiteaCI["Gitea Actions CI/CD"]:::infra
-    Registry["Private Registry<br/>registry.neko-piranha.ts.net"]:::infra
-    AppService["App Service<br/>2 replicas · 1 CPU / 1 GB"]:::infra
-    BackendService["Backend Service<br/>1 replica · 1 CPU / 512 MB"]:::infra
-  end
-
-  subgraph Pages["Frontend Pages (app/(ui)/)"]
-    direction TB
-    Home["/ Home"]:::page
-    Donate["/donate — Donation Form"]:::page
-    DonateTop["/donate/top — Leaderboard + Podium"]:::page
-    DonateAdmin["/donate/admin — Donation Admin"]:::page
-    Artifact["/artifact — Submission Form"]:::page
-    ArtifactAdmin["/artifact/admin — Review Panel"]:::page
-    Rubgram["/rubgram — Service Ordering"]:::page
-    RubgramAdmin["/rubgram/admin — Admin Panel"]:::page
-    RubgramSlip["/rubgram/admin/slip — Archive Viewer"]:::page
-    Tierlist["/tl/[type]/[ver] — Tier Rankings"]:::page
-    Guide["/guide — Build Guides"]:::page
-    AdminDash["/admin — Dashboard"]:::page
-    AdminChar["/admin/char — Character Manager"]:::page
-    AdminCDN["/admin/cdn — File Manager"]:::page
-    AdminLog["/admin/log — Audit Log"]:::page
-    AdminSettings["/admin/settings — Config"]:::page
-    Login["/login — Admin Login"]:::page
-  end
-
-  subgraph Widgets["OBS Widgets (app/widget/)"]
-    DonateWidget["/widget/donate<br/>Donation Alert Popup<br/>SFX + TTS + Animation"]:::widget
-    DonateTopWidget["/widget/donate/top<br/>Top Donor Bar"]:::widget
-    ArtifactCountWidget["/widget/artifact-count<br/>Queue Counter"]:::widget
-    RubgramCountWidget["/widget/rubgram-count<br/>Queue Counter"]:::widget
-  end
-
-  subgraph APIs["API Routes (app/api/)"]
-    APIAuth["/api/auth/[...all] — better-auth"]:::api
-    APITTS["/api/tts — Gemini TTS"]:::api
-    APIDonateHB["/api/donate/hb — Heartbeat"]:::api
-    APIRubgramCount["/api/rubgram/count"]:::api
-    APIAmberSync["/api/amber/sync"]:::api
-    APIAmberChar["/api/amber/char (ISR)"]:::api
-    APIAmberLog["/api/amber/log (ISR)"]:::api
-    APICard["/api/card/[sub] — Card Render"]:::api
-    APISlip["/api/slip/[id] — Slip Image"]:::api
-    APIDiscord["/api/discord/users"]:::api
-    APIHealth["/api/health"]:::api
-  end
-
-  subgraph SSE["Real-Time SSE (app/sse/)"]
-    SSEArtifact["/sse/artifact"]:::sse
-    SSERubgram["/sse/rubgram"]:::sse
-    SSEDonate["/sse/donate"]:::sse
-    SSEActive["/sse/active"]:::sse
-    SSELog["/sse/log"]:::sse
-    SSETierlist["/sse/tl.{name}"]:::sse
-  end
-
-  subgraph Backend["Backend (Bun Bytecode)"]
-    direction TB
-    RubgramExpiry["Expiration Check<br/>(20min timeout)"]:::backend
-    RubgramArchive["Monthly Archive<br/>Incremental rounds"]:::backend
-    AmberCron["Amber Sync Cron<br/>(every 14 days)"]:::backend
-    CardCache["Card Cache GC"]:::backend
-    DBSeed["DB Seeding<br/>(admin + defaults)"]:::backend
-    DiscordWebhook["Discord Webhook<br/>Subscriber"]:::backend
-  end
-
-  subgraph DB["Database"]
-    direction LR
-    subgraph PG["PostgreSQL — Drizzle ORM"]
-        PublicSchema("public<br/>characters · versions · settings · guides<br/>cdn · auditLog · user · session<br/>account · verification"):::db
-        ArtifactSchema("artifact<br/>submissions · cards · settings"):::db
-        EndgameSchema("endgame<br/>submissions · sarchive · expired<br/>slips · settings · discord · types"):::db
-        TierlistSchema("tierlist<br/>types · tiers · columns · badges<br/>versions · states"):::db
-        DonateSchema("donate<br/>donations"):::db
-    end
-    subgraph Redis["Redis"]
-        RedisPubSub("Pub/Sub — SSE Broadcasting"):::db
-        RedisCache("Cache — TTS Audio (7d) · Health (15m)<br/>Discord Users · Amber Hash (24h)"):::db
-        RedisAuth("Auth Tokens (600s TTL)"):::db
-    end
-  end
-
-  subgraph ExtAPI["External APIs"]
-    AmberAPI["Project Amber<br/>gi.yatta.moe"]:::external
-    EnkaAPI["Enka Network<br/>enka.network"]:::external
-    AstralAPI["Astral API<br/>Card Rendering"]:::external
-    SlipOKAPI["SlipOK<br/>PromptPay Verification"]:::external
-    SastifyAPI["Sastify<br/>TrueMoney Redemption"]:::external
-    GeminiAPI["Google Gemini TTS<br/>gemini-2.5-flash-preview-tts"]:::external
-    DiscordAPI["Discord API<br/>OAuth2 · Bot · Webhooks"]:::external
-    YouTubeAPI["YouTube API<br/>Live Status"]:::external
-    PostHogAPI["PostHog Cloud<br/>Analytics + Error Tracking"]:::external
-  end
-
-  subgraph Auth["Authentication"]
-    BetterAuth["better-auth<br/>Email/Password · Admin Role<br/>Drizzle Adapter"]:::auth
-    DiscordOAuth["Discord OAuth2<br/>Rubgram Users<br/>Persisted via cookie token"]:::auth
-    InternalToken["Internal Tokens<br/>Redis-backed · 600s TTL<br/>X-Internal-Auth header"]:::auth
-  end
-
-  subgraph Payments["Payment Processing"]
-    SlipOKFlow["PromptPay (SlipOK)<br/>Slip image → verify → dedup by transRef<br/>Used: Rubgram + Donation"]:::payment
-    TMNFlow["TrueMoney (Sastify)<br/>Voucher link → redeem API<br/>Used: Donation only"]:::payment
-  end
-
-  User --> Nginx
-  Streamer --> Nginx
-  Nginx --> AppService
-  GiteaCI --> Registry
-
-  GiteaCI --> AppService
-  GiteaCI --> BackendService
-  Registry --> AppService
-  Registry --> BackendService
-
-  Home --- Donate & Artifact & Rubgram & Tierlist & Guide & AdminDash
-  Donate --- DonateTop & DonateAdmin
-  Artifact --- ArtifactAdmin
-  Rubgram --- RubgramAdmin & RubgramSlip
-  AdminDash --- AdminChar & AdminCDN & AdminLog & AdminSettings & Login
-
-  BetterAuth --- Login & AdminDash & DonateAdmin & ArtifactAdmin & RubgramAdmin
-  DiscordOAuth --- Rubgram
-  InternalToken --- BackendService
-
-  AppService --- PG & Redis
-  BackendService --- PG & Redis
-
-  Donate --- SlipOKFlow & TMNFlow
-  Rubgram --- SlipOKFlow
-  SlipOKFlow --- SlipOKAPI
-  TMNFlow --- SastifyAPI
-
-  RedisPubSub --- SSEArtifact & SSERubgram & SSEDonate & SSEActive & SSELog & SSETierlist
-
-  DonateAdmin --- SSEDonate
-  ArtifactAdmin --- SSEArtifact
-  RubgramAdmin --- SSERubgram
-  AdminDash --- SSELog
-
-  DonateWidget --- SSEDonate
-  DonateTopWidget --- SSEDonate
-  ArtifactCountWidget --- SSEArtifact
-  RubgramCountWidget --- SSERubgram
-
-  DonateWidget --- APITTS & APIDonateHB
-  DonateTopWidget --- APIDonateHB
-
-  APITTS --- GeminiAPI
-  APICard --- AstralAPI & EnkaAPI
-  APIAmberSync & APIAmberChar & APIAmberLog & APIHealth --- AmberAPI
-  APIHealth --- EnkaAPI
-  APIDiscord --- DiscordAPI
-  SSEActive --- YouTubeAPI
-  AppService --- PostHogAPI
-
-  BackendService --- DiscordAPI & DiscordWebhook
-  BackendService --- RubgramExpiry & RubgramArchive & CardCache & DBSeed
-  AmberCron --- APIAmberSync
-
-  APITTS --- RedisCache
-  APIHealth --- RedisCache
-  APIDiscord --- RedisCache
-
-  Donate -. "skip-queue<br/>(promoted)" .-> Artifact
-```
+## Architecture Diagram has been moved to DIAGRAM.md
 
 ## Architecture
 
@@ -306,8 +118,18 @@ All widgets are SSE-driven, auto-updating, and designed for streaming overlays.
 
 ## Payment Processing
 
-- **Rubgram:** PromptPay only — SlipOK API verifies slip images, deduplicated by `transRef`. 20-minute payment window with QR code.
-- **Donation:** TrueMoney (Sastify API voucher redemption) + PromptPay (SlipOK). Transactions stored in dedicated `endgame.slips` table with full SlipOK response.
+- **Rubgram:** PromptPay only — the selected slip provider verifies images, deduplicated by `transRef`. 20-minute payment window with QR code.
+- **Donation:** TrueMoney (Sastify API voucher redemption) + PromptPay (the same selected provider). Transactions stored in `endgame.slips` with provider identity, verified amount/reference, and the full original response. Historical SlipOK records remain supported.
+
+Switch between **SlipOK** (default) and **Slip2Go** in `/admin/settings` → external services → slip verification. The choice is saved globally and read from the primary database for each new check; no restart is needed. Checks already running finish with their original provider. The selector requires valid configuration before saving; there is no automatic fallback or retry.
+
+- SlipOK uses the existing `SLIPOK_API_URL` and `SLIPOK_API_KEY`.
+- Slip2Go uses `SLIP2GO_VERIFY_URL` (the full image endpoint URL ending in `/api/verify-slip/qr-image/info`) and `SLIP2GO_API_SECRET` (the exact secret value sent in `Authorization`). See the [image verification guide](https://slip2go.com/guide/rest-api/image) and [authentication guide](https://slip2go.com/guide/authentication).
+- Slip2Go validates the exact payment amount and the account from `PROMPTPAY_TYPE` (`mobile`, `nationalId`, or `ewallet`) and `PROMPTPAY_IDENTIFIER`. Rubgram's static QR must receive into that same account. Provider duplicate checking is omitted; the shared database unique reference prevents reuse across both flows and providers while allowing failed submissions to be retried.
+
+Before deploying this change, run `bun dr push` against the deployment database to add `settings.slipCheckProvider` with default `slipok`. No existing slip JSON needs migration. Then configure Slip2Go credentials and PromptPay variables on each app instance before selecting Slip2Go. Revert to SlipOK using the same selector.
+
+Verification has a 30-second timeout and returns payment errors for provider failures, invalid responses, or unavailable services. `/api/health` checks the selected provider's origin without uploading a slip or spending verification credits; its cache is separate per provider. This checks reachability, not bank verification or account credits.
 
 ## Authentication & Authorization
 
@@ -324,6 +146,7 @@ All widgets are SSE-driven, auto-updating, and designed for streaming overlays.
 | Enka Network      | Character showcase auto-fetch                    | enka.network                 |
 | Astral/Enka Embed | Character card rendering                         | git.dgnr.us/astral/api       |
 | SlipOK            | PromptPay slip verification                      | configurable                 |
+| Slip2Go           | PromptPay slip verification                      | configurable                 |
 | Sastify           | TrueMoney voucher redemption                     | api.sastify.xyz              |
 | Google Gemini     | TTS for donation announcements                   | gemini-2.5-flash-preview-tts |
 | Discord API       | OAuth2, guild member list, webhook pings         | discord.com                  |
@@ -422,7 +245,8 @@ Required variables (~30 total, see `.env.example`):
 | ----------------- | ---------------------------------------------------------------------------------- |
 | Database          | `DATABASE_URL`, `REDIS_URL`                                                        |
 | Auth              | `BETTER_AUTH_SECRET`                                                               |
-| Rubgram payments  | `SLIPOK_API_URL`, `SLIPOK_API_KEY`                                                 |
+| Slip verification | `SLIPOK_API_URL`, `SLIPOK_API_KEY`; optional `SLIP2GO_VERIFY_URL`, `SLIP2GO_API_SECRET` |
+| PromptPay account | `PROMPTPAY_TYPE`, `PROMPTPAY_IDENTIFIER` (required for Slip2Go and donation QR) |
 | Donation payments | `TMN_DEST_PHONE_NUM`, `SASTIFY_API_PRIVKEY`                                        |
 | TTS               | `GEMINI_TTS_API_KEY`                                                               |
 | Widget            | `DONATE_WIDGET_KEY`                                                                |

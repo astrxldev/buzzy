@@ -2,28 +2,35 @@
 
 import { Bomb, FolderSync } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { ActionButton } from "@/components/action-button";
 import { CdnChooser } from "@/components/chooser";
+import { Field, FieldDescription, FieldTitle } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { shared } from "@/lib/comms";
+import type { SlipProvider } from "@/lib/slip-checker";
 import {
   forceRefresh,
+  setSlipCheckProvider,
   syncAmber,
   toggleDonatePaymentMethod,
   toggleEnka,
 } from "./api";
 import { Broadcaster } from "./broadcaster";
-import { Section } from "./page";
+import { Section } from "./section";
 
 export function SettingsServicesSection({
   enka: enkaInitial,
   donPp: initialDonPp,
   donTmn: initialDonTmn,
+  slipProvider: initialSlipProvider,
 }: {
   enka: boolean;
   donPp: boolean;
   donTmn: boolean;
+  slipProvider: SlipProvider;
 }) {
   const [syncResult, setSyncResult] = useState("");
   const [enka, setEnka] = useState<boolean>(enkaInitial);
@@ -31,6 +38,31 @@ export function SettingsServicesSection({
   const [donTmn, setDonTmn] = useState<boolean>(initialDonTmn);
   const [pathToReload, setPathToReload] = useState("");
   const [debug] = shared.state("debug");
+  const [slipProvider, setSlipProvider] = useState(initialSlipProvider);
+  const [savingSlipProvider, setSavingSlipProvider] = useState(false);
+
+  async function changeSlipProvider(value: string) {
+    if (
+      (value !== "slipok" && value !== "slip2go") ||
+      value === slipProvider ||
+      savingSlipProvider
+    )
+      return;
+    setSavingSlipProvider(true);
+    try {
+      const result = await setSlipCheckProvider(value);
+      if (result.success) {
+        setSlipProvider(result.provider);
+        toast.success("เปลี่ยนบริการตรวจสอบสลิปแล้ว");
+      } else {
+        toast.error(result.message);
+      }
+    } catch {
+      toast.error("ไม่สามารถเปลี่ยนบริการตรวจสอบสลิปได้ กรุณาลองใหม่");
+    } finally {
+      setSavingSlipProvider(false);
+    }
+  }
 
   async function sync() {
     return syncAmber().then(setSyncResult);
@@ -73,6 +105,25 @@ export function SettingsServicesSection({
             Reload
           </ActionButton>
         </div>
+        <Field data-disabled={savingSlipProvider}>
+          <FieldTitle id="slip-provider-label">บริการตรวจสอบสลิป</FieldTitle>
+          <ToggleGroup
+            type="single"
+            variant="outline"
+            value={slipProvider}
+            onValueChange={changeSlipProvider}
+            disabled={savingSlipProvider}
+            aria-labelledby="slip-provider-label"
+            aria-busy={savingSlipProvider}
+            className="w-fit"
+          >
+            <ToggleGroupItem value="slipok">SlipOK</ToggleGroupItem>
+            <ToggleGroupItem value="slip2go">Slip2Go</ToggleGroupItem>
+          </ToggleGroup>
+          <FieldDescription>
+            ใช้สำหรับรับกรรมและโดเนท มีผลกับการตรวจสอบสลิปครั้งถัดไป
+          </FieldDescription>
+        </Field>
         <span>Donate Payment Method</span>
         <div className="flex items-center gap-2">
           <Switch

@@ -43,9 +43,9 @@ export default {
     minimumCacheTTL: 86400,
   },
   experimental: {
+    agentUpgrade: "latest",
     imgOptTimeoutInSeconds: 30,
     typedEnv: true,
-    viewTransition: true,
     serverActions: { bodySizeLimit: "30mb" },
   },
   deploymentId: process.env.NEXT_DEPLOYMENT_ID,
