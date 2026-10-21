@@ -14,7 +14,7 @@ let authorized = true;
 const saved = mock((values: { slipCheckProvider: string }) => {
   storedProvider = values.slipCheckProvider;
 });
-const primarySelect = mock(() => ({
+const dbSelect = mock(() => ({
   from: () => ({
     where: async () =>
       storedProvider === undefined ? [] : [{ provider: storedProvider }],
@@ -24,13 +24,9 @@ const primarySelect = mock(() => ({
         : [{ slipCheckProvider: storedProvider }],
   }),
 }));
-const replicaSelect = mock(() => {
-  throw new Error("Provider must not be read from replica");
-});
 mock.module("@/lib/db", () => ({
-  db: { select: replicaSelect },
-  primaryDb: {
-    select: primarySelect,
+  db: {
+    select: dbSelect,
     insert: () => ({
       values: (values: { slipCheckProvider: string }) => ({
         onConflictDoUpdate: async () => saved(values),
@@ -40,7 +36,11 @@ mock.module("@/lib/db", () => ({
 }));
 mock.module("@/lib/auth", () => ({ adminCheck: async () => authorized }));
 const actionLog = mock(async () => {});
-mock.module("@/lib/api", () => ({ actionLog }));
+mock.module("@/lib/api", () => ({
+  actionLog,
+  cdnify: async () => ({ url: "https://cdn.example/test" }),
+  cdnDelete: async () => {},
+}));
 const revalidatePath = mock(() => {});
 mock.module("next/cache", () => ({ revalidatePath }));
 mock.module("@/lib/db/sse-endpoints", () => ({ sse: {} }));
@@ -56,7 +56,7 @@ mock.module("@/lib/db/redis", () => ({
   },
 }));
 
-const { checkSlip, getSlipProvider } = await import("./payment");
+const { checkSlip, getSlipProvider } = await import("@/lib/payment");
 const { getSettongs, setSlipCheckProvider } = await import(
   "@/app/(ui)/admin/settings/api"
 );
@@ -80,8 +80,7 @@ beforeEach(() => {
   saved.mockClear();
   actionLog.mockClear();
   revalidatePath.mockClear();
-  primarySelect.mockClear();
-  replicaSelect.mockClear();
+  dbSelect.mockClear();
   healthCache.clear();
 });
 afterEach(() => {
@@ -96,7 +95,7 @@ describe("saved slip provider", () => {
   test("defaults to SlipOK without a settings row", async () => {
     expect(await getSlipProvider()).toBe("slipok");
     expect((await getSettongs()).slipCheckProvider).toBe("slipok");
-    expect(replicaSelect).not.toHaveBeenCalled();
+    expect(dbSelect).toHaveBeenCalledTimes(2);
   });
 
   test("only admins can change or read admin settings", async () => {
@@ -163,7 +162,7 @@ describe("saved slip provider", () => {
       testEnv.SLIP2GO_VERIFY_URL,
       testEnv.SLIPOK_API_URL,
     ]);
-    expect(replicaSelect).not.toHaveBeenCalled();
+    expect(dbSelect).toHaveBeenCalled();
   });
 
   test("an in-progress check keeps its starting provider", async () => {

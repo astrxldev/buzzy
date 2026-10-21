@@ -67,12 +67,6 @@ export default function Home() {
             href="/donate"
             logo={DonateLogo}
           />
-          {/* <HomeLink
-            name="ซ่อมไอดีชาวบ้าน"
-            desc="ซ่อมไอดีชาวบ้าน"
-            href="/repair"
-            logo={DonateLogo}
-          /> */}
           <HomeLink
             name="คอมมิชชั่น"
             desc="คอมมิชชั่นจ้างแคลทีมดาเมท เปรียบเทียบดาเมท กลุ่มดาว"

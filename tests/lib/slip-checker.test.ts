@@ -4,7 +4,7 @@ import {
   isSlipProvider,
   type SlipProvider,
   verifySlip,
-} from "./slip-checker";
+} from "@/lib/slip-checker";
 
 const env = {
   SLIPOK_API_URL: "https://slipok.example/verify",

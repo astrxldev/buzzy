@@ -1,10 +1,10 @@
 import { eq } from "drizzle-orm";
-import { primaryDb } from "@/lib/db";
+import { db } from "@/lib/db";
 import { settings } from "@/lib/db/schema";
 import { isSlipProvider, verifySlip } from "@/lib/slip-checker";
 
 export async function getSlipProvider() {
-  const [config] = await primaryDb
+  const [config] = await db
     .select({ provider: settings.slipCheckProvider })
     .from(settings)
     .where(eq(settings.id, true));

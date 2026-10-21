@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import type { ToastType } from "@/components/fake-toast";
 import { actionLog } from "@/lib/api";
 import { adminCheck } from "@/lib/auth";
-import { db, primaryDb } from "@/lib/db";
+import { db } from "@/lib/db";
 import { settings } from "@/lib/db/schema";
 import { sse } from "@/lib/db/sse-endpoints";
 import { getSlipConfiguration, isSlipProvider } from "@/lib/slip-checker";
@@ -19,7 +19,7 @@ export async function getSettongs() {
       donateTruemoney: true,
       slipCheckProvider: "slipok" as const,
     },
-  ] = await primaryDb.select().from(settings).limit(1);
+  ] = await db.select().from(settings).limit(1);
   return settangs;
 }
 
@@ -35,7 +35,7 @@ export async function setSlipCheckProvider(provider: string) {
       message: error instanceof Error ? error.message : "การตั้งค่าไม่ถูกต้อง",
     };
   }
-  await primaryDb
+  await db
     .insert(settings)
     .values({ slipCheckProvider: provider })
     .onConflictDoUpdate({
