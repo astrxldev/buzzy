@@ -1,13 +1,13 @@
 import { describe, expect, spyOn, test } from "bun:test";
 import { PgDialect } from "drizzle-orm/pg-core";
-import type { tierlistStates } from "./db/schema";
+import type { tierlistStates } from "@/lib/db/schema";
 import {
   finishTierlistWrite,
   lockTierlistList,
   normalizeTierlistPlacements,
   resolveTierlistStateTarget,
   validateTierlistStateInput,
-} from "./tierlist-write";
+} from "@/lib/tierlist-write";
 
 type StateRow = typeof tierlistStates.$inferSelect;
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { shouldSnapshot, type TierlistResolvedConfig } from "./tierlist";
+import { shouldSnapshot, type TierlistResolvedConfig } from "@/lib/tierlist";
 
 function config({
   deprecates = "01/01/2000",

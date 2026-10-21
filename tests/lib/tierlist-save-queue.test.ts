@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { TierlistSaveQueue } from "./tierlist-save-queue";
+import { TierlistSaveQueue } from "@/lib/tierlist-save-queue";
 
 function deferred<T>() {
   let resolve!: (value: T) => void;

@@ -3,7 +3,7 @@ import {
   reconcileCanonicalStates,
   reconcileScopedStateWrite,
   TierlistCanonicalFetch,
-} from "./tierlist-canonical-fetch";
+} from "@/lib/tierlist-canonical-fetch";
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
