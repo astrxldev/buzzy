@@ -4,7 +4,8 @@ import { getSettongs } from "./api";
 import { SettingsServicesSection } from "./services";
 
 export default async function () {
-  const { enka, donatePromptpay, donateTruemoney } = await getSettongs();
+  const { enka, donatePromptpay, donateTruemoney, slipCheckProvider } =
+    await getSettongs();
 
   return (
     <div className="grid h-full w-full gap-8 p-2 pl-0">
@@ -18,6 +19,7 @@ export default async function () {
             enka={enka}
             donPp={donatePromptpay}
             donTmn={donateTruemoney}
+            slipProvider={slipCheckProvider}
           />
         </TabsContent>
         <TabsContent value="account">

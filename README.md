@@ -9,7 +9,7 @@ Next.js 16 application running multiple community events for YouTuber Buzz. Buil
 Payment-processing and stream-overlay system with two payment methods:
 
 - **TrueMoney (TMN):** Voucher gift link redemption via Sastify API
-- **PromptPay (SlipOK):** Slip image upload verified by SlipOK API
+- **PromptPay:** Slip image upload verified by SlipOK or Slip2Go, selected in admin settings
 
 Key features:
 
@@ -41,7 +41,7 @@ Paid endgame content service where Buzz plays on your account:
 - **Service selector:** Multiple configurable service types with real-time price estimation; "all services" discount
 - **Free queue counter:** Admin-configurable free slots (price = 0)
 - **20-minute payment window** with PromptPay QR code and slip upload
-- **SlipOK verification** with deduplication by `transRef`
+- **SlipOK / Slip2Go verification** with deduplication by `transRef`
 - **Expiration system:** Unpaid submissions auto-expire with queue rebalancing; expired users can restore and pay
 - **Admin panel:** Lock/limit/free controls, manual submission creation, Discord ping ("ถึงคิวแล้ว"), slip archive viewer by round, monthly archive
 - **Widget:** `/widget/rubgram-count` — OBS overlay displaying count/limit
@@ -118,8 +118,18 @@ All widgets are SSE-driven, auto-updating, and designed for streaming overlays.
 
 ## Payment Processing
 
-- **Rubgram:** PromptPay only — SlipOK API verifies slip images, deduplicated by `transRef`. 20-minute payment window with QR code.
-- **Donation:** TrueMoney (Sastify API voucher redemption) + PromptPay (SlipOK). Transactions stored in dedicated `endgame.slips` table with full SlipOK response.
+- **Rubgram:** PromptPay only — the selected slip provider verifies images, deduplicated by `transRef`. 20-minute payment window with QR code.
+- **Donation:** TrueMoney (Sastify API voucher redemption) + PromptPay (the same selected provider). Transactions stored in `endgame.slips` with provider identity, verified amount/reference, and the full original response. Historical SlipOK records remain supported.
+
+Switch between **SlipOK** (default) and **Slip2Go** in `/admin/settings` → external services → slip verification. The choice is saved globally and read from the primary database for each new check; no restart is needed. Checks already running finish with their original provider. The selector requires valid configuration before saving; there is no automatic fallback or retry.
+
+- SlipOK uses the existing `SLIPOK_API_URL` and `SLIPOK_API_KEY`.
+- Slip2Go uses `SLIP2GO_VERIFY_URL` (the full image endpoint URL ending in `/api/verify-slip/qr-image/info`) and `SLIP2GO_API_SECRET` (the exact secret value sent in `Authorization`). See the [image verification guide](https://slip2go.com/guide/rest-api/image) and [authentication guide](https://slip2go.com/guide/authentication).
+- Slip2Go validates the exact payment amount and the account from `PROMPTPAY_TYPE` (`mobile`, `nationalId`, or `ewallet`) and `PROMPTPAY_IDENTIFIER`. Rubgram's static QR must receive into that same account. Provider duplicate checking is omitted; the shared database unique reference prevents reuse across both flows and providers while allowing failed submissions to be retried.
+
+Before deploying this change, run `bun dr push` against the deployment database to add `settings.slipCheckProvider` with default `slipok`. No existing slip JSON needs migration. Then configure Slip2Go credentials and PromptPay variables on each app instance before selecting Slip2Go. Revert to SlipOK using the same selector.
+
+Verification has a 30-second timeout and returns payment errors for provider failures, invalid responses, or unavailable services. `/api/health` checks the selected provider's origin without uploading a slip or spending verification credits; its cache is separate per provider. This checks reachability, not bank verification or account credits.
 
 ## Authentication & Authorization
 
@@ -136,6 +146,7 @@ All widgets are SSE-driven, auto-updating, and designed for streaming overlays.
 | Enka Network      | Character showcase auto-fetch                    | enka.network                 |
 | Astral/Enka Embed | Character card rendering                         | git.dgnr.us/astral/api       |
 | SlipOK            | PromptPay slip verification                      | configurable                 |
+| Slip2Go           | PromptPay slip verification                      | configurable                 |
 | Sastify           | TrueMoney voucher redemption                     | api.sastify.xyz              |
 | Google Gemini     | TTS for donation announcements                   | gemini-2.5-flash-preview-tts |
 | Discord API       | OAuth2, guild member list, webhook pings         | discord.com                  |
@@ -234,7 +245,8 @@ Required variables (~30 total, see `.env.example`):
 | ----------------- | ---------------------------------------------------------------------------------- |
 | Database          | `DATABASE_URL`, `REDIS_URL`                                                        |
 | Auth              | `BETTER_AUTH_SECRET`                                                               |
-| Rubgram payments  | `SLIPOK_API_URL`, `SLIPOK_API_KEY`                                                 |
+| Slip verification | `SLIPOK_API_URL`, `SLIPOK_API_KEY`; optional `SLIP2GO_VERIFY_URL`, `SLIP2GO_API_SECRET` |
+| PromptPay account | `PROMPTPAY_TYPE`, `PROMPTPAY_IDENTIFIER` (required for Slip2Go and donation QR) |
 | Donation payments | `TMN_DEST_PHONE_NUM`, `SASTIFY_API_PRIVKEY`                                        |
 | TTS               | `GEMINI_TTS_API_KEY`                                                               |
 | Widget            | `DONATE_WIDGET_KEY`                                                                |
