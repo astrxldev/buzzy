@@ -91,7 +91,7 @@ export async function verifySlip(
     formData.append("files", new Blob([buffer], { type }), "image");
     formData.append("amount", amount.toString());
   } else {
-    headers.Authorization = config.key;
+    headers.Authorization = `Bearer ${config.key}`;
     formData.append("file", new Blob([buffer], { type }), "image");
     formData.append(
       "payload",

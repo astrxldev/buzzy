@@ -108,7 +108,9 @@ describe("slip verification requests", () => {
     ).toEqual({ success: true, provider: "slip2go", data: transaction, raw });
     const [url, init] = fetchSpy!.mock.calls[0];
     expect(url).toBe(env.SLIP2GO_VERIFY_URL);
-    expect(init!.headers).toEqual({ Authorization: env.SLIP2GO_API_SECRET });
+    expect(init!.headers).toEqual({
+      Authorization: `Bearer ${env.SLIP2GO_API_SECRET}`,
+    });
     const form = init!.body as FormData;
     expect(Array.from(form.keys())).toEqual(["file", "payload"]);
     expect((form.get("file") as File).type).toBe("image/jpeg");
