@@ -2,8 +2,10 @@
 import PromptpayImage from "#/assets/promptpay.jpg";
 import { useFormContext } from "@/components/form";
 import Image from "next/image";
+import posthog from "posthog-js";
 import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
+import { toast } from "sonner";
 import { generateQrcode } from "./api";
 import {
   Tooltip,
@@ -26,14 +28,22 @@ export function DynamicPPQR() {
       return;
     }
     let timeout: any;
-    generateQrcode(amount).then(
-      (v) => (
-        setQrcode(v),
-        setCurrent(amount),
-        setChanged(true),
-        (timeout = setTimeout(() => setChanged(false), 2000))
-      ),
-    );
+    generateQrcode(amount)
+      .then(
+        (v) => (
+          setQrcode(v),
+          setCurrent(amount),
+          setChanged(true),
+          (timeout = setTimeout(() => setChanged(false), 2000))
+        ),
+      )
+      .catch((e) => {
+        console.error(e);
+        posthog.captureException(e, { action: "generateQrcode" });
+        toast.error("ไม่สามารถสร้าง QR Code ได้ กรุณาลองใหม่อีกครั้ง", {
+          id: "ppqr-error",
+        });
+      });
     return () => clearTimeout(timeout);
   }, [form.values.amount]);
   return (

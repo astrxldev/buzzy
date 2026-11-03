@@ -3,7 +3,7 @@
 import { createContext } from "react";
 
 export type ActionSubmitContextData = {
-  listenForComplete: (complete: () => void) => void;
+  listenForComplete: (complete: (success?: boolean) => void) => void;
 };
 
 export const ActionSubmitContext = createContext<ActionSubmitContextData>({

@@ -22,7 +22,7 @@ export function ArtifactFormWrapper({
   const [, setWarningUid] = shared.state("warning.uid");
   const [warningSrc, setWarningSrc] = shared.state("warning.src");
   const [dataHold, setDataHold] = useState<FormData>();
-  const callback = useRef<() => void>(() => {});
+  const callback = useRef<(success?: boolean) => void>(() => {});
   const context: ActionSubmitContextData = {
     listenForComplete(complete) {
       callback.current = complete;
@@ -35,33 +35,68 @@ export function ArtifactFormWrapper({
     () => dataHold && warningSrc === "submit" && submit(dataHold, false),
   );
 
-  async function submit(data: FormData, doCheck = true) {
+  async function submit(data: FormData, doCheck = true): Promise<boolean> {
+    const props = {
+      character: data.get("character")?.toString(),
+      is_edit: !!edit,
+    };
     if (enka && doCheck) {
-      const check = await checkEnkaStatus(
-        (data.get("uid") ?? "").toString(),
-        (data.get("character") ?? "").toString(),
-      );
+      let check: Awaited<ReturnType<typeof checkEnkaStatus>>;
+      try {
+        check = await checkEnkaStatus(
+          (data.get("uid") ?? "").toString(),
+          (data.get("character") ?? "").toString(),
+        );
+      } catch (e) {
+        console.error(e);
+        posthog.captureException(e, { action: "checkEnkaStatus" });
+        posthog.capture("artifact_submit_failed", {
+          ...props,
+          stage: "enka_check",
+          reason: "error",
+        });
+        toast.error("ข้อผิดพลาดภายในระบบ กรุณาลองใหม่อีกครั้ง");
+        return false;
+      }
       console.log(data.get("uid"), data.get("character"), check);
       setWarningUid(data.get("uid")?.toString());
       setWarningSrc("submit");
       setDataHold(data);
-      if (check) return setDialog(check);
+      if (check) {
+        setDialog(check);
+        return false;
+      }
     }
-    posthog.capture("artifact_submitted", {
-      character: data.get("character")?.toString(),
-      is_edit: !!edit,
-    });
-    submitArtifact(data, edit)
-      .then((q) => {
-        if (typeof q === "string") return toast.error(q);
-        try {
-          // biome-ignore lint/suspicious/noTsIgnore: error appears on build but not visible to biome
-          // @ts-ignore
-          cookieStore.set("sid", q.id);
-        } catch {}
-        router.refresh();
-      })
-      .catch((e) => toast.error(`${e.message || e}`));
+    try {
+      const q = await submitArtifact(data, edit);
+      if (typeof q === "string") {
+        posthog.capture("artifact_submit_failed", {
+          ...props,
+          stage: "submit",
+          reason: "rejected",
+        });
+        toast.error(q);
+        return false;
+      }
+      posthog.capture("artifact_submitted", props);
+      try {
+        // biome-ignore lint/suspicious/noTsIgnore: error appears on build but not visible to biome
+        // @ts-ignore
+        cookieStore.set("sid", q.id);
+      } catch {}
+      router.refresh();
+      return true;
+    } catch (e) {
+      console.error(e);
+      posthog.captureException(e, { action: "submitArtifact" });
+      posthog.capture("artifact_submit_failed", {
+        ...props,
+        stage: "submit",
+        reason: "error",
+      });
+      toast.error(`${(e as Error)?.message || e}`);
+      return false;
+    }
   }
   return (
     <ActionSubmitContext.Provider value={context}>
@@ -69,8 +104,8 @@ export function ArtifactFormWrapper({
         {...props}
         onSubmit={(e) => {
           e.preventDefault();
-          submit(new FormData(e.target as HTMLFormElement)).finally(() =>
-            setTimeout(callback.current, 1000),
+          submit(new FormData(e.target as HTMLFormElement)).then((success) =>
+            setTimeout(() => callback.current(success), 1000),
           );
         }}
       />

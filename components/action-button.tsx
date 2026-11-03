@@ -33,8 +33,12 @@ export function ActionButton({
       {...props}
       onClick={async (ev) => {
         setState(1);
-        if (action === "provider")
-          await new Promise<void>(ctx.listenForComplete);
+        if (action === "provider") {
+          const success = await new Promise<boolean | undefined>(
+            ctx.listenForComplete,
+          );
+          if (success === false) return setState(0);
+        }
         onClick?.(ev);
         try {
           if (action !== "provider") await action();
